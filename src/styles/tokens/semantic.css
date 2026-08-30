@@ -93,7 +93,7 @@
   --radius-panel: var(--primitive-radius-2xl);
 
   --size-orb: var(--primitive-space-20);
-  --size-orb-lg: 15rem;
+  --size-orb-lg: 12rem;
   --size-hero-icon: var(--primitive-space-12);
   --size-thumb: var(--primitive-space-16);
   --size-drop-min: var(--primitive-size-drop);

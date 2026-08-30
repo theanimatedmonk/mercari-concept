@@ -1,5 +1,5 @@
 import { useDrag } from '@use-gesture/react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Lock } from 'lucide-react';
 import { useState } from 'react';
 import ContextMark from '../../components/icons/ContextMark';
@@ -30,6 +30,7 @@ export default function AttributeBubble({
 }: Props) {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [burst, setBurst] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const dist = distancePercent(attr.x, attr.y);
   const close = dist < 16;
   const far = dist > 28;
@@ -46,6 +47,7 @@ export default function AttributeBubble({
   const bind = useDrag(
     ({ xy: [cx, cy], last, first, memo }) => {
       if (attr.state === 'locked') return memo;
+      if (first) setDragging(true);
       const startDist = (memo as number) ?? dist;
       const next = pointToPercent(cx, cy);
       const nextDist = distancePercent(next.x, next.y);
@@ -56,6 +58,7 @@ export default function AttributeBubble({
       }
       onMove(attr.id, next.x, next.y);
       if (last) {
+        setDragging(false);
         onDeleteArmed(false);
         if (next.y > 86) {
           setBurst(true);
@@ -74,55 +77,63 @@ export default function AttributeBubble({
     <div
       className={`bubble${close ? ' is-close' : ''}${far ? ' is-far' : ''}${
         attr.state === 'locked' ? ' is-locked' : ''
-      }`}
-      role="button"
-      aria-label={attr.label}
-      tabIndex={0}
+      }${dragging ? ' is-dragging' : ''}`}
       style={{
         left: `${attr.x}%`,
         top: `${attr.y}%`,
         opacity: burst ? 0 : 1,
         transform: `translate(-50%, -50%) scale(${close ? 1.08 : far ? 0.92 : 1})`,
       }}
-      {...bind()}
-      onDoubleClick={() => {
-        if (attr.expandable) onExpand(attr.id);
-      }}
     >
-      <div className="bubble__pill">
-        {attr.category === 'inferred' ? (
-          <span className="bubble__mark">
-            <SparkleMark fill="currentColor" stroke="none" />
-          </span>
-        ) : null}
-        {attr.category === 'user-context' ? (
-          <span className="bubble__mark bubble__mark--context">
-            <ContextMark />
-          </span>
-        ) : null}
-        {attr.label}
-      </div>
-      <button
-        type="button"
-        className="bubble__lock"
-        aria-label={`Lock ${attr.label}`}
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={() => onLock(attr.id)}
+      <motion.div
+        className="bubble__unit"
+        layoutId={`attr-tag-${attr.id}`}
+        layout={false}
+        role="button"
+        aria-label={attr.label}
+        tabIndex={0}
+        {...bind()}
+        onDoubleClick={() => {
+          if (attr.expandable) onExpand(attr.id);
+        }}
       >
-        <Lock size={12} />
-      </button>
-      <AnimatePresence>
-        {feedback ? (
-          <motion.span
-            className="bubble__feedback"
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-          >
-            {feedback}
-          </motion.span>
-        ) : null}
-      </AnimatePresence>
+        <div className="bubble__pill">
+          {attr.category !== 'user-context' && !far ? (
+            <span className="bubble__mark">
+              <SparkleMark fill="currentColor" stroke="none" />
+            </span>
+          ) : null}
+          {attr.category === 'user-context' ? (
+            <span className="bubble__mark bubble__mark--context">
+              <ContextMark />
+            </span>
+          ) : null}
+          {attr.label}
+          <span className="bubble__lock-wrap">
+            <span
+              role="button"
+              tabIndex={0}
+              className="bubble__lock"
+              aria-label={
+                attr.state === 'locked' ? `Unlock ${attr.label}` : `Lock ${attr.label}`
+              }
+              onClick={() => onLock(attr.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onLock(attr.id);
+                }
+              }}
+            >
+              <Lock size={12} />
+            </span>
+            <span className="bubble__tooltip" role="tooltip">
+              {attr.state === 'locked' ? 'Unlock this quality' : 'Lock this quality'}
+            </span>
+          </span>
+        </div>
+        {feedback ? <span className="bubble__feedback">{feedback}</span> : null}
+      </motion.div>
       {burst
         ? Array.from({ length: 8 }).map((_, i) => (
             <motion.span

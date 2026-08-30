@@ -19,3 +19,7 @@
   position: relative;
   z-index: 1;
 }
+
+.app-shell__stage {
+  min-height: 100dvh;
+}

@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMemo, useRef, useState } from 'react';
+import AvatarOrb from '../../components/AvatarOrb';
 import { initialAttributes } from '../../data/attributes';
 import { DRESS_CENTER, expansions } from '../../data/demo';
 import { products } from '../../data/products';
@@ -64,6 +65,14 @@ export default function SemanticStudio({ imageSrc }: Props) {
     setAttributes((list) =>
       list.map((item) => {
         if (item.id !== id) return item;
+        if (item.state === 'locked') {
+          const weight = weightFromDistance(item.x, item.y);
+          return {
+            ...item,
+            state: (weight <= 0.35 ? 'less-relevant' : 'active') as const,
+            weight,
+          };
+        }
         const angle = Math.atan2(item.y - DRESS_CENTER.y, item.x - DRESS_CENTER.x);
         return {
           ...item,
@@ -137,7 +146,7 @@ export default function SemanticStudio({ imageSrc }: Props) {
         <div className="canvas__atmosphere" />
         <svg className="canvas__links" aria-hidden>
           {visible.map((attr) => {
-            const opacity = 0.12 + attr.weight * 0.45;
+            const opacity = 0.14 + attr.weight * 0.4;
             return (
               <line
                 key={attr.id}
@@ -152,6 +161,12 @@ export default function SemanticStudio({ imageSrc }: Props) {
             );
           })}
         </svg>
+        <div className="canvas__orb-dock">
+          <motion.div layout layoutId="avatar-orb-slot">
+            <AvatarOrb compact twitching />
+          </motion.div>
+          {hintCopy ? <p className="canvas__hint">{hintCopy}</p> : null}
+        </div>
         <div className="canvas__dress">
           <div className="canvas__dress-glow" />
           <motion.img
@@ -159,6 +174,7 @@ export default function SemanticStudio({ imageSrc }: Props) {
             className="canvas__dress-img"
             src={imageSrc}
             alt="Selected dress"
+            transition={{ type: 'spring', stiffness: 52, damping: 18, mass: 1 }}
           />
         </div>
         <AnimatePresence>
@@ -177,19 +193,6 @@ export default function SemanticStudio({ imageSrc }: Props) {
           ))}
         </AnimatePresence>
         <DeleteZone active={deleteArmed} />
-        {hintCopy ? (
-          <div
-            className="canvas__hint"
-            style={{
-              left: hint === 3 ? '50%' : '8%',
-              top: hint === 3 ? 'auto' : '10%',
-              bottom: hint === 3 ? '18%' : 'auto',
-              transform: hint === 3 ? 'translateX(-50%)' : undefined,
-            }}
-          >
-            {hintCopy}
-          </div>
-        ) : null}
       </section>
       <ProductPanel
         ranked={ranked}

@@ -1,24 +1,27 @@
 .studio {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(20rem, 31vw);
+  grid-template-columns: minmax(0, 1fr) minmax(22rem, 34vw);
   height: 100dvh;
   overflow: hidden;
-  background: var(--color-bg-canvas-deep);
+  background: var(--color-bg-canvas);
 }
 
 .canvas {
   position: relative;
   min-width: 0;
   overflow: hidden;
+  display: grid;
+  place-items: center;
 }
 
 .canvas__atmosphere {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at 50% 48%, var(--color-bg-elevated), transparent 58%),
-    var(--color-bg-canvas-deep);
+    radial-gradient(ellipse at 50% 48%, var(--color-glow-hero), transparent 42%),
+    var(--color-bg-canvas);
   pointer-events: none;
+  opacity: 0.55;
 }
 
 .canvas__links {
@@ -27,25 +30,34 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+  z-index: 1;
+}
+
+.canvas__orb-dock {
+  position: absolute;
+  top: var(--space-stack-md);
+  left: var(--space-inline-lg);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-sm);
+  max-width: min(28rem, 70%);
 }
 
 .canvas__dress {
-  position: absolute;
-  left: 50%;
-  top: 48%;
-  width: 22%;
-  transform: translate(-50%, -50%);
+  position: relative;
+  width: min(14.5rem, 38%);
   z-index: 2;
   pointer-events: none;
 }
 
 .canvas__dress-glow {
   position: absolute;
-  inset: -12%;
+  inset: -28%;
   border-radius: var(--radius-bubble);
-  background: var(--color-glow-dress);
+  background: radial-gradient(circle, var(--color-glow-hero), transparent 68%);
   filter: blur(var(--blur-glow));
-  opacity: 0.55;
+  opacity: 0.9;
 }
 
 .canvas__dress-img {
@@ -54,20 +66,16 @@
   aspect-ratio: 3 / 4;
   object-fit: cover;
   object-position: 48% 18%;
-  border-radius: 46% 42% 48% 44%;
-  mask-image: radial-gradient(ellipse at 50% 42%, black 48%, transparent 78%);
-  -webkit-mask-image: radial-gradient(ellipse at 50% 42%, black 48%, transparent 78%);
-  filter: drop-shadow(var(--shadow-elevated));
+  border-radius: var(--radius-sheet);
+  box-shadow: 0 28px 80px var(--color-glow-hero);
 }
 
 .canvas__hint {
-  position: absolute;
-  z-index: 4;
+  margin: 0;
   max-width: 14rem;
   padding: var(--space-stack-sm) var(--space-inline-md);
-  background: var(--color-bg-elevated);
+  background: var(--color-bg-subtle);
   color: var(--color-text-secondary);
-  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-card);
   font-size: var(--font-size-caption);
   box-shadow: var(--shadow-card);
@@ -116,14 +124,17 @@
   display: grid;
   justify-items: center;
   gap: var(--space-stack-xs);
-  touch-action: none;
-  cursor: grab;
-  transition:
-    transform var(--duration-slow) var(--ease-spring),
-    opacity var(--duration-slow) var(--ease-spring);
 }
 
-.bubble:active {
+.bubble__unit {
+  position: relative;
+  display: flex;
+  align-items: center;
+  touch-action: none;
+  cursor: grab;
+}
+
+.bubble__unit:active {
   cursor: grabbing;
 }
 
@@ -131,7 +142,8 @@
   display: flex;
   align-items: center;
   gap: var(--space-inline-xs);
-  padding: var(--space-stack-sm) var(--space-inline-md);
+  padding: var(--space-stack-sm) var(--space-stack-sm) var(--space-stack-sm)
+    var(--space-inline-md);
   background: var(--color-bg-bubble);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-bubble);
@@ -145,11 +157,12 @@
 
 .bubble.is-close .bubble__pill {
   background: var(--color-bg-bubble-strong);
-  box-shadow: var(--shadow-glow);
+  box-shadow: var(--shadow-card);
 }
 
 .bubble.is-far .bubble__pill {
-  opacity: 0.72;
+  opacity: 0.55;
+  background: var(--color-bg-subtle);
 }
 
 .bubble.is-locked .bubble__pill {
@@ -157,23 +170,31 @@
 }
 
 .bubble__mark {
-  color: var(--color-sparkle);
+  color: var(--color-sparkle-status);
 }
 
 .bubble__mark--context {
   color: var(--color-context-mark);
 }
 
+.bubble__lock-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
 .bubble__lock {
   border: 0;
-  background: var(--color-bg-elevated);
+  background: transparent;
   color: var(--color-text-muted);
-  width: var(--icon-size-lg);
-  height: var(--icon-size-lg);
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
   border-radius: var(--radius-bubble);
   display: grid;
   place-items: center;
-  opacity: 0.4;
+  opacity: 0.45;
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .bubble:hover .bubble__lock,
@@ -181,10 +202,47 @@
   opacity: 1;
 }
 
-.bubble__feedback {
+.bubble.is-locked .bubble__lock {
+  color: var(--color-text-primary);
+}
+
+.bubble__tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + var(--space-stack-xs));
+  transform: translateX(-50%);
+  padding: var(--space-stack-xs) var(--space-inline-sm);
+  background: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-bubble);
   font-size: var(--font-size-caption);
-  color: var(--color-text-muted);
+  white-space: nowrap;
+  opacity: 0;
   pointer-events: none;
+  box-shadow: var(--shadow-card);
+}
+
+.bubble__lock-wrap:hover .bubble__tooltip {
+  opacity: 1;
+}
+
+.bubble.is-dragging .bubble__tooltip {
+  opacity: 0;
+}
+
+.bubble__feedback {
+  position: absolute;
+  top: calc(100% + var(--space-stack-xs));
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-stack-xs) var(--space-inline-sm);
+  background: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-bubble);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-label);
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 .bubble__particle {

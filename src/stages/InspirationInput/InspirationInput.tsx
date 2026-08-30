@@ -29,6 +29,10 @@ const PROMPTS = [
 ];
 
 const BEAT_MS = 1750;
+const LAST_TAG_BEAT = analysisBeats.reduce(
+  (index, item, i) => (item.tag ? i : index),
+  0,
+);
 const LAYOUT_SPRING = { type: 'spring' as const, stiffness: 46, damping: 18, mass: 1.05 };
 
 type Props = {
@@ -95,12 +99,12 @@ export default function InspirationInput({ onContinue }: Props) {
 
   useEffect(() => {
     if (!reading || !imageSrc) return;
-    if (beat >= analysisBeats.length - 1) {
+    if (beat >= LAST_TAG_BEAT) {
       const done = window.setTimeout(() => {
         if (continued.current) return;
         continued.current = true;
         onContinue(imageSrc, context || DEMO_CONTEXT);
-      }, 1600);
+      }, 900);
       return () => window.clearTimeout(done);
     }
     const id = window.setTimeout(() => setBeat((n) => n + 1), BEAT_MS);
@@ -269,6 +273,7 @@ export default function InspirationInput({ onContinue }: Props) {
             {visibleTags.map((item) => (
               <motion.span
                 key={item.id}
+                layoutId={`attr-tag-${item.id}`}
                 className={`inspiration__tag inspiration__tag--${item.tagSide}`}
                 initial={{ opacity: 0, scale: 0.72 }}
                 animate={{ opacity: 1, scale: 1 }}

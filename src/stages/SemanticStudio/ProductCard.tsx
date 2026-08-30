@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import SparkleMark from '../../components/icons/SparkleMark';
 import { whyThis } from '../../lib/scoring';
 import type { Product, SemanticAttribute } from '../../types';
 
@@ -26,7 +27,8 @@ export default function ProductCard({ product, attributes }: Props) {
           className="product-card__why"
           onClick={() => setOpen((v) => !v)}
         >
-          ✦ Why this?
+          <SparkleMark fill="currentColor" stroke="none" />
+          Why this
         </button>
         {open ? (
           <motion.div
