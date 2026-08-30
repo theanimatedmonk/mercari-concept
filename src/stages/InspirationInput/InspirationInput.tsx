@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ImagePlus, Mic, Plus, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import AvatarOrb from '../../components/AvatarOrb';
+import SparkleMark from '../../components/icons/SparkleMark';
 import giftIcon from '../../assets/hero-icons/gift.svg';
 import vibeIcon from '../../assets/hero-icons/vibe.svg';
 import spaceIcon from '../../assets/hero-icons/space.svg';
+import { analysisBeats } from '../../data/analysis';
 import { DEMO_CONTEXT } from '../../data/demo';
 import './InspirationInput.css';
 
@@ -25,6 +28,9 @@ const PROMPTS = [
   },
 ];
 
+const BEAT_MS = 1750;
+const LAYOUT_SPRING = { type: 'spring' as const, stiffness: 46, damping: 18, mass: 1.05 };
+
 type Props = {
   onContinue: (imageSrc: string, context: string) => void;
 };
@@ -35,6 +41,9 @@ export default function InspirationInput({ onContinue }: Props) {
   const [context, setContext] = useState(DEMO_CONTEXT);
   const [dragging, setDragging] = useState(false);
   const [listening, setListening] = useState(false);
+  const [reading, setReading] = useState(false);
+  const [beat, setBeat] = useState(0);
+  const continued = useRef(false);
 
   function useFile(file: File) {
     setImageSrc(URL.createObjectURL(file));
@@ -78,12 +87,31 @@ export default function InspirationInput({ onContinue }: Props) {
   }
 
   function submit() {
-    if (!imageSrc) return;
-    onContinue(imageSrc, context || DEMO_CONTEXT);
+    if (!imageSrc || reading) return;
+    continued.current = false;
+    setBeat(0);
+    setReading(true);
   }
 
+  useEffect(() => {
+    if (!reading || !imageSrc) return;
+    if (beat >= analysisBeats.length - 1) {
+      const done = window.setTimeout(() => {
+        if (continued.current) return;
+        continued.current = true;
+        onContinue(imageSrc, context || DEMO_CONTEXT);
+      }, 1600);
+      return () => window.clearTimeout(done);
+    }
+    const id = window.setTimeout(() => setBeat((n) => n + 1), BEAT_MS);
+    return () => window.clearTimeout(id);
+  }, [reading, beat, imageSrc, context, onContinue]);
+
+  const current = analysisBeats[beat];
+  const visibleTags = analysisBeats.slice(0, beat + 1).filter((item) => item.tag);
+
   return (
-    <section className="inspiration">
+    <section className={`inspiration${reading ? ' is-reading' : ''}`}>
       <input
         ref={fileRef}
         type="file"
@@ -96,101 +124,163 @@ export default function InspirationInput({ onContinue }: Props) {
         }}
       />
 
-      <div className="inspiration__inner">
-        <header className="inspiration__intro">
-          <AvatarOrb lookingDown={Boolean(imageSrc)} />
+      <div
+        className={`inspiration__orb-dock${reading ? ' inspiration__orb-dock--corner' : ''}`}
+      >
+        <motion.div
+          layout="position"
+          layoutId="avatar-orb-slot"
+          transition={LAYOUT_SPRING}
+        >
+          <AvatarOrb lookingDown={Boolean(imageSrc) && !reading} twitching={reading} />
+        </motion.div>
+        {reading ? (
+          <>
+            <span className="inspiration__sparkle" aria-hidden>
+              <SparkleMark fill="currentColor" stroke="none" />
+            </span>
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={current.id}
+                className="inspiration__status-copy"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.32 }}
+              >
+                {current.text}
+                <span className="inspiration__ellipsis" aria-hidden>
+                  <span>.</span>
+                  <span>.</span>
+                  <span>.</span>
+                </span>
+              </motion.p>
+            </AnimatePresence>
+          </>
+        ) : null}
+      </div>
+
+      {!reading ? (
+        <div className="inspiration__inner">
           {!imageSrc ? (
             <>
-              <h1 className="inspiration__title">What's on your mind?</h1>
-              <p className="inspiration__sub">
-                Show me something you saw, describe it, or tell me what you're looking
-                for.
-              </p>
+              <header className="inspiration__intro">
+                <h1 className="inspiration__title">What's on your mind?</h1>
+                <p className="inspiration__sub">
+                  Show me something you saw, describe it, or tell me what you're looking
+                  for.
+                </p>
+              </header>
+              <button
+                type="button"
+                className={`inspiration__drop${dragging ? ' is-dragging' : ''}`}
+                onClick={() => fileRef.current?.click()}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragging(true);
+                }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={onDrop}
+                onPaste={onPaste}
+              >
+                <span className="inspiration__drop-icon">
+                  <ImagePlus size={18} />
+                </span>
+                <p>Drop an image or paste from anywhere</p>
+              </button>
+              <div className="inspiration__prompts">
+                {PROMPTS.map(({ id, label, icon }) => (
+                  <button key={id} type="button" className="inspiration__chip">
+                    <img className="inspiration__chip-icon" src={icon} alt="" />
+                    {label}
+                  </button>
+                ))}
+              </div>
             </>
-          ) : null}
-        </header>
-
-        {!imageSrc ? (
-          <>
-            <button
-              type="button"
-              className={`inspiration__drop${dragging ? ' is-dragging' : ''}`}
-              onClick={() => fileRef.current?.click()}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragging(true);
-              }}
-              onDragLeave={() => setDragging(false)}
-              onDrop={onDrop}
-              onPaste={onPaste}
-            >
-              <span className="inspiration__drop-icon">
-                <ImagePlus size={18} />
-              </span>
-              <p>Drop an image or paste from anywhere</p>
-            </button>
-            <div className="inspiration__prompts">
-              {PROMPTS.map(({ id, label, icon }) => (
-                <button key={id} type="button" className="inspiration__chip">
-                  <img className="inspiration__chip-icon" src={icon} alt="" />
-                  {label}
-                </button>
-              ))}
-            </div>
-          </>
-        ) : (
-          <div className="inspiration__sheet">
-            <button
-              type="button"
-              className="inspiration__close"
-              aria-label="Close"
-              onClick={() => setImageSrc(null)}
-            >
-              <X size={18} />
-            </button>
-            <div className="inspiration__media">
-              <div className="inspiration__thumb-wrap">
-                <img className="inspiration__thumb" src={imageSrc} alt="Inspiration" />
+          ) : (
+            <div className="inspiration__sheet">
+              <button
+                type="button"
+                className="inspiration__close"
+                aria-label="Close"
+                onClick={() => setImageSrc(null)}
+              >
+                <X size={18} />
+              </button>
+              <div className="inspiration__media">
+                <div className="inspiration__thumb-wrap">
+                  <motion.img
+                    layoutId="inspiration-dress"
+                    className="inspiration__thumb"
+                    src={imageSrc}
+                    alt="Inspiration"
+                    transition={LAYOUT_SPRING}
+                  />
+                  <button
+                    type="button"
+                    className="inspiration__remove"
+                    aria-label="Remove image"
+                    onClick={() => setImageSrc(null)}
+                  >
+                    <X size={10} />
+                  </button>
+                </div>
                 <button
                   type="button"
-                  className="inspiration__remove"
-                  aria-label="Remove image"
-                  onClick={() => setImageSrc(null)}
+                  className="inspiration__add"
+                  aria-label="Add another image"
+                  onClick={() => fileRef.current?.click()}
                 >
-                  <X size={10} />
+                  <Plus size={18} />
                 </button>
               </div>
-              <button
-                type="button"
-                className="inspiration__add"
-                aria-label="Add another image"
-                onClick={() => fileRef.current?.click()}
-              >
-                <Plus size={18} />
+              <h2 className="inspiration__remember">Anything else you remember?</h2>
+              <div className="inspiration__composer">
+                <textarea
+                  value={context}
+                  onChange={(e) => setContext(e.target.value)}
+                  placeholder="Add a little context…"
+                />
+                <button
+                  type="button"
+                  className={`inspiration__mic${listening ? ' is-listening' : ''}`}
+                  onClick={onMic}
+                  aria-label="Speak"
+                >
+                  <Mic size={16} />
+                </button>
+              </div>
+              <button type="button" className="inspiration__done" onClick={submit}>
+                Done
               </button>
             </div>
-            <h2 className="inspiration__remember">Anything else you remember?</h2>
-            <div className="inspiration__composer">
-              <textarea
-                value={context}
-                onChange={(e) => setContext(e.target.value)}
-                placeholder="Add a little context…"
-              />
-              <button
-                type="button"
-                className={`inspiration__mic${listening ? ' is-listening' : ''}`}
-                onClick={onMic}
-                aria-label="Speak"
+          )}
+        </div>
+      ) : imageSrc ? (
+        <div className="inspiration__hero">
+          <motion.img
+            layoutId="inspiration-dress"
+            className="inspiration__hero-img"
+            src={imageSrc}
+            alt="Inspiration"
+            transition={LAYOUT_SPRING}
+          />
+          <AnimatePresence>
+            {visibleTags.map((item) => (
+              <motion.span
+                key={item.id}
+                className={`inspiration__tag inspiration__tag--${item.tagSide}`}
+                initial={{ opacity: 0, scale: 0.72 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 140, damping: 16 }}
               >
-                <Mic size={16} />
-              </button>
-            </div>
-            <button type="button" className="inspiration__done" onClick={submit}>
-              Done
-            </button>
-          </div>
-        )}
-      </div>
+                <SparkleMark fill="currentColor" stroke="none" />
+                {item.tag}
+              </motion.span>
+            ))}
+          </AnimatePresence>
+        </div>
+      ) : null}
     </section>
   );
 }

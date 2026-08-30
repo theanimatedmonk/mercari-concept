@@ -3,7 +3,6 @@ import { useState } from 'react';
 import pageShade from './assets/bg-shade.png';
 import { DEMO_INSPIRATION } from './data/demo';
 import InspirationInput from './stages/InspirationInput/InspirationInput';
-import SelectFocus from './stages/SelectFocus/SelectFocus';
 import SemanticStudio from './stages/SemanticStudio/SemanticStudio';
 import type { JourneyStage } from './types';
 import './AppShell.css';
@@ -28,22 +27,8 @@ export default function App() {
             <InspirationInput
               onContinue={(src) => {
                 setImageSrc(src);
-                setStage('focus');
+                setStage('sculpt');
               }}
-            />
-          </motion.div>
-        ) : null}
-        {stage === 'focus' ? (
-          <motion.div
-            key="focus"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <SelectFocus
-              imageSrc={imageSrc}
-              onSelectDress={() => setStage('sculpt')}
             />
           </motion.div>
         ) : null}

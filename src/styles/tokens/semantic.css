@@ -41,6 +41,8 @@
   --color-context-mark: var(--primitive-ink-400);
   --color-glow: rgb(196 165 116 / 0.45);
   --color-glow-dress: rgb(255 255 255 / 0.55);
+  --color-glow-hero: rgb(196 92 180 / 0.45);
+  --color-sparkle-status: var(--primitive-intent-vibe);
   --color-overlay-veil: rgb(18 16 14 / 0.28);
   --color-shimmer: rgb(255 255 255 / 0.22);
   --color-ring-soft: rgb(255 255 255 / 0.35);
@@ -91,6 +93,7 @@
   --radius-panel: var(--primitive-radius-2xl);
 
   --size-orb: var(--primitive-space-20);
+  --size-orb-lg: 15rem;
   --size-hero-icon: var(--primitive-space-12);
   --size-thumb: var(--primitive-space-16);
   --size-drop-min: var(--primitive-size-drop);

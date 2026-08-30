@@ -1,7 +1,13 @@
 .avatar-orb {
-  width: 180px;
-  height: 180px;
+  width: var(--size-orb-lg);
+  height: var(--size-orb-lg);
   position: relative;
+  flex-shrink: 0;
+}
+
+.avatar-orb--compact {
+  width: var(--size-orb);
+  height: var(--size-orb);
 }
 
 .avatar-orb canvas {
