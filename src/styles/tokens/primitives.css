@@ -1,0 +1,86 @@
+/**
+ * Layer 1 — Primitive tokens
+ * Raw values. Components must not reference these directly.
+ */
+:root {
+  --primitive-ink-950: #12100e;
+  --primitive-ink-900: #1c1916;
+  --primitive-ink-800: #2a2622;
+  --primitive-ink-700: #3d3833;
+  --primitive-ink-600: #5c554c;
+  --primitive-ink-500: #7a7268;
+  --primitive-ink-400: #9c948a;
+  --primitive-ink-300: #c4bdb4;
+  --primitive-ink-200: #e4ddd4;
+  --primitive-ink-100: #f1ece5;
+  --primitive-ink-50: #f7f3ee;
+
+  --primitive-paper-50: #faf7f2;
+  --primitive-paper-100: #f3eee6;
+  --primitive-white: #ffffff;
+  --primitive-black: #000000;
+
+  --primitive-gold-200: #ead9b8;
+  --primitive-gold-400: #c4a574;
+  --primitive-gold-600: #8c6b3d;
+
+  --primitive-rose-500: #c45c4a;
+  --primitive-rose-600: #a84838;
+
+  --primitive-space-1: 0.25rem;
+  --primitive-space-2: 0.5rem;
+  --primitive-space-3: 0.75rem;
+  --primitive-space-4: 1rem;
+  --primitive-space-5: 1.25rem;
+  --primitive-space-6: 1.5rem;
+  --primitive-space-8: 2rem;
+  --primitive-space-10: 2.5rem;
+  --primitive-space-12: 3rem;
+  --primitive-space-16: 4rem;
+  --primitive-space-20: 5rem;
+  --primitive-space-24: 6rem;
+  --primitive-size-photo: 22rem;
+
+  --primitive-radius-sm: 0.25rem;
+  --primitive-radius-md: 0.5rem;
+  --primitive-radius-lg: 0.75rem;
+  --primitive-radius-xl: 1rem;
+  --primitive-radius-2xl: 1.5rem;
+  --primitive-radius-full: 9999px;
+
+  --primitive-font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --primitive-font-display: "Cormorant Garamond", "Times New Roman", serif;
+  --primitive-font-size-xs: 0.75rem;
+  --primitive-font-size-sm: 0.875rem;
+  --primitive-font-size-base: 1rem;
+  --primitive-font-size-lg: 1.125rem;
+  --primitive-font-size-xl: 1.25rem;
+  --primitive-font-size-2xl: 1.75rem;
+  --primitive-font-size-3xl: 2.5rem;
+  --primitive-font-size-4xl: 3.25rem;
+  --primitive-font-weight-normal: 400;
+  --primitive-font-weight-medium: 500;
+  --primitive-font-weight-semibold: 600;
+  --primitive-font-weight-bold: 700;
+  --primitive-line-height-tight: 1.15;
+  --primitive-line-height-normal: 1.5;
+
+  --primitive-duration-fast: 120ms;
+  --primitive-duration-normal: 200ms;
+  --primitive-duration-slow: 320ms;
+  --primitive-duration-slower: 560ms;
+  --primitive-ease-default: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --primitive-ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --primitive-shadow-soft: 0 18px 50px rgb(18 16 14 / 0.12);
+  --primitive-shadow-lift: 0 8px 28px rgb(18 16 14 / 0.1);
+  --primitive-shadow-glow: 0 0 32px rgb(196 165 116 / 0.35);
+
+  --primitive-blur-md: 18px;
+  --primitive-blur-lg: 40px;
+
+  --primitive-z-base: 1;
+  --primitive-z-sticky: 200;
+  --primitive-z-overlay: 800;
+  --primitive-z-modal: 900;
+}

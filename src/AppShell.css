@@ -1,0 +1,4 @@
+.app-shell {
+  min-height: 100dvh;
+  background: var(--color-bg-canvas);
+}

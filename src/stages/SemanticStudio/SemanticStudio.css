@@ -1,0 +1,197 @@
+.studio {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 31vw);
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--color-bg-canvas-deep);
+}
+
+.canvas {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.canvas__atmosphere {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 48%, var(--color-bg-elevated), transparent 58%),
+    var(--color-bg-canvas-deep);
+  pointer-events: none;
+}
+
+.canvas__links {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.canvas__dress {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  width: 22%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.canvas__dress-glow {
+  position: absolute;
+  inset: -12%;
+  border-radius: var(--radius-bubble);
+  background: var(--color-glow-dress);
+  filter: blur(var(--blur-glow));
+  opacity: 0.55;
+}
+
+.canvas__dress-img {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: 48% 18%;
+  border-radius: 46% 42% 48% 44%;
+  mask-image: radial-gradient(ellipse at 50% 42%, black 48%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 42%, black 48%, transparent 78%);
+  filter: drop-shadow(var(--shadow-elevated));
+}
+
+.canvas__hint {
+  position: absolute;
+  z-index: 4;
+  max-width: 14rem;
+  padding: var(--space-stack-sm) var(--space-inline-md);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+  font-size: var(--font-size-caption);
+  box-shadow: var(--shadow-card);
+  pointer-events: none;
+}
+
+.delete-zone {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-stack-lg);
+  transform: translateX(-50%);
+  z-index: 3;
+  min-width: 12rem;
+  padding: var(--space-stack-md) var(--space-inline-lg);
+  border-radius: var(--radius-card);
+  border: 1px dashed var(--color-border-default);
+  color: var(--color-text-muted);
+  background: transparent;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-stack-xs);
+  text-align: center;
+  opacity: 0.45;
+  transition:
+    opacity var(--duration-interaction) var(--ease-interaction),
+    background var(--duration-interaction) var(--ease-interaction),
+    color var(--duration-interaction) var(--ease-interaction);
+}
+
+.delete-zone.is-active {
+  opacity: 1;
+  background: var(--color-bg-delete);
+  color: var(--color-delete);
+  border-color: var(--color-delete);
+}
+
+.delete-zone h2 {
+  margin: 0;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-label);
+}
+
+.bubble {
+  position: absolute;
+  z-index: 5;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-stack-xs);
+  touch-action: none;
+  cursor: grab;
+  transition:
+    transform var(--duration-slow) var(--ease-spring),
+    opacity var(--duration-slow) var(--ease-spring);
+}
+
+.bubble:active {
+  cursor: grabbing;
+}
+
+.bubble__pill {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-xs);
+  padding: var(--space-stack-sm) var(--space-inline-md);
+  background: var(--color-bg-bubble);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-bubble);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(var(--blur-soft));
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body-sm);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.bubble.is-close .bubble__pill {
+  background: var(--color-bg-bubble-strong);
+  box-shadow: var(--shadow-glow);
+}
+
+.bubble.is-far .bubble__pill {
+  opacity: 0.72;
+}
+
+.bubble.is-locked .bubble__pill {
+  border-color: var(--color-border-strong);
+}
+
+.bubble__mark {
+  color: var(--color-sparkle);
+}
+
+.bubble__mark--context {
+  color: var(--color-context-mark);
+}
+
+.bubble__lock {
+  border: 0;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-muted);
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  border-radius: var(--radius-bubble);
+  display: grid;
+  place-items: center;
+  opacity: 0.4;
+}
+
+.bubble:hover .bubble__lock,
+.bubble.is-locked .bubble__lock {
+  opacity: 1;
+}
+
+.bubble__feedback {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.bubble__particle {
+  position: absolute;
+  width: var(--space-stack-xs);
+  height: var(--space-stack-xs);
+  border-radius: var(--radius-bubble);
+  background: var(--color-sparkle);
+  pointer-events: none;
+}
