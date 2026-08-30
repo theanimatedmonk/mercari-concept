@@ -1,5 +1,6 @@
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import { useState } from 'react';
+import pageShade from './assets/bg-shade.png';
 import { DEMO_INSPIRATION } from './data/demo';
 import InspirationInput from './stages/InspirationInput/InspirationInput';
 import SelectFocus from './stages/SelectFocus/SelectFocus';
@@ -14,6 +15,7 @@ export default function App() {
   return (
     <LayoutGroup>
     <div className="app-shell">
+      <img className="app-shell__shade" src={pageShade} alt="" />
       <AnimatePresence mode="wait">
         {stage === 'inspiration' ? (
           <motion.div

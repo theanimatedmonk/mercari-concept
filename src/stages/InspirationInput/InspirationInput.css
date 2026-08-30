@@ -1,4 +1,6 @@
 .inspiration {
+  margin: 0 auto;
+  width: 88vw;
   min-height: 100dvh;
   display: grid;
   place-items: center;
@@ -6,21 +8,10 @@
 }
 
 .inspiration__inner {
-  width: min(42rem, 100%);
+  width: min(var(--size-landing), 100%);
   display: grid;
-  gap: var(--space-stack-xl);
-}
-
-.inspiration__intro {
-  text-align: center;
-}
-
-.inspiration__eyebrow {
-  margin: 0 0 var(--space-stack-sm);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-caption);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  justify-items: center;
+  gap: var(--space-stack-lg);
 }
 
 .inspiration__title {
@@ -29,124 +20,202 @@
   font-size: var(--font-size-display);
   font-weight: var(--font-weight-heading);
   line-height: var(--line-height-tight);
+  white-space: nowrap;
+}
+
+.inspiration__intro {
+  text-align: center;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-stack-md);
 }
 
 .inspiration__sub {
-  margin: var(--space-stack-md) 0 0;
+  margin: 0;
+  max-width: 22rem;
   color: var(--color-text-secondary);
   font-size: var(--font-size-body);
 }
 
-.inspiration__card {
+.inspiration__drop {
+  width: 100%;
+  min-height: var(--size-drop-min);
   background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-card);
+  border: 0;
+  border-radius: var(--radius-sheet);
   padding: var(--space-stack-xl);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-elevated);
   display: grid;
-  gap: var(--space-stack-md);
+  place-items: center;
+  gap: var(--space-stack-sm);
   text-align: center;
   cursor: pointer;
-  transition:
-    border-color var(--duration-interaction) var(--ease-interaction),
-    background var(--duration-interaction) var(--ease-interaction);
 }
 
-.inspiration__card.is-dragging {
-  border-color: var(--color-border-strong);
-  background: var(--color-bg-subtle);
+.inspiration__drop.is-dragging {
+  box-shadow: var(--shadow-glow);
 }
 
-.inspiration__card h2 {
-  margin: 0;
-  font-family: var(--font-family-display);
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-heading);
-}
-
-.inspiration__card p {
-  margin: 0;
-  color: var(--color-text-secondary);
-}
-
-.inspiration__preview {
-  width: 100%;
-  max-height: var(--size-photo-preview);
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
-  object-position: 50% 20%;
-  border-radius: var(--radius-control);
-  justify-self: center;
-}
-
-.inspiration__demo {
-  justify-self: center;
-  border: 0;
-  background: transparent;
-  color: var(--color-text-primary);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
-.inspiration__context h3 {
-  margin: 0 0 var(--space-stack-sm);
-  font-size: var(--font-size-heading-sm);
-  font-family: var(--font-family-display);
-}
-
-.inspiration__field {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: var(--space-inline-sm);
-  align-items: center;
-  padding: var(--space-stack-sm) var(--space-inline-sm);
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-bubble);
-}
-
-.inspiration__field input {
-  border: 0;
-  background: transparent;
-  color: var(--color-text-primary);
-  outline: none;
-  padding: var(--space-stack-sm);
-  font-size: var(--font-size-body-sm);
-  min-width: 0;
-}
-
-.inspiration__icon-btn {
+.inspiration__drop-icon {
   width: var(--size-control);
   height: var(--size-control);
-  border: 0;
-  border-radius: var(--radius-bubble);
-  background: transparent;
-  color: var(--color-text-secondary);
+  border-radius: var(--radius-control);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-primary);
   display: grid;
   place-items: center;
 }
 
-.inspiration__icon-btn.is-listening {
-  color: var(--color-accent);
-}
-
-.inspiration__submit {
-  background: var(--color-primary);
-  color: var(--color-text-on-primary);
+.inspiration__drop p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-body-sm);
 }
 
 .inspiration__prompts {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-inline-sm);
   justify-content: center;
+  width: 100%;
+  gap: var(--space-stack-sm) var(--space-inline-sm);
 }
 
 .inspiration__chip {
-  border: 1px solid var(--color-border-default);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-inline-xs);
+  border: 1px solid var(--color-border-subtle);
   background: var(--color-bg-elevated);
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   border-radius: var(--radius-bubble);
-  padding: var(--space-stack-sm) var(--space-inline-md);
+  padding: 0 var(--space-inline-md) 0 0;
   font-size: var(--font-size-body-sm);
+  box-shadow: var(--shadow-card);
+}
+
+.inspiration__chip-icon {
+  width: var(--size-hero-icon);
+  height: var(--size-hero-icon);
+  flex-shrink: 0;
+  display: block;
+}
+
+.inspiration__sheet {
+  width: 100%;
+  position: relative;
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-sheet);
+  padding: var(--space-stack-lg);
+  box-shadow: var(--shadow-elevated);
+  display: grid;
+  gap: var(--space-stack-md);
+}
+
+.inspiration__close {
+  position: absolute;
+  top: var(--space-stack-md);
+  right: var(--space-stack-md);
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  display: grid;
+  place-items: center;
+}
+
+.inspiration__media {
+  display: flex;
+  gap: var(--space-inline-sm);
+  align-items: flex-start;
+}
+
+.inspiration__thumb-wrap {
+  position: relative;
+  width: var(--size-thumb);
+  height: var(--size-thumb);
+}
+
+.inspiration__thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-control);
+}
+
+.inspiration__remove {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(35%, -35%);
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
+  border: 0;
+  border-radius: var(--radius-bubble);
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  display: grid;
+  place-items: center;
+}
+
+.inspiration__add {
+  width: var(--size-thumb);
+  height: var(--size-thumb);
+  border: 1px dashed var(--color-border-default);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-text-muted);
+  display: grid;
+  place-items: center;
+}
+
+.inspiration__remember {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-heading-sm);
+  font-weight: var(--font-weight-heading);
+}
+
+.inspiration__composer {
+  position: relative;
+}
+
+.inspiration__composer textarea {
+  width: 100%;
+  min-height: var(--size-composer);
+  resize: none;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-card);
+  padding: var(--space-stack-md) var(--space-stack-xl) var(--space-stack-md)
+    var(--space-inline-md);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+.inspiration__mic {
+  position: absolute;
+  top: var(--space-stack-md);
+  right: var(--space-inline-sm);
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  display: grid;
+  place-items: center;
+}
+
+.inspiration__mic.is-listening {
+  color: var(--color-accent);
+}
+
+.inspiration__done {
+  width: 100%;
+  border: 0;
+  border-radius: var(--radius-bubble);
+  padding: var(--space-stack-md);
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  font-weight: var(--font-weight-label);
 }

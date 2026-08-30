@@ -1,4 +1,21 @@
 .app-shell {
+  position: relative;
   min-height: 100dvh;
-  background: var(--color-bg-canvas);
+  background-color: var(--color-bg-canvas);
+}
+
+.app-shell__shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  display: block;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app-shell > :not(.app-shell__shade) {
+  position: relative;
+  z-index: 1;
 }

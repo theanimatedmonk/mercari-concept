@@ -7,6 +7,18 @@
   --color-bg-canvas: var(--primitive-paper-50);
   --color-bg-elevated: var(--primitive-white);
   --color-bg-subtle: var(--primitive-paper-100);
+  --color-bg-input: var(--primitive-paper-100);
+  --gradient-page: linear-gradient(
+    180deg,
+    var(--primitive-mist-200) 0%,
+    var(--primitive-white) 58%
+  );
+  --color-intent-gift: var(--primitive-intent-gift);
+  --color-intent-vibe: var(--primitive-intent-vibe);
+  --color-intent-space: var(--primitive-intent-space);
+  --color-orb-hi: var(--primitive-orb-hi);
+  --color-orb-mid: var(--primitive-orb-mid);
+  --color-orb-deep: var(--primitive-orb-deep);
   --color-bg-hover: rgb(18 16 14 / 0.04);
   --color-bg-inverse: var(--primitive-ink-950);
   --color-bg-canvas-deep: var(--primitive-ink-50);
@@ -68,14 +80,22 @@
   --font-size-display-sm: var(--primitive-font-size-3xl);
   --font-weight-body: var(--primitive-font-weight-normal);
   --font-weight-label: var(--primitive-font-weight-medium);
-  --font-weight-heading: var(--primitive-font-weight-semibold);
+  --font-weight-heading: var(--primitive-font-weight-bold);
   --line-height-tight: var(--primitive-line-height-tight);
   --line-height-body: var(--primitive-line-height-normal);
 
   --radius-control: var(--primitive-radius-md);
   --radius-card: var(--primitive-radius-xl);
+  --radius-sheet: var(--primitive-radius-3xl);
   --radius-bubble: var(--primitive-radius-full);
   --radius-panel: var(--primitive-radius-2xl);
+
+  --size-orb: var(--primitive-space-20);
+  --size-hero-icon: var(--primitive-space-12);
+  --size-thumb: var(--primitive-space-16);
+  --size-drop-min: var(--primitive-size-drop);
+  --size-composer: var(--primitive-size-composer);
+  --size-landing: var(--primitive-size-landing);
 
   --shadow-card: var(--primitive-shadow-lift);
   --shadow-elevated: var(--primitive-shadow-soft);
