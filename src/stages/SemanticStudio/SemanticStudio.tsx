@@ -29,7 +29,7 @@ export default function SemanticStudio({ imageSrc }: Props) {
   );
 
   useEffect(() => {
-    const id = window.setTimeout(() => setTourOn(true), 2000);
+    const id = window.setTimeout(() => setTourOn(true), 4000);
     return () => window.clearTimeout(id);
   }, []);
 

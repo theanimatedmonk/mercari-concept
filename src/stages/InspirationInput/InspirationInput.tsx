@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ImagePlus, Mic, Plus, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import AvatarOrb from '../../components/AvatarOrb';
-import SparkleMark from '../../components/icons/SparkleMark';
+import DitherField from '../../components/DitherField';
 import giftIcon from '../../assets/hero-icons/gift.svg';
 import vibeIcon from '../../assets/hero-icons/vibe.svg';
 import spaceIcon from '../../assets/hero-icons/space.svg';
@@ -34,6 +34,10 @@ const LAST_TAG_BEAT = analysisBeats.reduce(
   0,
 );
 const LAYOUT_SPRING = { type: 'spring' as const, stiffness: 80, damping: 18, mass: 1.05 };
+const SCAN_COLS = 12;
+const SCAN_ROWS = 16;
+const SCAN_DOTS = SCAN_COLS * SCAN_ROWS;
+const SHOW_DITHER = false;
 
 type Props = {
   onContinue: (imageSrc: string, context: string) => void;
@@ -116,6 +120,7 @@ export default function InspirationInput({ onContinue }: Props) {
 
   return (
     <section className={`inspiration${reading ? ' is-reading' : ''}`}>
+      {SHOW_DITHER && !reading ? <DitherField /> : null}
       <input
         ref={fileRef}
         type="file"
@@ -140,30 +145,6 @@ export default function InspirationInput({ onContinue }: Props) {
             pose={reading ? 'twitch' : imageSrc ? 'lookDown' : undefined}
           />
         </motion.div>
-        {reading ? (
-          <>
-            <span className="inspiration__sparkle" aria-hidden>
-              <SparkleMark fill="currentColor" stroke="none" />
-            </span>
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={current.id}
-                className="inspiration__status-copy"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.32 }}
-              >
-                {current.text}
-                <span className="inspiration__ellipsis" aria-hidden>
-                  <span>.</span>
-                  <span>.</span>
-                  <span>.</span>
-                </span>
-              </motion.p>
-            </AnimatePresence>
-          </>
-        ) : null}
       </div>
 
       {!reading ? (
@@ -215,13 +196,17 @@ export default function InspirationInput({ onContinue }: Props) {
               </button>
               <div className="inspiration__media">
                 <div className="inspiration__thumb-wrap">
-                  <motion.img
-                    layoutId="inspiration-dress"
-                    className="inspiration__thumb"
-                    src={imageSrc}
-                    alt="Inspiration"
+                  <motion.div
+                    layoutId="inspiration-frame"
+                    className="inspiration__thumb-frame"
                     transition={LAYOUT_SPRING}
-                  />
+                  >
+                    <img
+                      className="inspiration__thumb"
+                      src={imageSrc}
+                      alt="Inspiration"
+                    />
+                  </motion.div>
                   <button
                     type="button"
                     className="inspiration__remove"
@@ -264,13 +249,32 @@ export default function InspirationInput({ onContinue }: Props) {
         </div>
       ) : imageSrc ? (
         <div className="inspiration__hero">
-          <motion.img
-            layoutId="inspiration-dress"
-            className="inspiration__hero-img"
-            src={imageSrc}
-            alt="Inspiration"
+          <div className="inspiration__hero-stage">
+          <motion.div
+            layoutId="inspiration-frame"
+            className="inspiration__hero-frame"
             transition={LAYOUT_SPRING}
-          />
+          >
+            <img
+              className="inspiration__hero-img"
+              src={imageSrc}
+              alt="Inspiration"
+            />
+            <div className="inspiration__scan" aria-hidden>
+              {Array.from({ length: SCAN_DOTS }, (_, i) => {
+                const col = i % SCAN_COLS;
+                const row = Math.floor(i / SCAN_COLS);
+                const delay = ((col * 0.09 + row * 0.06) % 2.2).toFixed(2);
+                return (
+                  <span
+                    key={i}
+                    className="inspiration__scan-dot"
+                    style={{ animationDelay: `${delay}s` }}
+                  />
+                );
+              })}
+            </div>
+          </motion.div>
           <AnimatePresence>
             {visibleTags.map((item) => (
               <motion.span
@@ -286,6 +290,24 @@ export default function InspirationInput({ onContinue }: Props) {
                 {item.tag}
               </motion.span>
             ))}
+          </AnimatePresence>
+          </div>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={current.id}
+              className="inspiration__status-copy"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.32 }}
+            >
+              {current.text}
+              <span className="inspiration__ellipsis" aria-hidden>
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+              </span>
+            </motion.p>
           </AnimatePresence>
         </div>
       ) : null}
