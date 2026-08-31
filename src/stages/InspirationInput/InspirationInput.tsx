@@ -2,7 +2,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ImagePlus, Mic, Plus, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import AvatarOrb from '../../components/AvatarOrb';
-import DitherField from '../../components/DitherField';
 import giftIcon from '../../assets/hero-icons/gift.svg';
 import vibeIcon from '../../assets/hero-icons/vibe.svg';
 import spaceIcon from '../../assets/hero-icons/space.svg';
@@ -37,7 +36,6 @@ const LAYOUT_SPRING = { type: 'spring' as const, stiffness: 80, damping: 18, mas
 const SCAN_COLS = 12;
 const SCAN_ROWS = 16;
 const SCAN_DOTS = SCAN_COLS * SCAN_ROWS;
-const SHOW_DITHER = false;
 
 type Props = {
   onContinue: (imageSrc: string, context: string) => void;
@@ -125,7 +123,6 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
 
   return (
     <section className={`inspiration${reading ? ' is-reading' : ''}`}>
-      {SHOW_DITHER && !reading ? <DitherField /> : null}
       <input
         ref={fileRef}
         type="file"

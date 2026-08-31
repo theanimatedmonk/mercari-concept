@@ -62,7 +62,6 @@
   --color-shimmer: rgb(255 255 255 / 0.22);
   --color-scan-dot: rgb(255 255 255 / 0.92);
   --color-ring-soft: rgb(255 255 255 / 0.35);
-  --color-dither: var(--primitive-ink-400);
   --color-connection: rgb(28 25 22 / 0.22);
   --color-connection-strong: rgb(28 25 22 / 0.45);
   --color-delete: var(--primitive-rose-500);

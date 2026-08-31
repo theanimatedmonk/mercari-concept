@@ -12,10 +12,6 @@
   padding: var(--space-page-y) var(--space-page-x);
 }
 
-.inspiration > :not(.dither-field) {
-  z-index: 1;
-}
-
 .inspiration.is-reading {
   grid-template-columns: 1fr;
   grid-template-rows: 1fr;
