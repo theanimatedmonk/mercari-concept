@@ -50,7 +50,7 @@
   position: absolute;
   top: var(--space-stack-md);
   left: var(--space-inline-lg);
-  z-index: 4;
+  z-index: 8;
   display: flex;
   align-items: center;
   gap: var(--space-inline-sm);
@@ -100,7 +100,7 @@
   left: 50%;
   bottom: var(--space-stack-lg);
   transform: translateX(-50%);
-  z-index: 3;
+  z-index: 8;
   min-width: 12rem;
   padding: var(--space-stack-md) var(--space-inline-lg);
   border-radius: var(--radius-card);
@@ -111,15 +111,12 @@
   justify-items: center;
   gap: var(--space-stack-xs);
   text-align: center;
-  opacity: 0.45;
   transition:
-    opacity var(--duration-interaction) var(--ease-interaction),
     background var(--duration-interaction) var(--ease-interaction),
     color var(--duration-interaction) var(--ease-interaction);
 }
 
 .delete-zone.is-active {
-  opacity: 1;
   background: var(--color-bg-delete);
   color: var(--color-delete);
   border-color: var(--color-delete);
@@ -129,6 +126,11 @@
   margin: 0;
   font-size: var(--font-size-body);
   font-weight: var(--font-weight-label);
+  opacity: 0.45;
+}
+
+.delete-zone.is-active h2 {
+  opacity: 1;
 }
 
 .bubble {
@@ -304,8 +306,7 @@
   }
 
   .canvas__orb-dock {
-    left: var(--space-inline-md);
-    max-width: 60%;
+    display: none;
   }
 
   .delete-zone {

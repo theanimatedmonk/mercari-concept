@@ -225,7 +225,7 @@
   font-size: var(--font-size-display);
   font-weight: var(--font-weight-heading);
   line-height: var(--line-height-tight);
-  text-wrap: balance;
+  white-space: nowrap;
 }
 
 .inspiration__intro {
@@ -445,12 +445,14 @@
   }
 
   .inspiration:not(.is-reading) .avatar-orb {
-    width: var(--size-orb);
-    height: var(--size-orb);
+    width: var(--size-orb-md);
+    height: var(--size-orb-md);
   }
 
   .inspiration__title {
     font-size: var(--font-size-display-sm);
+    white-space: normal;
+    text-wrap: balance;
   }
 
   .inspiration__sub {

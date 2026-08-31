@@ -2,7 +2,7 @@
   position: absolute;
   top: var(--space-stack-md);
   right: var(--space-inline-lg);
-  z-index: 6;
+  z-index: 8;
 }
 
 .canvas-edit__btn {

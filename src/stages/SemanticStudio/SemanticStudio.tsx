@@ -223,15 +223,18 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
           onDone={() => setCoachStep(-1)}
         />
       ) : null}
-      {listingOpen ? (
-        <ProductListing
-          product={products.find((item) => item.id === LISTING_PRODUCT_ID) ?? products[0]}
-          similar={listingSimilarIds
-            .map((id) => products.find((item) => item.id === id))
-            .filter((item): item is (typeof products)[number] => Boolean(item))}
-          onClose={() => setListingOpen(false)}
-        />
-      ) : null}
+      <AnimatePresence>
+        {listingOpen ? (
+          <ProductListing
+            key="listing"
+            product={products.find((item) => item.id === LISTING_PRODUCT_ID) ?? products[0]}
+            similar={listingSimilarIds
+              .map((id) => products.find((item) => item.id === id))
+              .filter((item): item is (typeof products)[number] => Boolean(item))}
+            onClose={() => setListingOpen(false)}
+          />
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

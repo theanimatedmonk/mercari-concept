@@ -8,7 +8,7 @@ import {
   useViewModelInstance,
   useViewModelInstanceBoolean,
 } from '@rive-app/react-webgl2';
-import mercariRiv from '../assets/rive/mercari.riv?url';
+import deleteRiv from '../assets/rive/delete.riv?url';
 import './DeleteMark.css';
 
 type Props = {
@@ -17,12 +17,13 @@ type Props = {
 
 export default function DeleteMark({ hover }: Props) {
   const { rive, RiveComponent } = useRive({
-    src: mercariRiv,
+    src: deleteRiv,
     artboard: 'delete',
     stateMachine: 'delete',
     autoplay: true,
     autoBind: false,
     shouldDisableRiveListeners: true,
+    shouldResizeCanvasToContainer: true,
     layout: new Layout({
       fit: Fit.Contain,
       alignment: Alignment.Center,
@@ -34,12 +35,21 @@ export default function DeleteMark({ hover }: Props) {
   const { setValue } = useViewModelInstanceBoolean('hover', vmi);
 
   useEffect(() => {
+    if (!rive) return;
+    const resize = () => rive.resizeDrawingSurfaceToCanvas();
+    resize();
+    const id = requestAnimationFrame(resize);
+    return () => cancelAnimationFrame(id);
+  }, [rive]);
+
+  useEffect(() => {
+    if (!vmi) return;
     setValue(hover);
-  }, [hover, setValue]);
+  }, [hover, vmi, setValue]);
 
   return (
     <div className="delete-mark" aria-hidden>
-      <RiveComponent />
+      <RiveComponent className="delete-mark__canvas" />
     </div>
   );
 }

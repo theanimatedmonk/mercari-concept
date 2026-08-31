@@ -45,9 +45,6 @@ export default function StyleOnMe({ selfie, result, onClose, onRevealed }: Props
   return (
     <div className="style-on-me" role="dialog" aria-modal="true" aria-labelledby="style-on-me-status">
       <button type="button" className="style-on-me__veil" aria-label="Close" onClick={onClose} />
-      <button type="button" className="style-on-me__close" aria-label="Close" onClick={onClose}>
-        <X size={18} />
-      </button>
       <div className="style-on-me__stage">
         <div className="style-on-me__frame">
           <img
@@ -71,6 +68,9 @@ export default function StyleOnMe({ selfie, result, onClose, onRevealed }: Props
               })}
             </div>
           ) : null}
+          <button type="button" className="style-on-me__close" aria-label="Close" onClick={onClose}>
+            <X size={18} />
+          </button>
         </div>
         <AnimatePresence mode="wait">
           <motion.p

@@ -20,8 +20,8 @@
 .style-on-me__close {
   position: absolute;
   top: var(--space-stack-md);
-  right: var(--space-inline-lg);
-  z-index: 1;
+  right: var(--space-inline-md);
+  z-index: 2;
   width: var(--size-control);
   height: var(--size-control);
   border: 0;

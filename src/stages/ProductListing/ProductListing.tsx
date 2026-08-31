@@ -9,6 +9,7 @@ import {
   Star,
   X,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import SparkleMark from '../../components/icons/SparkleMark';
 import {
@@ -60,14 +61,46 @@ export default function ProductListing({ product, similar, onClose }: Props) {
     setActive((n) => (n + delta + gallery.length) % gallery.length);
   }
 
+  const [sheetUp, setSheetUp] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 48rem)').matches,
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 48rem)');
+    const apply = () => setSheetUp(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+
   const meta = `${listingCopy.size} | ${product.condition} | ${listingCopy.brand}`;
+  const sheetMotion = sheetUp
+    ? { hidden: { y: '100%' }, show: { y: 0 } }
+    : { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
 
   return (
-    <div className="listing" role="dialog" aria-modal="true" aria-labelledby="listing-title">
-      <button type="button" className="listing__veil" aria-label="Close listing" onClick={onClose} />
-      <button type="button" className="listing__close" aria-label="Close" onClick={onClose}>
-        <X size={22} />
-      </button>
+    <motion.div
+      className="listing"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="listing-title"
+      initial="hidden"
+      animate="show"
+      exit="hidden"
+      transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <motion.button
+        type="button"
+        className="listing__veil"
+        aria-label="Close listing"
+        onClick={onClose}
+        variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}
+      />
+      {sheetUp ? null : (
+        <button type="button" className="listing__close" aria-label="Close" onClick={onClose}>
+          <X size={22} />
+        </button>
+      )}
       <input
         ref={fileRef}
         type="file"
@@ -79,7 +112,7 @@ export default function ProductListing({ product, similar, onClose }: Props) {
           e.target.value = '';
         }}
       />
-      <div className="listing__sheet">
+      <motion.div className="listing__sheet" variants={sheetMotion}>
         <div className="listing__main">
           <div className="listing__col listing__col--media">
             <div className="listing__gallery">
@@ -291,7 +324,7 @@ export default function ProductListing({ product, similar, onClose }: Props) {
             ))}
           </div>
         </section>
-      </div>
+      </motion.div>
       {selfie ? (
         <StyleOnMe
           selfie={selfie}
@@ -303,6 +336,6 @@ export default function ProductListing({ product, similar, onClose }: Props) {
           onRevealed={onTryOnRevealed}
         />
       ) : null}
-    </div>
+    </motion.div>
   );
 }

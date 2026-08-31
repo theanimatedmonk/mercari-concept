@@ -495,9 +495,6 @@
   }
 
   .listing__close {
-    top: auto;
-    bottom: var(--size-listing-height);
-    right: var(--space-inline-md);
-    transform: translateY(50%);
+    display: none;
   }
 }
