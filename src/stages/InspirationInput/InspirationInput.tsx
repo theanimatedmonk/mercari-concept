@@ -41,9 +41,10 @@ const SHOW_DITHER = false;
 
 type Props = {
   onContinue: (imageSrc: string, context: string) => void;
+  onReadingChange?: (reading: boolean) => void;
 };
 
-export default function InspirationInput({ onContinue }: Props) {
+export default function InspirationInput({ onContinue, onReadingChange }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [context, setContext] = useState(DEMO_CONTEXT);
@@ -52,6 +53,10 @@ export default function InspirationInput({ onContinue }: Props) {
   const [reading, setReading] = useState(false);
   const [beat, setBeat] = useState(0);
   const continued = useRef(false);
+
+  useEffect(() => {
+    onReadingChange?.(reading);
+  }, [reading, onReadingChange]);
 
   function useFile(file: File) {
     setImageSrc(URL.createObjectURL(file));
@@ -225,6 +230,7 @@ export default function InspirationInput({ onContinue }: Props) {
                   <Plus size={18} />
                 </button>
               </div>
+              <div className="inspiration__remember-wrap">
               <h2 className="inspiration__remember">Anything else you remember?</h2>
               <div className="inspiration__composer">
                 <textarea
@@ -240,6 +246,7 @@ export default function InspirationInput({ onContinue }: Props) {
                 >
                   <Mic size={16} />
                 </button>
+              </div>
               </div>
               <button type="button" className="inspiration__done" onClick={submit}>
                 Done

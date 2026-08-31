@@ -10,11 +10,16 @@ import './AppShell.css';
 export default function App() {
   const [stage, setStage] = useState<JourneyStage>('inspiration');
   const [imageSrc, setImageSrc] = useState(DEMO_INSPIRATION);
+  const [hideShade, setHideShade] = useState(false);
 
   return (
     <LayoutGroup>
     <div className="app-shell">
-      <img className="app-shell__shade" src={pageShade} alt="" />
+      <img
+        className={`app-shell__shade${hideShade ? ' is-hidden' : ''}`}
+        src={pageShade}
+        alt=""
+      />
       <AnimatePresence mode="wait">
         {stage === 'inspiration' ? (
           <motion.div
@@ -25,8 +30,10 @@ export default function App() {
             transition={{ duration: 0.28 }}
           >
             <InspirationInput
+              onReadingChange={setHideShade}
               onContinue={(src) => {
                 setImageSrc(src);
+                setHideShade(false);
                 setStage('sculpt');
               }}
             />
