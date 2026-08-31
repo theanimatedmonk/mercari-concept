@@ -1,7 +1,8 @@
 .panel {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
+  height: 100%;
+  min-height: 0;
   overflow: auto;
   padding: var(--space-stack-lg) var(--space-inline-lg) var(--space-stack-lg);
   background: var(--color-bg-elevated);
@@ -188,4 +189,16 @@
 .product-card__why-body ul {
   margin: 0;
   padding-left: var(--space-inline-md);
+}
+
+@media (max-width: 48rem) {
+  .panel {
+    border-left: 0;
+    border-top: 1px solid var(--color-border-subtle);
+    padding: var(--space-stack-md) var(--space-inline-md) var(--space-stack-lg);
+  }
+
+  .panel__heading h1 {
+    font-size: var(--font-size-body);
+  }
 }

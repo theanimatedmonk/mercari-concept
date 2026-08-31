@@ -1,6 +1,7 @@
 .inspiration {
   margin: 0 auto;
-  width: 88vw;
+  width: 100%;
+  max-width: 100%;
   min-height: 100dvh;
   display: grid;
   place-items: center;
@@ -216,6 +217,7 @@
 
 .inspiration__inner {
   width: min(var(--size-landing), 100%);
+  min-width: 0;
   display: grid;
   justify-items: center;
   gap: var(--space-stack-lg);
@@ -227,7 +229,7 @@
   font-size: var(--font-size-display);
   font-weight: var(--font-weight-heading);
   line-height: var(--line-height-tight);
-  white-space: nowrap;
+  text-wrap: balance;
 }
 
 .inspiration__intro {
@@ -235,6 +237,8 @@
   display: grid;
   justify-items: center;
   gap: var(--space-stack-md);
+  min-width: 0;
+  width: 100%;
 }
 
 .inspiration__sub {
@@ -291,6 +295,8 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-inline-xs);
+  max-width: 100%;
+  min-width: 0;
   border: 1px solid var(--color-border-subtle);
   background: var(--color-bg-elevated);
   color: var(--color-text-primary);
@@ -298,6 +304,7 @@
   padding: 0 var(--space-inline-md) 0 0;
   font-size: var(--font-size-body-sm);
   box-shadow: var(--shadow-card);
+  text-align: left;
 }
 
 .inspiration__chip-icon {
@@ -432,4 +439,58 @@
   background: var(--color-primary);
   color: var(--color-text-on-primary);
   font-weight: var(--font-weight-label);
+}
+
+@media (max-width: 48rem) {
+  .inspiration {
+    padding: var(--space-stack-lg) var(--space-inline-md);
+    align-content: start;
+    padding-top: var(--space-stack-xl);
+  }
+
+  .inspiration:not(.is-reading) .avatar-orb {
+    width: var(--size-orb);
+    height: var(--size-orb);
+  }
+
+  .inspiration__title {
+    font-size: var(--font-size-display-sm);
+  }
+
+  .inspiration__sub {
+    max-width: 100%;
+    font-size: var(--font-size-body-sm);
+  }
+
+  .inspiration__drop {
+    padding: var(--space-stack-lg);
+  }
+
+  .inspiration__prompts {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .inspiration__chip {
+    width: 100%;
+  }
+
+  .inspiration__hero {
+    width: min(16rem, 78vw);
+  }
+
+  .inspiration__orb-dock--corner {
+    top: -4rem;
+    left: -2rem;
+    max-width: calc(100% - var(--space-inline-md) * 2);
+  }
+
+  .inspiration__tag {
+    font-size: var(--font-size-caption);
+    padding: var(--space-stack-xs) var(--space-inline-sm);
+  }
+
+  .inspiration__remember {
+    font-size: var(--font-size-body);
+  }
 }

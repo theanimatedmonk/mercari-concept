@@ -12,6 +12,7 @@ export default function DeleteZone({ active, highlighted }: Props) {
         highlighted ? ' is-coach-target' : ''
       }`}
       data-coach-target="delete"
+      aria-label="Not relevant"
     >
       <DeleteMark hover={active} />
       <h2>Not relevant</h2>

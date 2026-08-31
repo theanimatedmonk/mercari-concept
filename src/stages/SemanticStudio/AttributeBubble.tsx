@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import deleteSound from '../../assets/audio files/delete.mp3';
 import lockSound from '../../assets/audio files/lock.mp3';
 import LockMark from '../../components/icons/LockMark';
-import { clamp, distancePercent } from '../../lib/scoring';
+import { clamp, distancePercent, spreadFromCenter, unspreadFromCenter } from '../../lib/scoring';
 import type { SemanticAttribute } from '../../types';
 
 function playClip(ref: MutableRefObject<HTMLAudioElement | null>, src: string) {
@@ -40,6 +40,7 @@ type Band = 'more' | 'less';
 
 type Props = {
   attr: SemanticAttribute;
+  spread?: number;
   highlighted?: boolean;
   onMove: (id: string, x: number, y: number) => void;
   onDragStart: () => void;
@@ -59,6 +60,7 @@ function bandFromDist(dist: number, current: Band): Band {
 
 export default function AttributeBubble({
   attr,
+  spread = 1,
   highlighted,
   onMove,
   onDragStart,
@@ -103,7 +105,8 @@ export default function AttributeBubble({
         onDragStart();
       }
       const startDist = (memo as number) ?? dist;
-      const next = pointToPercent(cx, cy);
+      const point = pointToPercent(cx, cy);
+      const next = unspreadFromCenter(point.x, point.y, spread);
       const nextDist = distancePercent(next.x, next.y);
       const zone = canvasRef.current?.querySelector('[data-coach-target="delete"]');
       const zoneRect = zone?.getBoundingClientRect();
@@ -142,6 +145,7 @@ export default function AttributeBubble({
 
   const more = !locked && band === 'more';
   const less = !locked && band === 'less';
+  const shown = spreadFromCenter(attr.x, attr.y, spread);
 
   return (
     <div
@@ -150,28 +154,32 @@ export default function AttributeBubble({
         locked ? ' is-locked' : ''
       }${dragging ? ' is-dragging' : ''}${highlighted ? ' is-coach-target' : ''}`}
       style={{
-        left: `${attr.x}%`,
-        top: `${attr.y}%`,
+        left: `${shown.x}%`,
+        top: `${shown.y}%`,
         opacity: burst ? 0 : 1,
+        ['--bubble-far' as string]: locked
+          ? '0'
+          : String(clamp((dist - 10) / 36, 0, 1)),
       }}
     >
-      <motion.div
-        className="bubble__unit"
-        role="button"
-        aria-label={attr.label}
-        tabIndex={0}
-        {...bind()}
-        onDoubleClick={() => {
-          if (attr.expandable) onExpand(attr.id);
-        }}
-      >
+      <motion.div className="bubble__unit">
         <div className="bubble__pill">
-          {attr.id === 'plum' ? <span className="bubble__swatch" aria-hidden /> : null}
-          {attr.label}
+          <span
+            className="bubble__grab"
+            role="button"
+            aria-label={attr.label}
+            tabIndex={0}
+            {...bind()}
+            onDoubleClick={() => {
+              if (attr.expandable) onExpand(attr.id);
+            }}
+          >
+            {attr.id === 'plum' ? <span className="bubble__swatch" aria-hidden /> : null}
+            {attr.label}
+          </span>
           <span className="bubble__lock-wrap">
-            <span
-              role="button"
-              tabIndex={0}
+            <button
+              type="button"
               className="bubble__lock"
               aria-label={
                 attr.state === 'locked' ? `Unlock ${attr.label}` : `Lock ${attr.label}`
@@ -181,17 +189,9 @@ export default function AttributeBubble({
                 else playClip(lockAudio, lockSound);
                 onLock(attr.id);
               }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  if (attr.state === 'locked') playUnlockTap();
-                  else playClip(lockAudio, lockSound);
-                  onLock(attr.id);
-                }
-              }}
             >
               <LockMark filled={attr.state === 'locked'} />
-            </span>
+            </button>
             <span className="bubble__tooltip" role="tooltip">
               {attr.state === 'locked' ? 'Unlock this quality' : 'Lock this quality'}
             </span>

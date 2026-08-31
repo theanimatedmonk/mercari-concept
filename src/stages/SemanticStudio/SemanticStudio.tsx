@@ -5,7 +5,7 @@ import { initialAttributes } from '../../data/attributes';
 import { DRESS_CENTER, expansions } from '../../data/demo';
 import { LISTING_PRODUCT_ID, listingSimilarIds } from '../../data/listing';
 import { products } from '../../data/products';
-import { distancePercent, rankProducts, weightFromDistance } from '../../lib/scoring';
+import { distancePercent, rankProducts, spreadFromCenter, weightFromDistance } from '../../lib/scoring';
 import type { SemanticAttribute } from '../../types';
 import AttributeBubble from './AttributeBubble';
 import CanvasEdit from './CanvasEdit';
@@ -29,6 +29,7 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
   const [tourOn, setTourOn] = useState(false);
   const [listingOpen, setListingOpen] = useState(false);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [spread, setSpread] = useState(1);
   const rankedHold = useRef(
     rankProducts(products, initialAttributes).map((row) => row.product),
   );
@@ -36,6 +37,14 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
   useEffect(() => {
     const id = window.setTimeout(() => setTourOn(true), 4000);
     return () => window.clearTimeout(id);
+  }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 48rem)');
+    const apply = () => setSpread(mq.matches ? 1.38 : 1);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
   }, []);
 
   const ranked = useMemo(() => {
@@ -78,7 +87,7 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
           const weight = weightFromDistance(item.x, item.y);
           return {
             ...item,
-            state: (weight <= 0.35 ? 'less-relevant' : 'active') as const,
+            state: weight <= 0.35 ? 'less-relevant' : 'active',
             weight,
           };
         }
@@ -147,13 +156,14 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
         <svg className="canvas__links" aria-hidden>
           {visible.map((attr) => {
             const opacity = 0.14 + attr.weight * 0.4;
+            const tip = spreadFromCenter(attr.x, attr.y, spread);
             return (
               <line
                 key={attr.id}
                 x1={`${DRESS_CENTER.x}%`}
                 y1={`${DRESS_CENTER.y}%`}
-                x2={`${attr.x}%`}
-                y2={`${attr.y}%`}
+                x2={`${tip.x}%`}
+                y2={`${tip.y}%`}
                 stroke="currentColor"
                 strokeWidth={attr.state === 'locked' ? 2 : 1}
                 style={{ color: 'var(--color-connection-strong)', opacity }}
@@ -178,6 +188,7 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
             <AttributeBubble
               key={attr.id}
               attr={attr}
+              spread={spread}
               canvasRef={canvasRef}
               highlighted={coach?.target === attr.id}
               onMove={onMove}

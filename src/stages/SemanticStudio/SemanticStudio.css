@@ -132,18 +132,21 @@
 }
 
 .bubble {
+  --bubble-far: 0;
   position: absolute;
   z-index: 5;
   display: grid;
   justify-items: center;
   gap: var(--space-stack-xs);
-  transform: translate(-50%, -50%);
-  will-change: left, top;
+  transform: translate(-50%, -50%) scale(calc(1 - var(--bubble-far) * 0.28));
+  will-change: left, top, transform, opacity;
 }
 
 .bubble.is-dragging,
-.bubble.is-coach-target {
+.bubble.is-coach-target,
+.bubble.is-locked {
   z-index: 6;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .bubble__pill {
@@ -170,11 +173,18 @@
   position: relative;
   display: flex;
   align-items: center;
+}
+
+.bubble__grab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-inline-xs);
+  min-width: 0;
   touch-action: none;
   cursor: grab;
 }
 
-.bubble__unit:active {
+.bubble__grab:active {
   cursor: grabbing;
 }
 
@@ -184,13 +194,16 @@
 }
 
 .bubble.is-less .bubble__pill {
-  opacity: 0.55;
+  opacity: calc(1 - var(--bubble-far) * 0.55);
   background: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
+  box-shadow: none;
 }
 
 .bubble.is-locked .bubble__pill {
   border-color: var(--color-border-strong);
   opacity: 1;
+  color: var(--color-text-primary);
 }
 
 .bubble__swatch {
@@ -217,8 +230,10 @@
   display: grid;
   place-items: center;
   opacity: 0.45;
+  flex-shrink: 0;
   pointer-events: auto;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .bubble:hover .bubble__lock,
@@ -276,4 +291,47 @@
   border-radius: var(--radius-bubble);
   background: var(--color-sparkle);
   pointer-events: none;
+}
+
+@media (max-width: 48rem) {
+  .studio__layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: var(--size-canvas-stack) minmax(0, 1fr);
+  }
+
+  .canvas__dress {
+    width: min(6.25rem, 26%);
+  }
+
+  .canvas__orb-dock {
+    left: var(--space-inline-md);
+    max-width: 60%;
+  }
+
+  .delete-zone {
+    left: auto;
+    right: var(--space-inline-md);
+    bottom: var(--space-stack-sm);
+    transform: none;
+    min-width: 0;
+    padding: var(--space-stack-sm);
+  }
+
+  .delete-zone h2 {
+    display: none;
+  }
+
+  .bubble__pill {
+    font-size: var(--font-size-caption);
+    padding: var(--space-stack-xs) var(--space-stack-sm) var(--space-stack-xs)
+      var(--space-inline-sm);
+  }
+
+  .bubble__lock {
+    opacity: 1;
+  }
+
+  .bubble__tooltip {
+    display: none;
+  }
 }

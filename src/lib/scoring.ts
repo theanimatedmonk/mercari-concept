@@ -9,6 +9,20 @@ export function distancePercent(x: number, y: number) {
   return Math.hypot(x - DRESS_CENTER.x, y - DRESS_CENTER.y);
 }
 
+export function spreadFromCenter(x: number, y: number, spread: number) {
+  return {
+    x: clamp(DRESS_CENTER.x + (x - DRESS_CENTER.x) * spread, 7, 93),
+    y: clamp(DRESS_CENTER.y + (y - DRESS_CENTER.y) * spread, 10, 88),
+  };
+}
+
+export function unspreadFromCenter(x: number, y: number, spread: number) {
+  return {
+    x: DRESS_CENTER.x + (x - DRESS_CENTER.x) / spread,
+    y: DRESS_CENTER.y + (y - DRESS_CENTER.y) / spread,
+  };
+}
+
 /** Map canvas distance to semantic weight. */
 export function weightFromDistance(x: number, y: number) {
   const t = clamp(distancePercent(x, y) / 46, 0, 1);
