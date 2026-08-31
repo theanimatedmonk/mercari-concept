@@ -7,18 +7,34 @@ import type { Product, SemanticAttribute } from '../../types';
 type Props = {
   product: Product;
   attributes: SemanticAttribute[];
+  onOpen?: () => void;
 };
 
-export default function ProductCard({ product, attributes }: Props) {
+export default function ProductCard({ product, attributes, onOpen }: Props) {
   const [open, setOpen] = useState(false);
   const explanation = whyThis(product, attributes);
 
   return (
-    <article className="product-card">
-      <img className="product-card__image" src={product.image} alt={product.name} />
+    <article className={`product-card${onOpen ? ' is-openable' : ''}`}>
+      {onOpen ? (
+        <button type="button" className="product-card__open" onClick={onOpen}>
+          <img className="product-card__image" src={product.image} alt={product.name} />
+        </button>
+      ) : (
+        <img className="product-card__image" src={product.image} alt={product.name} />
+      )}
       <div className="product-card__body">
-        <h3 className="product-card__name">{product.name}</h3>
-        <p className="product-card__price">{product.price}</p>
+        {onOpen ? (
+          <button type="button" className="product-card__open-copy" onClick={onOpen}>
+            <h3 className="product-card__name">{product.name}</h3>
+            <p className="product-card__price">{product.price}</p>
+          </button>
+        ) : (
+          <>
+            <h3 className="product-card__name">{product.name}</h3>
+            <p className="product-card__price">{product.price}</p>
+          </>
+        )}
         <p className="product-card__meta">
           {product.condition} · {product.seller}
         </p>

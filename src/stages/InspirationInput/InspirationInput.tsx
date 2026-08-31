@@ -231,7 +231,7 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
                 </button>
               </div>
               <div className="inspiration__remember-wrap">
-              <h2 className="inspiration__remember">Anything else you remember?</h2>
+              <h2 className="inspiration__remember">Tell me what stood out?</h2>
               <div className="inspiration__composer">
                 <textarea
                   value={context}
@@ -249,7 +249,7 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
               </div>
               </div>
               <button type="button" className="inspiration__done" onClick={submit}>
-                Done
+              Make sense of this
               </button>
             </div>
           )}

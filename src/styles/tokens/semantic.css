@@ -13,6 +13,11 @@
     var(--primitive-mist-200) 0%,
     var(--primitive-white) 58%
   );
+  --gradient-style-on-me: linear-gradient(
+    90deg,
+    var(--primitive-style-pink) 0%,
+    var(--primitive-style-blue) 100%
+  );
   --color-intent-gift: var(--primitive-intent-gift);
   --color-intent-vibe: var(--primitive-intent-vibe);
   --color-intent-space: var(--primitive-intent-space);
@@ -41,6 +46,10 @@
   --color-primary-hover: var(--primitive-ink-800);
   --color-accent: var(--primitive-rose-500);
   --color-accent-hover: var(--primitive-rose-600);
+  --color-market: var(--primitive-market-500);
+  --color-market-hover: var(--primitive-market-600);
+  --color-market-soft: var(--primitive-market-100);
+  --color-text-on-market: var(--primitive-white);
   --color-sparkle: var(--primitive-gold-400);
   --color-context-mark: var(--primitive-ink-400);
   --color-glow: rgb(196 165 116 / 0.45);
@@ -49,6 +58,7 @@
   --color-sparkle-status: var(--primitive-intent-vibe);
   --color-pill-plum: #7a2d62;
   --color-overlay-veil: rgb(18 16 14 / 0.28);
+  --color-overlay-deep: rgb(18 16 14 / 0.72);
   --color-shimmer: rgb(255 255 255 / 0.22);
   --color-scan-dot: rgb(255 255 255 / 0.92);
   --color-ring-soft: rgb(255 255 255 / 0.35);
@@ -86,11 +96,13 @@
   --font-size-body: var(--primitive-font-size-base);
   --font-size-heading-sm: var(--primitive-font-size-xl);
   --font-size-heading: var(--primitive-font-size-2xl);
+  --font-size-price: var(--primitive-font-size-lg);
   --font-size-display: var(--primitive-font-size-4xl);
   --font-size-display-sm: var(--primitive-font-size-3xl);
   --font-weight-body: var(--primitive-font-weight-normal);
   --font-weight-label: var(--primitive-font-weight-medium);
   --font-weight-heading: var(--primitive-font-weight-bold);
+  --font-weight-semibold: var(--primitive-font-weight-semibold);
   --line-height-tight: var(--primitive-line-height-tight);
   --line-height-body: var(--primitive-line-height-normal);
 
@@ -107,6 +119,8 @@
   --size-drop-min: var(--primitive-size-drop);
   --size-composer: var(--primitive-size-composer);
   --size-landing: var(--primitive-size-landing);
+  --size-listing: 60vw;
+  --size-listing-height: 90dvh;
 
   --shadow-card: var(--primitive-shadow-lift);
   --shadow-elevated: var(--primitive-shadow-soft);
@@ -128,6 +142,7 @@
 
   --z-canvas: var(--primitive-z-base);
   --z-overlay: var(--primitive-z-overlay);
+  --z-modal: var(--primitive-z-modal);
 }
 
 [data-theme='dark'] {

@@ -1,9 +1,37 @@
 import { useDrag } from '@use-gesture/react';
 import { motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type MutableRefObject } from 'react';
+import deleteSound from '../../assets/audio files/delete.mp3';
+import lockSound from '../../assets/audio files/lock.mp3';
 import LockMark from '../../components/icons/LockMark';
 import { clamp, distancePercent } from '../../lib/scoring';
 import type { SemanticAttribute } from '../../types';
+
+function playClip(ref: MutableRefObject<HTMLAudioElement | null>, src: string) {
+  const audio = ref.current ?? new Audio(src);
+  ref.current = audio;
+  audio.currentTime = 0;
+  void audio.play().catch(() => undefined);
+}
+
+let tapCtx: AudioContext | null = null;
+
+function playUnlockTap() {
+  tapCtx ??= new AudioContext();
+  const ctx = tapCtx;
+  void ctx.resume();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(2100, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(1100, ctx.currentTime + 0.028);
+  gain.gain.setValueAtTime(0.028, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.045);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.05);
+}
 
 const MORE_ENTER = 17;
 const LESS_ENTER = 27;
@@ -48,6 +76,8 @@ export default function AttributeBubble({
   const [band, setBand] = useState<Band>(dist < 22 ? 'more' : 'less');
   const bandRef = useRef(band);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const deleteAudio = useRef<HTMLAudioElement | null>(null);
+  const lockAudio = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (dragging) return;
@@ -97,6 +127,7 @@ export default function AttributeBubble({
         setDragging(false);
         onDeleteArmed(false);
         if (overDelete) {
+          playClip(deleteAudio, deleteSound);
           setBurst(true);
           window.setTimeout(() => onDelete(attr.id), 280);
         } else {
@@ -145,10 +176,16 @@ export default function AttributeBubble({
               aria-label={
                 attr.state === 'locked' ? `Unlock ${attr.label}` : `Lock ${attr.label}`
               }
-              onClick={() => onLock(attr.id)}
+              onClick={() => {
+                if (attr.state === 'locked') playUnlockTap();
+                else playClip(lockAudio, lockSound);
+                onLock(attr.id);
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
+                  if (attr.state === 'locked') playUnlockTap();
+                  else playClip(lockAudio, lockSound);
                   onLock(attr.id);
                 }
               }}

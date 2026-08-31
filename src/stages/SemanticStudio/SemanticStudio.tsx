@@ -3,26 +3,31 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import AvatarOrb from '../../components/AvatarOrb';
 import { initialAttributes } from '../../data/attributes';
 import { DRESS_CENTER, expansions } from '../../data/demo';
+import { LISTING_PRODUCT_ID, listingSimilarIds } from '../../data/listing';
 import { products } from '../../data/products';
 import { distancePercent, rankProducts, weightFromDistance } from '../../lib/scoring';
 import type { SemanticAttribute } from '../../types';
 import AttributeBubble from './AttributeBubble';
+import CanvasEdit from './CanvasEdit';
 import CanvasCoachmark, { COACH_STEPS } from './CanvasCoachmark';
 import DeleteZone from './DeleteZone';
 import ProductPanel from './ProductPanel';
+import ProductListing from '../ProductListing/ProductListing';
 import './SemanticStudio.css';
 
 type Props = {
   imageSrc: string;
+  onStartOver: () => void;
 };
 
-export default function SemanticStudio({ imageSrc }: Props) {
+export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
   const canvasRef = useRef<HTMLElement>(null);
   const [attributes, setAttributes] = useState<SemanticAttribute[]>(initialAttributes);
   const [moves, setMoves] = useState(0);
   const [deleteArmed, setDeleteArmed] = useState(false);
   const [coachStep, setCoachStep] = useState(0);
   const [tourOn, setTourOn] = useState(false);
+  const [listingOpen, setListingOpen] = useState(false);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const rankedHold = useRef(
     rankProducts(products, initialAttributes).map((row) => row.product),
@@ -159,6 +164,7 @@ export default function SemanticStudio({ imageSrc }: Props) {
         <div className="canvas__orb-dock">
           <AvatarOrb compact pose="idle" />
         </div>
+        <CanvasEdit onStartOver={onStartOver} />
         <div className="canvas__dress">
           <div className="canvas__dress-glow" />
           <img
@@ -193,6 +199,7 @@ export default function SemanticStudio({ imageSrc }: Props) {
         ranked={ranked}
         attributes={attributes}
         meaningfulMoves={Math.min(moves, 12)}
+        onOpenListing={() => setListingOpen(true)}
       />
       </div>
       {coach ? <div className="studio__veil" /> : null}
@@ -203,6 +210,15 @@ export default function SemanticStudio({ imageSrc }: Props) {
           onNext={() => setCoachStep((n) => n + 1)}
           onBack={() => setCoachStep((n) => Math.max(0, n - 1))}
           onDone={() => setCoachStep(-1)}
+        />
+      ) : null}
+      {listingOpen ? (
+        <ProductListing
+          product={products.find((item) => item.id === LISTING_PRODUCT_ID) ?? products[0]}
+          similar={listingSimilarIds
+            .map((id) => products.find((item) => item.id === id))
+            .filter((item): item is (typeof products)[number] => Boolean(item))}
+          onClose={() => setListingOpen(false)}
         />
       ) : null}
     </div>

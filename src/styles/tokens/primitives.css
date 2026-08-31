@@ -37,6 +37,12 @@
   --primitive-rose-500: #c45c4a;
   --primitive-rose-600: #a84838;
 
+  --primitive-market-100: #f3e8ff;
+  --primitive-market-500: #5b3dff;
+  --primitive-market-600: #4a2ee6;
+  --primitive-style-pink: #e664e5;
+  --primitive-style-blue: #5869e8;
+
   --primitive-space-1: 0.25rem;
   --primitive-space-2: 0.5rem;
   --primitive-space-3: 0.75rem;
@@ -53,6 +59,7 @@
   --primitive-size-drop: 10rem;
   --primitive-size-composer: 6.5rem;
   --primitive-size-landing: 34rem;
+  --primitive-size-listing: 72rem;
 
   --primitive-radius-sm: 0.25rem;
   --primitive-radius-md: 0.5rem;

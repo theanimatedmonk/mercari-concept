@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000">
+  <rect width="800" height="1000" fill="#eef1f8"/>
+  <rect x="48" y="48" width="704" height="904" fill="none" stroke="#c4bdb4" stroke-width="2" stroke-dasharray="10 8"/>
+  <text x="400" y="500" text-anchor="middle" fill="#7a7268" font-family="system-ui, sans-serif" font-size="28">Photo</text>
+</svg>

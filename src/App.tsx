@@ -16,7 +16,7 @@ export default function App() {
     <LayoutGroup>
     <div className="app-shell">
       <img
-        className={`app-shell__shade${hideShade ? ' is-hidden' : ''}`}
+        className={`app-shell__shade${hideShade || stage === 'sculpt' ? ' is-hidden' : ''}`}
         src={pageShade}
         alt=""
       />
@@ -33,7 +33,6 @@ export default function App() {
               onReadingChange={setHideShade}
               onContinue={(src) => {
                 setImageSrc(src);
-                setHideShade(false);
                 setStage('sculpt');
               }}
             />
@@ -47,7 +46,13 @@ export default function App() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.32 }}
           >
-            <SemanticStudio imageSrc={imageSrc} />
+            <SemanticStudio
+              imageSrc={imageSrc}
+              onStartOver={() => {
+                setHideShade(false);
+                setStage('inspiration');
+              }}
+            />
           </motion.div>
         ) : null}
       </AnimatePresence>

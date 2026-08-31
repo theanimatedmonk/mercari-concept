@@ -1,0 +1,83 @@
+.canvas-edit {
+  position: absolute;
+  top: var(--space-stack-md);
+  right: var(--space-inline-lg);
+  z-index: 6;
+}
+
+.canvas-edit__btn {
+  width: var(--size-control);
+  height: var(--size-control);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-card);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition:
+    background var(--duration-interaction) var(--ease-interaction),
+    border-color var(--duration-interaction) var(--ease-interaction),
+    color var(--duration-interaction) var(--ease-interaction);
+}
+
+.canvas-edit__btn:hover,
+.canvas-edit__btn[aria-expanded='true'] {
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-default);
+}
+
+.canvas-edit__menu {
+  position: absolute;
+  top: calc(100% + var(--space-stack-xs));
+  right: 0;
+  min-width: 14rem;
+  padding: var(--space-stack-xs);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-elevated);
+  display: grid;
+  gap: var(--space-stack-xs);
+}
+
+.canvas-edit__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-sm);
+  width: 100%;
+  border: 0;
+  border-radius: var(--radius-control);
+  padding: var(--space-stack-sm) var(--space-inline-sm);
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--font-weight-label);
+  text-align: left;
+}
+
+.canvas-edit__item:hover {
+  background: var(--color-bg-hover);
+}
+
+.studio-taste {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: var(--space-page-y) var(--space-page-x);
+}
+
+.studio-taste__veil {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: var(--color-overlay-veil);
+}
+
+.studio-taste__sheet {
+  position: relative;
+  z-index: 1;
+  width: min(var(--size-landing), 100%);
+}

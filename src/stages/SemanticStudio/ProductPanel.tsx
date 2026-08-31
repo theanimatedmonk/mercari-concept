@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ListFilter } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { LISTING_PRODUCT_ID } from '../../data/listing';
 import { panelPhase } from '../../lib/scoring';
 import type { Product, SemanticAttribute } from '../../types';
 import ProductCard from './ProductCard';
@@ -29,6 +30,7 @@ type Props = {
   ranked: Product[];
   attributes: SemanticAttribute[];
   meaningfulMoves: number;
+  onOpenListing?: (product: Product) => void;
 };
 
 function Slot({
@@ -36,11 +38,13 @@ function Slot({
   showCard,
   index,
   attributes,
+  onOpen,
 }: {
   product?: Product;
   showCard: boolean;
   index: number;
   attributes: SemanticAttribute[];
+  onOpen?: () => void;
 }) {
   return (
     <div className="panel__slot">
@@ -52,7 +56,7 @@ function Slot({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <ProductCard product={product} attributes={attributes} />
+            <ProductCard product={product} attributes={attributes} onOpen={onOpen} />
           </motion.div>
         ) : (
           <motion.div
@@ -73,10 +77,20 @@ function Slot({
   );
 }
 
-export default function ProductPanel({ ranked, attributes, meaningfulMoves }: Props) {
+export default function ProductPanel({
+  ranked,
+  attributes,
+  meaningfulMoves,
+  onOpenListing,
+}: Props) {
   const phase = panelPhase(attributes, meaningfulMoves);
   const copy = COPY[phase];
-  const visible = ranked.slice(0, SLOT_COUNT);
+  const featured = ranked.find((item) => item.id === LISTING_PRODUCT_ID);
+  const visible = (() => {
+    const slice = ranked.slice(0, SLOT_COUNT);
+    if (!featured || slice.some((item) => item.id === featured.id)) return slice;
+    return [...slice.slice(0, SLOT_COUNT - 1), featured];
+  })();
   const [revealed, setRevealed] = useState(0);
 
   useEffect(() => {
@@ -121,6 +135,11 @@ export default function ProductPanel({ ranked, attributes, meaningfulMoves }: Pr
                 showCard={Boolean(product && index < revealed)}
                 index={index}
                 attributes={attributes}
+                onOpen={
+                  product?.id === LISTING_PRODUCT_ID
+                    ? () => onOpenListing?.(product)
+                    : undefined
+                }
               />
             );
           })}
@@ -135,6 +154,11 @@ export default function ProductPanel({ ranked, attributes, meaningfulMoves }: Pr
                 showCard={Boolean(product && index < revealed)}
                 index={index}
                 attributes={attributes}
+                onOpen={
+                  product?.id === LISTING_PRODUCT_ID
+                    ? () => onOpenListing?.(product)
+                    : undefined
+                }
               />
             );
           })}

@@ -139,6 +139,27 @@
   display: none;
 }
 
+.product-card.is-openable .product-card__image {
+  cursor: pointer;
+}
+
+.product-card__open,
+.product-card__open-copy {
+  display: grid;
+  gap: var(--space-stack-xs);
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: inherit;
+}
+
+.product-card__open:hover .product-card__image,
+.product-card.is-openable:hover .product-card__image {
+  opacity: 0.92;
+}
+
 .product-card__why {
   margin-top: 0;
   border: 0;
