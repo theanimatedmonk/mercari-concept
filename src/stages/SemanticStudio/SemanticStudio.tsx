@@ -74,7 +74,7 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
     );
   }
 
-  function onGestureEnd(_kind: 'nudge' | 'away') {
+  function onGestureEnd() {
     setDraggingId(null);
     setMoves((n) => n + 1);
   }

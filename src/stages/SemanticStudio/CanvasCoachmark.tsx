@@ -7,12 +7,14 @@ export const COACH_STEPS = [
     title: 'Pull closer',
     body: 'Want more of this? Bring it closer.',
     target: 'statement',
+    lock: false,
     prefer: 'above' as const,
   },
   {
     title: 'Push away',
     body: 'Still relevant, just not as much.',
     target: 'sculptural',
+    lock: false,
     prefer: 'below' as const,
   },
   {
@@ -26,6 +28,7 @@ export const COACH_STEPS = [
     title: 'Let it go',
     body: "Drop what doesn't feel right.",
     target: 'delete',
+    lock: false,
     prefer: 'above' as const,
   },
 ] as const;
@@ -59,10 +62,9 @@ export default function CanvasCoachmark({
     const bubble = bubbleRef.current;
     if (!canvas || !bubble || !current) return;
 
-    const selector =
-      'lock' in current && current.lock
-        ? `[data-coach-target="${current.target}"] .bubble__lock`
-        : `[data-coach-target="${current.target}"]`;
+    const selector = current.lock
+      ? `[data-coach-target="${current.target}"] .bubble__lock`
+      : `[data-coach-target="${current.target}"]`;
     const target = canvas.querySelector(selector);
     if (!target) return;
 
