@@ -35,10 +35,12 @@ export default function DitherField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: true });
-    if (!ctx) return;
+    const surface = canvasRef.current;
+    if (!surface) return;
+    const gfx = surface.getContext('2d', { alpha: true });
+    if (!gfx) return;
+    const canvas: HTMLCanvasElement = surface;
+    const ctx: CanvasRenderingContext2D = gfx;
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const pointer = { x: -9999, y: -9999, px: -9999, py: -9999, speed: 0 };

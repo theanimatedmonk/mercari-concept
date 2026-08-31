@@ -59,9 +59,10 @@ export default function CanvasCoachmark({
     const bubble = bubbleRef.current;
     if (!canvas || !bubble || !current) return;
 
-    const selector = current.lock
-      ? `[data-coach-target="${current.target}"] .bubble__lock`
-      : `[data-coach-target="${current.target}"]`;
+    const selector =
+      'lock' in current && current.lock
+        ? `[data-coach-target="${current.target}"] .bubble__lock`
+        : `[data-coach-target="${current.target}"]`;
     const target = canvas.querySelector(selector);
     if (!target) return;
 

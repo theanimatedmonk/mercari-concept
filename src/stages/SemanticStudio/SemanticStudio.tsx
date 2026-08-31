@@ -5,7 +5,7 @@ import { initialAttributes } from '../../data/attributes';
 import { DRESS_CENTER, expansions } from '../../data/demo';
 import { LISTING_PRODUCT_ID, listingSimilarIds } from '../../data/listing';
 import { products } from '../../data/products';
-import { distancePercent, rankProducts, spreadFromCenter, weightFromDistance } from '../../lib/scoring';
+import { rankProducts, spreadFromCenter, weightFromDistance } from '../../lib/scoring';
 import type { SemanticAttribute } from '../../types';
 import AttributeBubble from './AttributeBubble';
 import CanvasEdit from './CanvasEdit';
@@ -74,7 +74,7 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
     );
   }
 
-  function onGestureEnd(kind: 'nudge' | 'away') {
+  function onGestureEnd(_kind: 'nudge' | 'away') {
     setDraggingId(null);
     setMoves((n) => n + 1);
   }
