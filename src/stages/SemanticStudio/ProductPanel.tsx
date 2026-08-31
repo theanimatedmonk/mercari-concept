@@ -21,7 +21,7 @@ const COPY = {
   },
 };
 
-const SLOT_COUNT = 6;
+const SLOT_COUNT = 12;
 const FIRST_CARD_MS = 520;
 const NEXT_CARD_MS = 320;
 
@@ -30,6 +30,48 @@ type Props = {
   attributes: SemanticAttribute[];
   meaningfulMoves: number;
 };
+
+function Slot({
+  product,
+  showCard,
+  index,
+  attributes,
+}: {
+  product?: Product;
+  showCard: boolean;
+  index: number;
+  attributes: SemanticAttribute[];
+}) {
+  return (
+    <div className="panel__slot">
+      <AnimatePresence mode="wait">
+        {showCard && product ? (
+          <motion.div
+            key={product.id}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ProductCard product={product} attributes={attributes} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key={`shimmer-${index}`}
+            className="product-shimmer"
+            initial={{ opacity: 0.7 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            aria-hidden
+          >
+            <span className="product-shimmer__image" />
+            <span className="product-shimmer__line" />
+            <span className="product-shimmer__line product-shimmer__line--short" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function ProductPanel({ ranked, attributes, meaningfulMoves }: Props) {
   const phase = panelPhase(attributes, meaningfulMoves);
@@ -44,12 +86,15 @@ export default function ProductPanel({ ranked, attributes, meaningfulMoves }: Pr
     return () => window.clearTimeout(id);
   }, [revealed, visible.length]);
 
+  const left = Array.from({ length: Math.ceil(SLOT_COUNT / 2) }, (_, i) => i * 2);
+  const right = Array.from({ length: Math.floor(SLOT_COUNT / 2) }, (_, i) => i * 2 + 1);
+
   return (
     <motion.aside
       className="panel"
-      initial={{ x: '108%' }}
-      animate={{ x: 0 }}
-      transition={{ type: 'spring', stiffness: 64, damping: 20, mass: 0.9 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.35 }}
     >
       <header className="panel__header">
         <div className="panel__heading">
@@ -66,39 +111,34 @@ export default function ProductPanel({ ranked, attributes, meaningfulMoves }: Pr
         </button>
       </header>
       <div className="panel__grid">
-        {Array.from({ length: SLOT_COUNT }, (_, index) => {
-          const product = visible[index];
-          const showCard = product && index < revealed;
-          return (
-            <div key={product?.id ?? `slot-${index}`} className="panel__slot">
-              <AnimatePresence mode="wait">
-                {showCard ? (
-                  <motion.div
-                    key={product.id}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35 }}
-                  >
-                    <ProductCard product={product} attributes={attributes} />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key={`shimmer-${index}`}
-                    className="product-shimmer"
-                    initial={{ opacity: 0.7 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    aria-hidden
-                  >
-                    <span className="product-shimmer__image" />
-                    <span className="product-shimmer__line" />
-                    <span className="product-shimmer__line product-shimmer__line--short" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          );
-        })}
+        <div className="panel__col">
+          {left.map((index) => {
+            const product = visible[index];
+            return (
+              <Slot
+                key={product?.id ?? `slot-${index}`}
+                product={product}
+                showCard={Boolean(product && index < revealed)}
+                index={index}
+                attributes={attributes}
+              />
+            );
+          })}
+        </div>
+        <div className="panel__col">
+          {right.map((index) => {
+            const product = visible[index];
+            return (
+              <Slot
+                key={product?.id ?? `slot-${index}`}
+                product={product}
+                showCard={Boolean(product && index < revealed)}
+                index={index}
+                attributes={attributes}
+              />
+            );
+          })}
+        </div>
       </div>
     </motion.aside>
   );

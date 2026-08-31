@@ -33,7 +33,7 @@ const LAST_TAG_BEAT = analysisBeats.reduce(
   (index, item, i) => (item.tag ? i : index),
   0,
 );
-const LAYOUT_SPRING = { type: 'spring' as const, stiffness: 46, damping: 18, mass: 1.05 };
+const LAYOUT_SPRING = { type: 'spring' as const, stiffness: 80, damping: 18, mass: 1.05 };
 
 type Props = {
   onContinue: (imageSrc: string, context: string) => void;
@@ -136,7 +136,9 @@ export default function InspirationInput({ onContinue }: Props) {
           layoutId="avatar-orb-slot"
           transition={LAYOUT_SPRING}
         >
-          <AvatarOrb lookingDown={Boolean(imageSrc) && !reading} twitching={reading} />
+          <AvatarOrb
+            pose={reading ? 'twitch' : imageSrc ? 'lookDown' : undefined}
+          />
         </motion.div>
         {reading ? (
           <>
@@ -273,13 +275,14 @@ export default function InspirationInput({ onContinue }: Props) {
             {visibleTags.map((item) => (
               <motion.span
                 key={item.id}
-                layoutId={`attr-tag-${item.id}`}
                 className={`inspiration__tag inspiration__tag--${item.tagSide}`}
                 initial={{ opacity: 0, scale: 0.72 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ type: 'spring', stiffness: 140, damping: 16 }}
               >
-                <SparkleMark fill="currentColor" stroke="none" />
+                {item.id === 'plum' ? (
+                  <span className="inspiration__swatch" aria-hidden />
+                ) : null}
                 {item.tag}
               </motion.span>
             ))}

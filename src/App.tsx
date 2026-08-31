@@ -15,9 +15,15 @@ export default function App() {
     <LayoutGroup>
     <div className="app-shell">
       <img className="app-shell__shade" src={pageShade} alt="" />
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {stage === 'inspiration' ? (
-          <motion.div key="inspiration">
+          <motion.div
+            key="inspiration"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.28 }}
+          >
             <InspirationInput
               onContinue={(src) => {
                 setImageSrc(src);
@@ -27,7 +33,13 @@ export default function App() {
           </motion.div>
         ) : null}
         {stage === 'sculpt' ? (
-          <motion.div key="sculpt" className="app-shell__stage">
+          <motion.div
+            key="sculpt"
+            className="app-shell__stage"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.32 }}
+          >
             <SemanticStudio imageSrc={imageSrc} />
           </motion.div>
         ) : null}

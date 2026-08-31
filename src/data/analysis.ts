@@ -5,11 +5,18 @@ export type AnalysisBeat = {
   text: string;
   category: AttributeCategory;
   tag?: string;
-  tagSide?: 'left' | 'right' | 'left-low' | 'right-high' | 'right-low';
+  tagSide?: 'left' | 'right' | 'left-low' | 'left-high' | 'right-high' | 'right-low';
 };
 
 /** Claude-style status lines, ordered visual → inferred → user context. */
 export const analysisBeats: AnalysisBeat[] = [
+  {
+    id: 'plum',
+    category: 'visual',
+    text: 'Holding onto this plum',
+    tag: 'Plum',
+    tagSide: 'left-high',
+  },
   {
     id: 'asymmetric',
     category: 'visual',

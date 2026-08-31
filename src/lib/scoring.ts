@@ -12,11 +12,7 @@ export function distancePercent(x: number, y: number) {
 /** Map canvas distance to semantic weight. */
 export function weightFromDistance(x: number, y: number) {
   const t = clamp(distancePercent(x, y) / 46, 0, 1);
-  if (t < 0.14) return 1;
-  if (t < 0.3) return 0.8;
-  if (t < 0.52) return 0.6;
-  if (t < 0.76) return 0.35;
-  return 0.15;
+  return 1 - t * 0.85;
 }
 
 export function resolvedWeight(attr: SemanticAttribute) {

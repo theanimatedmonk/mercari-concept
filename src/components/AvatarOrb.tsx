@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   Alignment,
   Fit,
@@ -11,17 +11,15 @@ import {
 import mercariRiv from '../assets/rive/mercari.riv?url';
 import './AvatarOrb.css';
 
+export type OrbPose = 'lookDown' | 'twitch' | 'idle';
+
 type Props = {
-  lookingDown?: boolean;
-  twitching?: boolean;
+  pose?: OrbPose;
   compact?: boolean;
 };
 
-export default function AvatarOrb({
-  lookingDown = false,
-  twitching = false,
-  compact = false,
-}: Props) {
+export default function AvatarOrb({ pose, compact = false }: Props) {
+  const lastPose = useRef<OrbPose | null>(null);
   const { rive, RiveComponent } = useRive({
     src: mercariRiv,
     artboard: 'Mercari',
@@ -43,29 +41,22 @@ export default function AvatarOrb({
 
   useEffect(() => {
     if (!vmi) return;
-    if (twitching) twitch();
-    else if (lookingDown) lookDown();
-    else idle();
-  }, [vmi, twitching, lookingDown, twitch, lookDown, idle]);
-
-  useEffect(() => {
-    if (!vmi) return;
-    const ms = twitching ? 2800 : 8000;
-    const id = window.setInterval(() => twitch(), ms);
-    return () => window.clearInterval(id);
-  }, [vmi, twitching, twitch]);
+    if (!pose) {
+      lastPose.current = null;
+      return;
+    }
+    if (lastPose.current === pose) return;
+    lastPose.current = pose;
+    if (pose === 'lookDown') lookDown();
+    if (pose === 'twitch') twitch();
+    if (pose === 'idle') idle();
+  }, [vmi, pose, lookDown, twitch, idle]);
 
   return (
     <div
       className={`avatar-orb${compact ? ' avatar-orb--compact' : ''}`}
       role="img"
       aria-label="Assistant"
-      onPointerEnter={() => {
-        if (!lookingDown && !twitching) lookDown();
-      }}
-      onPointerLeave={() => {
-        if (!lookingDown && !twitching) idle();
-      }}
     >
       <RiveComponent />
     </div>

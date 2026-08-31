@@ -33,7 +33,7 @@ export default function SelectFocus({ imageSrc, onSelectDress }: Props) {
     <section className="focus">
       <div className="focus__inner">
       <div className="focus__status">
-        <AvatarOrb compact twitching />
+        <AvatarOrb compact />
         <span className="focus__sparkle" aria-hidden>
           <SparkleMark fill="currentColor" stroke="none" />
         </span>

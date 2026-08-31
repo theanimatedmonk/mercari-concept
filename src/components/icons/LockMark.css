@@ -1,0 +1,8 @@
+.lock-mark .lock-mark__body,
+.lock-mark .lock-mark__shackle {
+  fill: none;
+}
+
+.lock-mark--filled .lock-mark__body {
+  fill: currentColor;
+}

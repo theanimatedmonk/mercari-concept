@@ -33,6 +33,10 @@
   --color-text-on-primary: var(--primitive-white);
   --color-text-accent: var(--primitive-gold-600);
 
+  --color-coachmark: var(--primitive-coach-500);
+  --color-coachmark-nav: var(--primitive-coach-700);
+  --color-coachmark-skip: rgb(255 255 255 / 0.22);
+  --color-text-on-coachmark: var(--primitive-white);
   --color-primary: var(--primitive-ink-900);
   --color-primary-hover: var(--primitive-ink-800);
   --color-accent: var(--primitive-rose-500);
@@ -43,6 +47,7 @@
   --color-glow-dress: rgb(255 255 255 / 0.55);
   --color-glow-hero: rgb(196 92 180 / 0.45);
   --color-sparkle-status: var(--primitive-intent-vibe);
+  --color-pill-plum: #7a2d62;
   --color-overlay-veil: rgb(18 16 14 / 0.28);
   --color-shimmer: rgb(255 255 255 / 0.22);
   --color-ring-soft: rgb(255 255 255 / 0.35);
@@ -50,6 +55,7 @@
   --color-connection-strong: rgb(28 25 22 / 0.45);
   --color-delete: var(--primitive-rose-500);
   --size-control: var(--primitive-space-10);
+  --size-coach-nav: var(--primitive-space-8);
   --size-photo-preview: var(--primitive-size-photo);
 
   --color-border-default: var(--primitive-ink-200);

@@ -1,5 +1,5 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import { useMemo, useRef, useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import AvatarOrb from '../../components/AvatarOrb';
 import { initialAttributes } from '../../data/attributes';
 import { DRESS_CENTER, expansions } from '../../data/demo';
@@ -7,6 +7,7 @@ import { products } from '../../data/products';
 import { distancePercent, rankProducts, weightFromDistance } from '../../lib/scoring';
 import type { SemanticAttribute } from '../../types';
 import AttributeBubble from './AttributeBubble';
+import CanvasCoachmark, { COACH_STEPS } from './CanvasCoachmark';
 import DeleteZone from './DeleteZone';
 import ProductPanel from './ProductPanel';
 import './SemanticStudio.css';
@@ -20,16 +21,24 @@ export default function SemanticStudio({ imageSrc }: Props) {
   const [attributes, setAttributes] = useState<SemanticAttribute[]>(initialAttributes);
   const [moves, setMoves] = useState(0);
   const [deleteArmed, setDeleteArmed] = useState(false);
-  const [hint, setHint] = useState(1);
-
-  const ranked = useMemo(
-    () => rankProducts(products, attributes).map((row) => row.product),
-    [attributes],
+  const [coachStep, setCoachStep] = useState(0);
+  const [tourOn, setTourOn] = useState(false);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const rankedHold = useRef(
+    rankProducts(products, initialAttributes).map((row) => row.product),
   );
 
-  function bumpHint(next: number) {
-    setHint((h) => (h === 0 ? 0 : Math.max(h, next)));
-  }
+  useEffect(() => {
+    const id = window.setTimeout(() => setTourOn(true), 2000);
+    return () => window.clearTimeout(id);
+  }, []);
+
+  const ranked = useMemo(() => {
+    if (draggingId) return rankedHold.current;
+    const next = rankProducts(products, attributes).map((row) => row.product);
+    rankedHold.current = next;
+    return next;
+  }, [attributes, draggingId]);
 
   function onMove(id: string, x: number, y: number) {
     setAttributes((list) =>
@@ -39,11 +48,6 @@ export default function SemanticStudio({ imageSrc }: Props) {
         }
         let nx = x;
         let ny = y;
-        const dist = distancePercent(x, y);
-        if (dist < 11) {
-          nx += (DRESS_CENTER.x - x) * 0.12;
-          ny += (DRESS_CENTER.y - y) * 0.12;
-        }
         const weight = weightFromDistance(nx, ny);
         return {
           ...item,
@@ -57,8 +61,8 @@ export default function SemanticStudio({ imageSrc }: Props) {
   }
 
   function onGestureEnd(kind: 'nudge' | 'away') {
+    setDraggingId(null);
     setMoves((n) => n + 1);
-    bumpHint(kind === 'away' ? 3 : 2);
   }
 
   function onLock(id: string) {
@@ -84,17 +88,16 @@ export default function SemanticStudio({ imageSrc }: Props) {
       }),
     );
     setMoves((n) => n + 1);
-    setHint(0);
   }
 
   function onDelete(id: string) {
+    setDraggingId(null);
     setAttributes((list) =>
       list.map((item) =>
         item.id === id ? { ...item, state: 'deleted', weight: 0 } : item,
       ),
     );
     setMoves((n) => n + 1);
-    bumpHint(4);
   }
 
   function onExpand(id: string) {
@@ -129,19 +132,11 @@ export default function SemanticStudio({ imageSrc }: Props) {
   }
 
   const visible = attributes.filter((a) => a.state !== 'deleted');
-  const hintCopy =
-    hint === 1
-      ? 'Pull qualities closer to keep more of them'
-      : hint === 2
-        ? 'Move this away if you want less of it'
-        : hint === 3
-          ? 'Drop irrelevant ideas here'
-          : hint === 4
-            ? "Lock what you don't want to compromise on"
-            : null;
+  const coach = tourOn && coachStep >= 0 ? COACH_STEPS[coachStep] : undefined;
 
   return (
     <div className="studio">
+      <div className="studio__layout">
       <section className="canvas" ref={canvasRef}>
         <div className="canvas__atmosphere" />
         <svg className="canvas__links" aria-hidden>
@@ -162,19 +157,14 @@ export default function SemanticStudio({ imageSrc }: Props) {
           })}
         </svg>
         <div className="canvas__orb-dock">
-          <motion.div layout layoutId="avatar-orb-slot">
-            <AvatarOrb compact twitching />
-          </motion.div>
-          {hintCopy ? <p className="canvas__hint">{hintCopy}</p> : null}
+          <AvatarOrb compact pose="idle" />
         </div>
         <div className="canvas__dress">
           <div className="canvas__dress-glow" />
-          <motion.img
-            layoutId="inspiration-dress"
+          <img
             className="canvas__dress-img"
             src={imageSrc}
             alt="Selected dress"
-            transition={{ type: 'spring', stiffness: 52, damping: 18, mass: 1 }}
           />
         </div>
         <AnimatePresence>
@@ -183,7 +173,9 @@ export default function SemanticStudio({ imageSrc }: Props) {
               key={attr.id}
               attr={attr}
               canvasRef={canvasRef}
+              highlighted={coach?.target === attr.id}
               onMove={onMove}
+              onDragStart={() => setDraggingId(attr.id)}
               onLock={onLock}
               onExpand={onExpand}
               onDelete={onDelete}
@@ -192,13 +184,27 @@ export default function SemanticStudio({ imageSrc }: Props) {
             />
           ))}
         </AnimatePresence>
-        <DeleteZone active={deleteArmed} />
+        <DeleteZone
+          active={deleteArmed || coach?.target === 'delete'}
+          highlighted={coach?.target === 'delete'}
+        />
       </section>
       <ProductPanel
         ranked={ranked}
         attributes={attributes}
         meaningfulMoves={Math.min(moves, 12)}
       />
+      </div>
+      {coach ? <div className="studio__veil" /> : null}
+      {coach ? (
+        <CanvasCoachmark
+          step={coachStep}
+          canvasRef={canvasRef}
+          onNext={() => setCoachStep((n) => n + 1)}
+          onBack={() => setCoachStep((n) => Math.max(0, n - 1))}
+          onDone={() => setCoachStep(-1)}
+        />
+      ) : null}
     </div>
   );
 }

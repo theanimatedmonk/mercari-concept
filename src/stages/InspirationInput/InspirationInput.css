@@ -18,8 +18,8 @@
 
 .inspiration__orb-dock--corner {
   position: absolute;
-  top: 1rem;
-  left: calc(38% - min(14rem, 36vw));
+  top: 5rem;
+  left: calc(40% - min(12rem, 36vw));
   z-index: 4;
   justify-content: flex-start;
   gap: var(--space-inline-sm);
@@ -72,7 +72,7 @@
 
 .inspiration__hero {
   position: relative;
-  width: min(28rem, 72vw);
+  width: min(22rem, 56vw);
   aspect-ratio: 3 / 4;
 }
 
@@ -99,8 +99,17 @@
   font-weight: var(--font-weight-label);
 }
 
-.inspiration__tag .icon {
-  color: var(--color-sparkle-status);
+.inspiration__swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-bubble);
+  background: var(--color-pill-plum);
+}
+
+.inspiration__tag--left-high {
+  left: 6%;
+  top: 14%;
 }
 
 .inspiration__tag--left {

@@ -1,9 +1,22 @@
 .studio {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(22rem, 34vw);
+  position: relative;
   height: 100dvh;
   overflow: hidden;
   background: var(--color-bg-canvas);
+}
+
+.studio__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(22rem, 34vw);
+  height: 100%;
+}
+
+.studio__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: var(--color-overlay-veil);
+  pointer-events: auto;
 }
 
 .canvas {
@@ -46,7 +59,7 @@
 
 .canvas__dress {
   position: relative;
-  width: min(14.5rem, 38%);
+  width: min(12.5rem, 32%);
   z-index: 2;
   pointer-events: none;
 }
@@ -124,18 +137,13 @@
   display: grid;
   justify-items: center;
   gap: var(--space-stack-xs);
+  transform: translate(-50%, -50%);
+  will-change: left, top;
 }
 
-.bubble__unit {
-  position: relative;
-  display: flex;
-  align-items: center;
-  touch-action: none;
-  cursor: grab;
-}
-
-.bubble__unit:active {
-  cursor: grabbing;
+.bubble.is-dragging,
+.bubble.is-coach-target {
+  z-index: 6;
 }
 
 .bubble__pill {
@@ -153,28 +161,44 @@
   font-size: var(--font-size-body-sm);
   white-space: nowrap;
   user-select: none;
+  transition:
+    opacity var(--duration-slow) var(--ease-interaction),
+    background-color var(--duration-slow) var(--ease-interaction);
 }
 
-.bubble.is-close .bubble__pill {
+.bubble__unit {
+  position: relative;
+  display: flex;
+  align-items: center;
+  touch-action: none;
+  cursor: grab;
+}
+
+.bubble__unit:active {
+  cursor: grabbing;
+}
+
+.bubble.is-more .bubble__pill {
   background: var(--color-bg-bubble-strong);
   box-shadow: var(--shadow-card);
 }
 
-.bubble.is-far .bubble__pill {
+.bubble.is-less .bubble__pill {
   opacity: 0.55;
   background: var(--color-bg-subtle);
 }
 
 .bubble.is-locked .bubble__pill {
   border-color: var(--color-border-strong);
+  opacity: 1;
 }
 
-.bubble__mark {
-  color: var(--color-sparkle-status);
-}
-
-.bubble__mark--context {
-  color: var(--color-context-mark);
+.bubble__swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-bubble);
+  background: var(--color-pill-plum);
 }
 
 .bubble__lock-wrap {

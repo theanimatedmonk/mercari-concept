@@ -1,0 +1,11 @@
+.delete-mark {
+  width: var(--size-control);
+  height: var(--size-control);
+  pointer-events: none;
+}
+
+.delete-mark canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}

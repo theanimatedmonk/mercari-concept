@@ -13,14 +13,16 @@
   --primitive-ink-300: #c4bdb4;
   --primitive-ink-200: #e4ddd4;
   --primitive-ink-100: #f1ece5;
-  --primitive-ink-50: #f7f3ee;
+  --primitive-ink-50: #fafafa;
 
-  --primitive-paper-50: #f7f8fc;
+  --primitive-paper-50: #fafafa;
   --primitive-paper-100: #eef1f8;
   --primitive-mist-200: #dde5f6;
   --primitive-white: #ffffff;
   --primitive-black: #000000;
 
+  --primitive-coach-500: #3b6cff;
+  --primitive-coach-700: #1f4fe0;
   --primitive-intent-gift: #4f8cff;
   --primitive-intent-vibe: #d45ad8;
   --primitive-intent-space: #f2a03a;
