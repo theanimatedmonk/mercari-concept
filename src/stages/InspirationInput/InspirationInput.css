@@ -4,6 +4,7 @@
   max-width: 100%;
   min-height: 100dvh;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   align-content: center;
   gap: var(--space-stack-md);
@@ -213,6 +214,7 @@
 
 .inspiration__inner {
   width: min(var(--size-landing-wide), 100%);
+  max-width: 100%;
   min-width: 0;
   display: grid;
   justify-items: center;
@@ -248,6 +250,8 @@
   display: flex;
   align-items: center;
   width: min(var(--size-landing), 100%);
+  max-width: 100%;
+  min-width: 0;
   min-height: calc(var(--size-control) + var(--space-stack-md));
   gap: var(--space-inline-sm);
   padding: var(--space-stack-lg) var(--space-stack-lg) var(--space-stack-lg)
@@ -262,7 +266,8 @@
 }
 
 .inspiration__query {
-  flex: 1;
+  flex: 1 1 0;
+  width: 0;
   min-width: 0;
   border: 0;
   background: transparent;
@@ -352,6 +357,8 @@
 
 .inspiration__sheet {
   width: min(var(--size-landing), 100%);
+  max-width: 100%;
+  min-width: 0;
   position: relative;
   background: var(--color-bg-elevated);
   border-radius: var(--radius-sheet);
@@ -502,6 +509,26 @@
   .inspiration__sub {
     max-width: 100%;
     font-size: var(--font-size-body-sm);
+  }
+
+  .inspiration__bar {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    width: 100%;
+    min-height: calc(var(--size-composer) + var(--size-control));
+    gap: var(--space-stack-md);
+    padding: var(--space-stack-md);
+    border-radius: var(--radius-sheet);
+  }
+
+  .inspiration__query {
+    width: auto;
+    align-self: start;
+  }
+
+  .inspiration__bar-actions {
+    justify-self: end;
+    gap: var(--space-inline-sm);
   }
 
   .inspiration__examples {
