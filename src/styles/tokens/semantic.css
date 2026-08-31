@@ -119,6 +119,7 @@
   --size-drop-min: var(--primitive-size-drop);
   --size-composer: var(--primitive-size-composer);
   --size-landing: var(--primitive-size-landing);
+  --size-landing-wide: 56rem;
   --size-listing: 60vw;
   --size-listing-height: 90dvh;
   --size-canvas-stack: 48dvh;
@@ -132,6 +133,7 @@
   --duration-slow: var(--primitive-duration-slow);
   --duration-reveal: var(--primitive-duration-slower);
   --duration-scan: 1.8s;
+  --duration-float: 4.2s;
   --ease-interaction: var(--primitive-ease-default);
   --ease-spring: var(--primitive-ease-spring);
 

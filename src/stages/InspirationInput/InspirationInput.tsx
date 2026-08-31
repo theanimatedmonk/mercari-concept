@@ -1,31 +1,21 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { ImagePlus, Mic, Plus, X } from 'lucide-react';
+import { ArrowUp, Plus, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import AvatarOrb from '../../components/AvatarOrb';
-import giftIcon from '../../assets/hero-icons/gift.svg';
-import vibeIcon from '../../assets/hero-icons/vibe.svg';
-import spaceIcon from '../../assets/hero-icons/space.svg';
+import ImageMark from '../../components/icons/ImageMark';
+import MicMark from '../../components/icons/MicMark';
+import exampleImage from '../../assets/lander-images/image_text.png';
+import exampleText from '../../assets/lander-images/text.png';
+import exampleVoice from '../../assets/lander-images/voice.png';
 import { analysisBeats } from '../../data/analysis';
 import { DEMO_CONTEXT } from '../../data/demo';
 import generatedSound from '../../assets/audio files/generated.mp3';
 import './InspirationInput.css';
 
-const PROMPTS = [
-  {
-    id: 'gift',
-    label: 'Help me find a gift for someone',
-    icon: giftIcon,
-  },
-  {
-    id: 'vibe',
-    label: "I'm looking for a specific vibe",
-    icon: vibeIcon,
-  },
-  {
-    id: 'space',
-    label: 'Help me find something for my space',
-    icon: spaceIcon,
-  },
+const EXAMPLES = [
+  { id: 'image', src: exampleImage, alt: 'Describe a look from a photo' },
+  { id: 'text', src: exampleText, alt: 'Ask with a short prompt' },
+  { id: 'voice', src: exampleVoice, alt: 'Talk through a feeling' },
 ];
 
 const BEAT_MS = 1750;
@@ -46,7 +36,7 @@ type Props = {
 export default function InspirationInput({ onContinue, onReadingChange }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [context, setContext] = useState(DEMO_CONTEXT);
+  const [context, setContext] = useState('');
   const [dragging, setDragging] = useState(false);
   const [listening, setListening] = useState(false);
   const [reading, setReading] = useState(false);
@@ -61,6 +51,7 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
 
   function useFile(file: File) {
     setImageSrc(URL.createObjectURL(file));
+    setContext((value) => value.trim() || DEMO_CONTEXT);
   }
 
   function onDrop(e: React.DragEvent) {
@@ -171,10 +162,8 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
                   for.
                 </p>
               </header>
-              <button
-                type="button"
-                className={`inspiration__drop${dragging ? ' is-dragging' : ''}`}
-                onClick={() => fileRef.current?.click()}
+              <div
+                className={`inspiration__bar${dragging ? ' is-dragging' : ''}`}
                 onDragOver={(e) => {
                   e.preventDefault();
                   setDragging(true);
@@ -183,17 +172,53 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
                 onDrop={onDrop}
                 onPaste={onPaste}
               >
-                <span className="inspiration__drop-icon">
-                  <ImagePlus size={18} />
-                </span>
-                <p>Drop an image or paste from anywhere</p>
-              </button>
-              <div className="inspiration__prompts">
-                {PROMPTS.map(({ id, label, icon }) => (
-                  <button key={id} type="button" className="inspiration__chip">
-                    <img className="inspiration__chip-icon" src={icon} alt="" />
-                    {label}
+                <input
+                  className="inspiration__query"
+                  value={context}
+                  onChange={(e) => setContext(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key !== 'Enter') return;
+                    e.preventDefault();
+                    fileRef.current?.click();
+                  }}
+                  placeholder="Start with anything..."
+                  aria-label="Start with anything..."
+                />
+                <div className="inspiration__bar-actions">
+                  <button
+                    type="button"
+                    className="inspiration__bar-btn"
+                    aria-label="Add an image"
+                    onClick={() => fileRef.current?.click()}
+                  >
+                    <ImageMark />
                   </button>
+                  <button
+                    type="button"
+                    className={`inspiration__bar-btn${listening ? ' is-listening' : ''}`}
+                    aria-label="Speak"
+                    onClick={onMic}
+                  >
+                    <MicMark />
+                  </button>
+                  <button
+                    type="button"
+                    className="inspiration__submit"
+                    aria-label="Continue"
+                    onClick={() => fileRef.current?.click()}
+                  >
+                    <ArrowUp size={18} strokeWidth={2.4} />
+                  </button>
+                </div>
+              </div>
+              <div className="inspiration__examples">
+                {EXAMPLES.map((item) => (
+                  <img
+                    key={item.id}
+                    className="inspiration__example"
+                    src={item.src}
+                    alt={item.alt}
+                  />
                 ))}
               </div>
             </>
@@ -239,7 +264,7 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
                 </button>
               </div>
               <div className="inspiration__remember-wrap">
-              <h2 className="inspiration__remember">Tell me what stood out?</h2>
+              <h2 className="inspiration__remember">Tell me a bit more...</h2>
               <div className="inspiration__composer">
                 <textarea
                   value={context}
@@ -252,12 +277,12 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
                   onClick={onMic}
                   aria-label="Speak"
                 >
-                  <Mic size={16} />
+                  <MicMark />
                 </button>
               </div>
               </div>
               <button type="button" className="inspiration__done" onClick={submit}>
-              Make sense of this
+              Let's find something great
               </button>
             </div>
           )}
