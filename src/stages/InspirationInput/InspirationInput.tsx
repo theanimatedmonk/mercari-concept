@@ -7,6 +7,7 @@ import vibeIcon from '../../assets/hero-icons/vibe.svg';
 import spaceIcon from '../../assets/hero-icons/space.svg';
 import { analysisBeats } from '../../data/analysis';
 import { DEMO_CONTEXT } from '../../data/demo';
+import generatedSound from '../../assets/audio files/generated.mp3';
 import './InspirationInput.css';
 
 const PROMPTS = [
@@ -51,6 +52,8 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
   const [reading, setReading] = useState(false);
   const [beat, setBeat] = useState(0);
   const continued = useRef(false);
+  const generatedAudio = useRef<HTMLAudioElement | null>(null);
+  const generatedPlayed = useRef(false);
 
   useEffect(() => {
     onReadingChange?.(reading);
@@ -100,6 +103,7 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
   function submit() {
     if (!imageSrc || reading) return;
     continued.current = false;
+    generatedPlayed.current = false;
     setBeat(0);
     setReading(true);
   }
@@ -107,6 +111,13 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
   useEffect(() => {
     if (!reading || !imageSrc) return;
     if (beat >= LAST_TAG_BEAT) {
+      if (!generatedPlayed.current) {
+        generatedPlayed.current = true;
+        const audio = generatedAudio.current ?? new Audio(generatedSound);
+        generatedAudio.current = audio;
+        audio.currentTime = 0;
+        void audio.play().catch(() => undefined);
+      }
       const done = window.setTimeout(() => {
         if (continued.current) return;
         continued.current = true;

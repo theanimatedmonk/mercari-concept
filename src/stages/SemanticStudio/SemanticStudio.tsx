@@ -151,8 +151,13 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
   return (
     <div className="studio">
       <div className="studio__layout">
-      <section className="canvas" ref={canvasRef}>
+      <section className="canvas">
         <div className="canvas__atmosphere" />
+        <div className="canvas__orb-dock">
+          <AvatarOrb compact pose="idle" />
+        </div>
+        <CanvasEdit onStartOver={onStartOver} />
+        <div className="canvas__field" ref={canvasRef as React.Ref<HTMLDivElement>}>
         <svg className="canvas__links" aria-hidden>
           {visible.map((attr) => {
             const opacity = 0.14 + attr.weight * 0.4;
@@ -171,10 +176,6 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
             );
           })}
         </svg>
-        <div className="canvas__orb-dock">
-          <AvatarOrb compact pose="idle" />
-        </div>
-        <CanvasEdit onStartOver={onStartOver} />
         <div className="canvas__dress">
           <div className="canvas__dress-glow" />
           <img
@@ -205,6 +206,7 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
           active={deleteArmed || coach?.target === 'delete'}
           highlighted={coach?.target === 'delete'}
         />
+        </div>
       </section>
       <ProductPanel
         ranked={ranked}

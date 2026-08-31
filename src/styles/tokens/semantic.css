@@ -122,6 +122,7 @@
   --size-listing: 60vw;
   --size-listing-height: 90dvh;
   --size-canvas-stack: 48dvh;
+  --size-panel-sheet: 92dvh;
 
   --shadow-card: var(--primitive-shadow-lift);
   --shadow-elevated: var(--primitive-shadow-soft);

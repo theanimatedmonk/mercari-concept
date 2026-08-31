@@ -16,19 +16,21 @@ type Props = {
 };
 
 export default function DeleteMark({ hover }: Props) {
-  const { rive, RiveComponent } = useRive({
-    src: deleteRiv,
-    artboard: 'delete',
-    stateMachine: 'delete',
-    autoplay: true,
-    autoBind: false,
-    shouldDisableRiveListeners: true,
-    shouldResizeCanvasToContainer: true,
-    layout: new Layout({
-      fit: Fit.Contain,
-      alignment: Alignment.Center,
-    }),
-  });
+  const { rive, RiveComponent } = useRive(
+    {
+      src: deleteRiv,
+      artboard: 'delete',
+      stateMachine: 'delete',
+      autoplay: true,
+      autoBind: false,
+      shouldDisableRiveListeners: true,
+      layout: new Layout({
+        fit: Fit.Contain,
+        alignment: Alignment.Center,
+      }),
+    },
+    { shouldResizeCanvasToContainer: true },
+  );
 
   const viewModel = useViewModel(rive, { name: 'Delete' });
   const vmi = useViewModelInstance(viewModel, { name: 'my instance', rive });

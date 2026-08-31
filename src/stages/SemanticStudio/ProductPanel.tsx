@@ -1,6 +1,6 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, animate, motion, useMotionValue } from 'framer-motion';
 import { ListFilter } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { LISTING_PRODUCT_ID } from '../../data/listing';
 import { panelPhase } from '../../lib/scoring';
 import type { Product, SemanticAttribute } from '../../types';
@@ -25,6 +25,19 @@ const COPY = {
 const SLOT_COUNT = 12;
 const FIRST_CARD_MS = 520;
 const NEXT_CARD_MS = 320;
+const SHEET_RATIO = 0.92;
+const CANVAS_STACK_RATIO = 0.48;
+
+function sheetRange() {
+  const view = window.innerHeight;
+  const peek = view * (1 - CANVAS_STACK_RATIO);
+  const max = view * SHEET_RATIO;
+  return { peek, max };
+}
+
+function clamp(n: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, n));
+}
 
 type Props = {
   ranked: Product[];
@@ -92,6 +105,42 @@ export default function ProductPanel({
     return [...slice.slice(0, SLOT_COUNT - 1), featured];
   })();
   const [revealed, setRevealed] = useState(0);
+  const [sheet, setSheet] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 48rem)').matches,
+  );
+  const peekRef = useRef(0);
+  const maxRef = useRef(0);
+  const dragOrigin = useRef({ y: 0, h: 0 });
+  const height = useMotionValue(
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 48rem)').matches
+      ? window.innerHeight * (1 - CANVAS_STACK_RATIO)
+      : 0,
+  );
+
+  useLayoutEffect(() => {
+    const mq = window.matchMedia('(max-width: 48rem)');
+    const layout = () => {
+      const on = mq.matches;
+      setSheet(on);
+      if (!on) {
+        height.set(0);
+        return;
+      }
+      const { peek, max } = sheetRange();
+      const current = height.get();
+      peekRef.current = peek;
+      maxRef.current = max;
+      const next = current > peek * 1.05 ? clamp(current, peek, max) : peek;
+      height.set(next);
+    };
+    layout();
+    mq.addEventListener('change', layout);
+    window.addEventListener('resize', layout);
+    return () => {
+      mq.removeEventListener('change', layout);
+      window.removeEventListener('resize', layout);
+    };
+  }, [height]);
 
   useEffect(() => {
     if (revealed >= visible.length) return;
@@ -103,14 +152,67 @@ export default function ProductPanel({
   const left = Array.from({ length: Math.ceil(SLOT_COUNT / 2) }, (_, i) => i * 2);
   const right = Array.from({ length: Math.floor(SLOT_COUNT / 2) }, (_, i) => i * 2 + 1);
 
+  function startSheetDrag(event: React.PointerEvent) {
+    event.preventDefault();
+    dragOrigin.current = { y: event.clientY, h: height.get() };
+    const pointer = event.pointerId;
+    const target = event.currentTarget;
+    target.setPointerCapture(pointer);
+
+    function onMove(ev: Event) {
+      const point = ev as PointerEvent;
+      const next = dragOrigin.current.h + (dragOrigin.current.y - point.clientY);
+      height.set(clamp(next, peekRef.current, maxRef.current));
+    }
+
+    function onUp(ev: Event) {
+      const point = ev as PointerEvent;
+      target.releasePointerCapture(pointer);
+      target.removeEventListener('pointermove', onMove);
+      target.removeEventListener('pointerup', onUp);
+      target.removeEventListener('pointercancel', onUp);
+      const flung = point.clientY < dragOrigin.current.y - 24;
+      const mid = (peekRef.current + maxRef.current) / 2;
+      const open = flung || height.get() > mid;
+      void animate(height, open ? maxRef.current : peekRef.current, {
+        type: 'spring',
+        stiffness: 380,
+        damping: 36,
+      });
+    }
+
+    target.addEventListener('pointermove', onMove);
+    target.addEventListener('pointerup', onUp);
+    target.addEventListener('pointercancel', onUp);
+  }
+
   return (
     <motion.aside
       className="panel"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.35 }}
+      style={sheet ? { height } : undefined}
     >
-      <header className="panel__header">
+      {sheet ? (
+        <button
+          type="button"
+          className="panel__handle"
+          aria-label="Drag to expand products"
+          onPointerDown={startSheetDrag}
+        />
+      ) : null}
+      <header
+        className="panel__header"
+        onPointerDown={
+          sheet
+            ? (e) => {
+                if ((e.target as HTMLElement).closest('.panel__filter')) return;
+                startSheetDrag(e);
+              }
+            : undefined
+        }
+      >
         <div className="panel__heading">
           <motion.h1 layout key={copy.title}>
             {copy.title}

@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import generatedSound from '../../assets/audio files/generated.mp3';
 import { listingTryOnBeats } from '../../data/listing';
 import './StyleOnMe.css';
 
@@ -20,6 +21,7 @@ type Props = {
 export default function StyleOnMe({ selfie, result, onClose, onRevealed }: Props) {
   const [beat, setBeat] = useState(0);
   const [revealed, setRevealed] = useState(false);
+  const generatedAudio = useRef<HTMLAudioElement | null>(null);
   const onRevealedRef = useRef(onRevealed);
   onRevealedRef.current = onRevealed;
   const last = listingTryOnBeats.length - 1;
@@ -35,6 +37,10 @@ export default function StyleOnMe({ selfie, result, onClose, onRevealed }: Props
     if (beat < last || revealed) return;
     const id = window.setTimeout(() => {
       setRevealed(true);
+      const audio = generatedAudio.current ?? new Audio(generatedSound);
+      generatedAudio.current = audio;
+      audio.currentTime = 0;
+      void audio.play().catch(() => undefined);
       onRevealedRef.current();
     }, REVEAL_MS);
     return () => window.clearTimeout(id);
