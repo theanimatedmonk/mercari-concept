@@ -264,25 +264,25 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
                 </button>
               </div>
               <div className="inspiration__remember-wrap">
-              <h2 className="inspiration__remember">Tell me a bit more...</h2>
-              <div className="inspiration__composer">
-                <textarea
-                  value={context}
-                  onChange={(e) => setContext(e.target.value)}
-                  placeholder="Add a little context…"
-                />
-                <button
-                  type="button"
-                  className={`inspiration__mic${listening ? ' is-listening' : ''}`}
-                  onClick={onMic}
-                  aria-label="Speak"
-                >
-                  <MicMark />
-                </button>
-              </div>
+                <h2 className="inspiration__remember">Tell me a bit more...</h2>
+                <div className="inspiration__composer">
+                  <textarea
+                    value={context}
+                    onChange={(e) => setContext(e.target.value)}
+                    placeholder="Add a little context…"
+                  />
+                  <button
+                    type="button"
+                    className={`inspiration__mic${listening ? ' is-listening' : ''}`}
+                    onClick={onMic}
+                    aria-label="Speak"
+                  >
+                    <MicMark />
+                  </button>
+                </div>
               </div>
               <button type="button" className="inspiration__done" onClick={submit}>
-              Let's find something great
+                Let's find something great
               </button>
             </div>
           )}

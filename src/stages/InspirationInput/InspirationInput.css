@@ -438,6 +438,28 @@
   font-family: var(--font-family-display);
   font-size: var(--font-size-heading-sm);
   font-weight: var(--font-weight-heading);
+  line-height: var(--line-height-tight);
+}
+
+.inspiration__remember-wrap {
+  display: grid;
+  min-width: 0;
+}
+
+.inspiration__remember-wrap:has(.inspiration__remember-sub) {
+  gap: var(--space-stack-xs);
+}
+
+.inspiration__stack {
+  display: grid;
+  gap: var(--space-stack-md);
+  min-width: 0;
+}
+
+.inspiration__remember-sub {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body-sm);
 }
 
 .inspiration__composer {

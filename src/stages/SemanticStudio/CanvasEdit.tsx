@@ -89,29 +89,16 @@ export default function CanvasEdit({ onStartOver }: Props) {
                 >
                   <X size={18} />
                 </button>
-                <div className="inspiration__media">
-                  <div className="inspiration__thumb-wrap">
-                    <div className="inspiration__thumb-frame">
-                      <img
-                        className="inspiration__thumb"
-                        src={DEMO_INSPIRATION}
-                        alt="Inspiration"
-                      />
-                    </div>
+                <div className="inspiration__stack">
+                  <div className="inspiration__remember-wrap">
+                    <h2 id="studio-taste-title" className="inspiration__remember">
+                      Tell me anything...
+                    </h2>
+                    <p className="inspiration__remember-sub">
+                      A stray thought, an image, whatever's there. Share it, we'll make
+                      sense of it together.
+                    </p>
                   </div>
-                  <button
-                    type="button"
-                    className="inspiration__add"
-                    disabled
-                    aria-label="Add another image"
-                  >
-                    <Plus size={18} />
-                  </button>
-                </div>
-                <div className="inspiration__remember-wrap">
-                  <h2 id="studio-taste-title" className="inspiration__remember">
-                    Anything else you remember?
-                  </h2>
                   <div className="inspiration__composer">
                     <textarea
                       value={context}
@@ -122,13 +109,32 @@ export default function CanvasEdit({ onStartOver }: Props) {
                       <Mic size={16} />
                     </button>
                   </div>
+                  <div className="inspiration__media">
+                    <div className="inspiration__thumb-wrap">
+                      <div className="inspiration__thumb-frame">
+                        <img
+                          className="inspiration__thumb"
+                          src={DEMO_INSPIRATION}
+                          alt="Inspiration"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="inspiration__add"
+                      disabled
+                      aria-label="Add another image"
+                    >
+                      <Plus size={18} />
+                    </button>
+                  </div>
                 </div>
                 <button
                   type="button"
                   className="inspiration__done"
                   onClick={() => setTasteOpen(false)}
                 >
-                  Done
+                  Let's go!
                 </button>
               </div>
             </div>,

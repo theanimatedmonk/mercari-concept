@@ -81,3 +81,20 @@
   z-index: 1;
   width: min(var(--size-landing), 100%);
 }
+
+.studio-taste .inspiration__remember {
+  padding-right: var(--icon-size-lg);
+}
+
+@media (max-width: 48rem) {
+  .studio-taste {
+    padding: var(--space-stack-md) var(--space-inline-md);
+    align-items: center;
+  }
+
+  .studio-taste__sheet {
+    width: 100%;
+    max-height: calc(100dvh - var(--space-stack-xl));
+    overflow: auto;
+  }
+}
