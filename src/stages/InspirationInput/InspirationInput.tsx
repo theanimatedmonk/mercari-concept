@@ -7,9 +7,10 @@ import MicMark from '../../components/icons/MicMark';
 import exampleImage from '../../assets/lander-images/image_text.png';
 import exampleText from '../../assets/lander-images/text.png';
 import exampleVoice from '../../assets/lander-images/voice.png';
-import { analysisBeats } from '../../data/analysis';
 import { DEMO_CONTEXT } from '../../data/demo';
 import generatedSound from '../../assets/audio files/generated.mp3';
+import { imageUrlToBase64, requestAnalyze } from '../../lib/llm/client';
+import type { AnalyzeResponse } from '../../lib/llm/types';
 import './InspirationInput.css';
 
 const EXAMPLES = [
@@ -18,29 +19,37 @@ const EXAMPLES = [
   { id: 'voice', src: exampleVoice, alt: 'Talk through a feeling' },
 ];
 
-const BEAT_MS = 1750;
-const LAST_TAG_BEAT = analysisBeats.reduce(
-  (index, item, i) => (item.tag ? i : index),
-  0,
-);
+const BEAT_MS = 1400;
 const LAYOUT_SPRING = { type: 'spring' as const, stiffness: 80, damping: 18, mass: 1.05 };
 const SCAN_COLS = 12;
 const SCAN_ROWS = 16;
 const SCAN_DOTS = SCAN_COLS * SCAN_ROWS;
 
 type Props = {
-  onContinue: (imageSrc: string, context: string) => void;
+  onContinue: (payload: {
+    imageSrc: string | null;
+    context: string;
+    analysis: AnalyzeResponse;
+  }) => void;
+  onNotFashion: () => void;
   onReadingChange?: (reading: boolean) => void;
 };
 
-export default function InspirationInput({ onContinue, onReadingChange }: Props) {
+export default function InspirationInput({
+  onContinue,
+  onNotFashion,
+  onReadingChange,
+}: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [context, setContext] = useState('');
   const [dragging, setDragging] = useState(false);
   const [listening, setListening] = useState(false);
   const [reading, setReading] = useState(false);
+  const [waiting, setWaiting] = useState(false);
   const [beat, setBeat] = useState(0);
+  const [analysis, setAnalysis] = useState<AnalyzeResponse | null>(null);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const continued = useRef(false);
   const generatedAudio = useRef<HTMLAudioElement | null>(null);
   const generatedPlayed = useRef(false);
@@ -52,6 +61,7 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
   function useFile(file: File) {
     setImageSrc(URL.createObjectURL(file));
     setContext((value) => value.trim() || DEMO_CONTEXT);
+    setAnalyzeError(null);
   }
 
   function onDrop(e: React.DragEvent) {
@@ -84,24 +94,61 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
 
   function onMic() {
     setListening(true);
-    setContext('');
-    window.setTimeout(() => {
-      setContext(DEMO_CONTEXT);
-      setListening(false);
-    }, 900);
+    window.setTimeout(() => setListening(false), 900);
   }
 
-  function submit() {
-    if (!imageSrc || reading) return;
+  function canSubmit() {
+    return Boolean(imageSrc || context.trim());
+  }
+
+  async function submit() {
+    if (!canSubmit() || reading) return;
     continued.current = false;
     generatedPlayed.current = false;
+    setAnalyzeError(null);
+    setAnalysis(null);
     setBeat(0);
     setReading(true);
+    setWaiting(true);
+    try {
+      const payload: { text?: string; imageBase64?: string; mimeType?: string } = {};
+      const text = context.trim();
+      if (text) payload.text = text;
+      if (imageSrc) {
+        const image = await imageUrlToBase64(imageSrc);
+        payload.imageBase64 = image.imageBase64;
+        payload.mimeType = image.mimeType;
+      }
+      const result = await requestAnalyze(payload);
+      if (!result.fashion) {
+        onNotFashion();
+        return;
+      }
+      setAnalysis(result);
+      setWaiting(false);
+    } catch (error) {
+      setReading(false);
+      setWaiting(false);
+      setAnalyzeError(
+        error instanceof Error ? error.message : 'Could not read that. Try again.',
+      );
+    }
   }
 
+  function submitFromBar() {
+    if (context.trim()) {
+      void submit();
+      return;
+    }
+    fileRef.current?.click();
+  }
+
+  const beats = analysis?.attributes ?? [];
+  const lastBeat = Math.max(beats.length - 1, 0);
+
   useEffect(() => {
-    if (!reading || !imageSrc) return;
-    if (beat >= LAST_TAG_BEAT) {
+    if (!reading || waiting || !analysis?.fashion) return;
+    if (beats.length === 0 || beat >= lastBeat) {
       if (!generatedPlayed.current) {
         generatedPlayed.current = true;
         const audio = generatedAudio.current ?? new Audio(generatedSound);
@@ -112,16 +159,23 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
       const done = window.setTimeout(() => {
         if (continued.current) return;
         continued.current = true;
-        onContinue(imageSrc, context || DEMO_CONTEXT);
+        onContinue({
+          imageSrc,
+          context: context.trim(),
+          analysis,
+        });
       }, 900);
       return () => window.clearTimeout(done);
     }
     const id = window.setTimeout(() => setBeat((n) => n + 1), BEAT_MS);
     return () => window.clearTimeout(id);
-  }, [reading, beat, imageSrc, context, onContinue]);
+  }, [reading, waiting, analysis, beat, lastBeat, beats.length, imageSrc, context, onContinue]);
 
-  const current = analysisBeats[beat];
-  const visibleTags = analysisBeats.slice(0, beat + 1).filter((item) => item.tag);
+  const current = beats[beat];
+  const visibleTags = beats.slice(0, beat + 1).filter((item) => item.tag);
+  const statusText = waiting
+    ? 'Looking at this'
+    : current?.text ?? 'Finding the thread';
 
   return (
     <section className={`inspiration${reading ? ' is-reading' : ''}`}>
@@ -179,7 +233,7 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
                   onKeyDown={(e) => {
                     if (e.key !== 'Enter') return;
                     e.preventDefault();
-                    fileRef.current?.click();
+                    submitFromBar();
                   }}
                   placeholder="Start with anything..."
                   aria-label="Start with anything..."
@@ -205,12 +259,15 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
                     type="button"
                     className="inspiration__submit"
                     aria-label="Continue"
-                    onClick={() => fileRef.current?.click()}
+                    onClick={submitFromBar}
                   >
                     <ArrowUp size={18} strokeWidth={2.4} />
                   </button>
                 </div>
               </div>
+              {analyzeError ? (
+                <p className="inspiration__error">{analyzeError}</p>
+              ) : null}
               <div className="inspiration__examples">
                 {EXAMPLES.map((item) => (
                   <img
@@ -281,67 +338,69 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
                   </button>
                 </div>
               </div>
-              <button type="button" className="inspiration__done" onClick={submit}>
+              {analyzeError ? (
+                <p className="inspiration__error">{analyzeError}</p>
+              ) : null}
+              <button type="button" className="inspiration__done" onClick={() => void submit()}>
                 Let's find something great
               </button>
             </div>
           )}
         </div>
-      ) : imageSrc ? (
+      ) : (
         <div className="inspiration__hero">
-          <div className="inspiration__hero-stage">
-          <motion.div
-            layoutId="inspiration-frame"
-            className="inspiration__hero-frame"
-            transition={LAYOUT_SPRING}
-          >
-            <img
-              className="inspiration__hero-img"
-              src={imageSrc}
-              alt="Inspiration"
-            />
-            <div className="inspiration__scan" aria-hidden>
-              {Array.from({ length: SCAN_DOTS }, (_, i) => {
-                const col = i % SCAN_COLS;
-                const row = Math.floor(i / SCAN_COLS);
-                const delay = ((col * 0.09 + row * 0.06) % 2.2).toFixed(2);
-                return (
-                  <span
-                    key={i}
-                    className="inspiration__scan-dot"
-                    style={{ animationDelay: `${delay}s` }}
-                  />
-                );
-              })}
-            </div>
-          </motion.div>
-          <AnimatePresence>
-            {visibleTags.map((item) => (
-              <motion.span
-                key={item.id}
-                className={`inspiration__tag inspiration__tag--${item.tagSide}`}
-                initial={{ opacity: 0, scale: 0.72 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 140, damping: 16 }}
+          {imageSrc ? (
+            <div className="inspiration__hero-stage">
+              <motion.div
+                layoutId="inspiration-frame"
+                className="inspiration__hero-frame"
+                transition={LAYOUT_SPRING}
               >
-                {item.id === 'plum' ? (
-                  <span className="inspiration__swatch" aria-hidden />
-                ) : null}
-                {item.tag}
-              </motion.span>
-            ))}
-          </AnimatePresence>
-          </div>
+                <img
+                  className="inspiration__hero-img"
+                  src={imageSrc}
+                  alt="Inspiration"
+                />
+                <div className="inspiration__scan" aria-hidden>
+                  {Array.from({ length: SCAN_DOTS }, (_, i) => {
+                    const col = i % SCAN_COLS;
+                    const row = Math.floor(i / SCAN_COLS);
+                    const delay = ((col * 0.09 + row * 0.06) % 2.2).toFixed(2);
+                    return (
+                      <span
+                        key={i}
+                        className="inspiration__scan-dot"
+                        style={{ animationDelay: `${delay}s` }}
+                      />
+                    );
+                  })}
+                </div>
+              </motion.div>
+              <AnimatePresence>
+                {visibleTags.map((item) => (
+                  <motion.span
+                    key={item.id}
+                    className={`inspiration__tag inspiration__tag--${item.tagSide ?? 'left'}`}
+                    initial={{ opacity: 0, scale: 0.72 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 140, damping: 16 }}
+                  >
+                    {item.tag}
+                  </motion.span>
+                ))}
+              </AnimatePresence>
+            </div>
+          ) : null}
           <AnimatePresence mode="wait">
             <motion.p
-              key={current.id}
+              key={waiting ? 'waiting' : current?.id ?? 'status'}
               className="inspiration__status-copy"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.32 }}
             >
-              {current.text}
+              {statusText}
               <span className="inspiration__ellipsis" aria-hidden>
                 <span>.</span>
                 <span>.</span>
@@ -350,7 +409,7 @@ export default function InspirationInput({ onContinue, onReadingChange }: Props)
             </motion.p>
           </AnimatePresence>
         </div>
-      ) : null}
+      )}
     </section>
   );
 }

@@ -280,6 +280,14 @@
   color: var(--color-text-muted);
 }
 
+.inspiration__error {
+  margin: 0;
+  max-width: min(var(--size-landing), 100%);
+  color: var(--color-delete);
+  font-size: var(--font-size-body-sm);
+  text-align: center;
+}
+
 .inspiration__bar-actions {
   display: flex;
   align-items: center;

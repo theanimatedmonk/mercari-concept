@@ -78,7 +78,8 @@
   opacity: 0.9;
 }
 
-.canvas__dress-img {
+.canvas__dress-img,
+.canvas__dress-empty {
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 4;
@@ -86,6 +87,10 @@
   object-position: 48% 18%;
   border-radius: var(--radius-sheet);
   box-shadow: 0 28px 80px var(--color-glow-hero);
+}
+
+.canvas__dress-empty {
+  background: var(--color-bg-subtle);
 }
 
 .canvas__hint {

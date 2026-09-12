@@ -5,16 +5,19 @@ import { deriveAttributes } from './deriveAttributes';
 import {
   catalogId,
   FASHION_CATEGORIES,
+  FASHION_CATEGORY_SET,
   type DummyJsonList,
   type DummyJsonProduct,
 } from './types';
+
+type PillHint = { id: string; label: string };
 
 function handleFromBrand(brand?: string, category?: string) {
   const raw = (brand || category || 'marketplace').toLowerCase().replace(/[^a-z0-9]+/g, '');
   return raw ? `@${raw.slice(0, 18)}` : '@marketplace';
 }
 
-export function mapDummyProduct(item: DummyJsonProduct): Product {
+export function mapDummyProduct(item: DummyJsonProduct, pills?: PillHint[]): Product {
   const blob = [item.title, item.description, ...(item.tags ?? [])].join(' ');
   return {
     id: catalogId(item.id),
@@ -23,7 +26,7 @@ export function mapDummyProduct(item: DummyJsonProduct): Product {
     condition: 'Like new',
     seller: handleFromBrand(item.brand, item.category),
     image: item.thumbnail,
-    attributes: deriveAttributes(blob),
+    attributes: deriveAttributes(blob, pills),
     cluster: 'visual-match',
   };
 }
@@ -44,15 +47,39 @@ export function withHeroListing(live: Product[]): Product[] {
   return [hero, ...live];
 }
 
-export async function fetchFashionCatalog(): Promise<Product[]> {
-  const batches = await Promise.all(FASHION_CATEGORIES.map((category) => fetchCategory(category)));
+function uniqueProducts(items: Product[]): Product[] {
   const seen = new Set<string>();
   const mapped: Product[] = [];
-  for (const item of batches.flat()) {
-    const product = mapDummyProduct(item);
+  for (const product of items) {
     if (seen.has(product.id)) continue;
     seen.add(product.id);
     mapped.push(product);
   }
   return mapped;
+}
+
+export async function fetchFashionCatalog(pills?: PillHint[]): Promise<Product[]> {
+  const batches = await Promise.allSettled(
+    FASHION_CATEGORIES.map((category) => fetchCategory(category)),
+  );
+  const items = batches.flatMap((batch) => (batch.status === 'fulfilled' ? batch.value : []));
+  return uniqueProducts(items.map((item) => mapDummyProduct(item, pills)));
+}
+
+export async function searchFashionCatalog(
+  query: string,
+  pills?: PillHint[],
+): Promise<Product[]> {
+  const q = query.trim();
+  if (!q) return fetchFashionCatalog(pills);
+  const res = await fetch(
+    `https://dummyjson.com/products/search?q=${encodeURIComponent(q)}&limit=24`,
+  );
+  if (!res.ok) throw new Error(`DummyJSON search: ${res.status}`);
+  const data = (await res.json()) as DummyJsonList;
+  const fashion = (data.products ?? []).filter((item) =>
+    FASHION_CATEGORY_SET.has(item.category),
+  );
+  if (fashion.length === 0) return fetchFashionCatalog(pills);
+  return uniqueProducts(fashion.map((item) => mapDummyProduct(item, pills)));
 }

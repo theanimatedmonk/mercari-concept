@@ -1,11 +1,12 @@
 import { AnimatePresence } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import AvatarOrb from '../../components/AvatarOrb';
-import { initialAttributes } from '../../data/attributes';
 import { DRESS_CENTER, expansions } from '../../data/demo';
 import { LISTING_PRODUCT_ID, listingSimilarIds } from '../../data/listing';
 import { products as fallbackProducts } from '../../data/products';
 import { useCatalog } from '../../lib/catalog/useCatalog';
+import { layoutAttributes } from '../../lib/llm/layoutAttributes';
+import type { AnalyzeResponse } from '../../lib/llm/types';
 import { rankProducts, spreadFromCenter, weightFromDistance } from '../../lib/scoring';
 import type { SemanticAttribute } from '../../types';
 import AttributeBubble from './AttributeBubble';
@@ -17,14 +18,16 @@ import ProductListing from '../ProductListing/ProductListing';
 import './SemanticStudio.css';
 
 type Props = {
-  imageSrc: string;
+  imageSrc: string | null;
+  analysis: AnalyzeResponse;
   onStartOver: () => void;
 };
 
-export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
-  const { catalog } = useCatalog();
+export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Props) {
+  const pills = layoutAttributes(analysis.attributes);
+  const { catalog } = useCatalog(analysis.catalogQuery, analysis.attributes);
   const canvasRef = useRef<HTMLElement>(null);
-  const [attributes, setAttributes] = useState<SemanticAttribute[]>(initialAttributes);
+  const [attributes, setAttributes] = useState<SemanticAttribute[]>(pills);
   const [moves, setMoves] = useState(0);
   const [deleteArmed, setDeleteArmed] = useState(false);
   const [coachStep, setCoachStep] = useState(0);
@@ -33,8 +36,12 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [spread, setSpread] = useState(1);
   const rankedHold = useRef(
-    rankProducts(fallbackProducts, initialAttributes).map((row) => row.product),
+    rankProducts(fallbackProducts, pills).map((row) => row.product),
   );
+
+  useEffect(() => {
+    setAttributes(pills);
+  }, [analysis]);
 
   useEffect(() => {
     const id = window.setTimeout(() => setTourOn(true), 4000);
@@ -180,11 +187,15 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
         </svg>
         <div className="canvas__dress">
           <div className="canvas__dress-glow" />
-          <img
-            className="canvas__dress-img"
-            src={imageSrc}
-            alt="Selected dress"
-          />
+          {imageSrc ? (
+            <img
+              className="canvas__dress-img"
+              src={imageSrc}
+              alt="Selected look"
+            />
+          ) : (
+            <div className="canvas__dress-empty" aria-hidden />
+          )}
         </div>
         <AnimatePresence>
           {visible.map((attr) => (
