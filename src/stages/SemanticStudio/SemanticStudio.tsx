@@ -4,7 +4,8 @@ import AvatarOrb from '../../components/AvatarOrb';
 import { initialAttributes } from '../../data/attributes';
 import { DRESS_CENTER, expansions } from '../../data/demo';
 import { LISTING_PRODUCT_ID, listingSimilarIds } from '../../data/listing';
-import { products } from '../../data/products';
+import { products as fallbackProducts } from '../../data/products';
+import { useCatalog } from '../../lib/catalog/useCatalog';
 import { rankProducts, spreadFromCenter, weightFromDistance } from '../../lib/scoring';
 import type { SemanticAttribute } from '../../types';
 import AttributeBubble from './AttributeBubble';
@@ -21,6 +22,7 @@ type Props = {
 };
 
 export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
+  const { catalog } = useCatalog();
   const canvasRef = useRef<HTMLElement>(null);
   const [attributes, setAttributes] = useState<SemanticAttribute[]>(initialAttributes);
   const [moves, setMoves] = useState(0);
@@ -31,7 +33,7 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [spread, setSpread] = useState(1);
   const rankedHold = useRef(
-    rankProducts(products, initialAttributes).map((row) => row.product),
+    rankProducts(fallbackProducts, initialAttributes).map((row) => row.product),
   );
 
   useEffect(() => {
@@ -49,10 +51,10 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
 
   const ranked = useMemo(() => {
     if (draggingId) return rankedHold.current;
-    const next = rankProducts(products, attributes).map((row) => row.product);
+    const next = rankProducts(catalog, attributes).map((row) => row.product);
     rankedHold.current = next;
     return next;
-  }, [attributes, draggingId]);
+  }, [attributes, catalog, draggingId]);
 
   function onMove(id: string, x: number, y: number) {
     setAttributes((list) =>
@@ -229,10 +231,18 @@ export default function SemanticStudio({ imageSrc, onStartOver }: Props) {
         {listingOpen ? (
           <ProductListing
             key="listing"
-            product={products.find((item) => item.id === LISTING_PRODUCT_ID) ?? products[0]}
+            product={
+              catalog.find((item) => item.id === LISTING_PRODUCT_ID) ??
+              fallbackProducts.find((item) => item.id === LISTING_PRODUCT_ID) ??
+              catalog[0]
+            }
             similar={listingSimilarIds
-              .map((id) => products.find((item) => item.id === id))
-              .filter((item): item is (typeof products)[number] => Boolean(item))}
+              .map(
+                (id) =>
+                  catalog.find((item) => item.id === id) ??
+                  fallbackProducts.find((item) => item.id === id),
+              )
+              .filter((item): item is (typeof catalog)[number] => Boolean(item))}
             onClose={() => setListingOpen(false)}
           />
         ) : null}
