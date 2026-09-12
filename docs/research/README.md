@@ -4,7 +4,7 @@ Docs-only exploration of how this prototype could rank **real, free/open product
 
 **Scope:** fashion first (matches the current sculpt flow), then general marketplace options.
 
-**Not in this branch:** adapters, API calls, UI changes, or swapping [`src/data/products.ts`](../../src/data/products.ts). Execution comes after this research is reviewed.
+**Implementation** is on `feat/real-catalog` (DummyJSON fashion fetch, keyword attributes, local catalog fallback). These notes stay the contract.
 
 ## Why this exists
 
