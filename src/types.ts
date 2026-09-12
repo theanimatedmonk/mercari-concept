@@ -32,6 +32,6 @@ export type Product = {
   cluster: ProductCluster;
 };
 
-export type JourneyStage = 'inspiration' | 'focus' | 'sculpt';
+export type JourneyStage = 'inspiration' | 'focus' | 'sculpt' | 'not-fashion';
 
 export type PanelPhase = 'start' | 'shaping' | 'resolved';

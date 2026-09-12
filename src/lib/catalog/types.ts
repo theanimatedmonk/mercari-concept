@@ -19,7 +19,13 @@ export const FASHION_CATEGORIES = [
   'womens-shoes',
   'womens-bags',
   'mens-shirts',
+  'mens-shoes',
+  'tops',
+  'sunglasses',
+  'womens-jewellery',
 ] as const;
+
+export const FASHION_CATEGORY_SET = new Set<string>(FASHION_CATEGORIES);
 
 export const CATALOG_ID_PREFIX = 'dj-';
 

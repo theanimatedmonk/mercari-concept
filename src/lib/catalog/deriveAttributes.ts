@@ -35,7 +35,10 @@ const KEYWORDS: Record<string, string[]> = {
   delicate: ['delicate', 'lace'],
 };
 
-export function deriveAttributes(text: string): Record<string, number> {
+export function deriveAttributes(
+  text: string,
+  pills?: { id: string; label: string }[],
+): Record<string, number> {
   const hay = text.toLowerCase();
   const attributes: Record<string, number> = {};
   for (const [id, words] of Object.entries(KEYWORDS)) {
@@ -44,6 +47,18 @@ export function deriveAttributes(text: string): Record<string, number> {
       if (hay.includes(word)) hits += 1;
     }
     if (hits > 0) attributes[id] = Math.min(1, 0.55 + hits * 0.12);
+  }
+  if (pills) {
+    for (const pill of pills) {
+      const label = pill.label.toLowerCase().trim();
+      if (!label) continue;
+      let score = attributes[pill.id] ?? 0;
+      if (hay.includes(label)) score = Math.max(score, 0.78);
+      for (const part of label.split(/\s+/)) {
+        if (part.length > 3 && hay.includes(part)) score = Math.max(score, 0.64);
+      }
+      if (score > 0) attributes[pill.id] = Math.min(1, score);
+    }
   }
   return attributes;
 }
