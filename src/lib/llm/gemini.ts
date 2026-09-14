@@ -1,13 +1,13 @@
-import type { AttributeCategory } from '../../types';
+import type { AttributeCategory } from '../../types.js';
 import type {
   AnalysisAttribute,
   AnalyzeRequest,
   AnalyzeResponse,
   TagSide,
-} from './types';
-import { TAG_SIDES } from './types';
+} from './types.js';
+import { TAG_SIDES } from './types.js';
 
-const MODEL = 'gemini-2.0-flash';
+const MODEL = 'gemini-3.6-flash';
 
 const SYSTEM = `You analyze fashion shopping inspiration (photo and/or text).
 Return JSON only with this shape:

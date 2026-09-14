@@ -1,4 +1,4 @@
-import type { AttributeCategory } from '../../types';
+import type { AttributeCategory } from '../../types.js';
 
 export const TAG_SIDES = [
   'left',

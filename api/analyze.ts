@@ -1,5 +1,5 @@
-import { runAnalyze } from '../src/lib/llm/runAnalyze';
-import type { AnalyzeRequest } from '../src/lib/llm/types';
+import { runAnalyze } from '../src/lib/llm/runAnalyze.js';
+import type { AnalyzeRequest } from '../src/lib/llm/types.js';
 
 type VercelReq = {
   method?: string;

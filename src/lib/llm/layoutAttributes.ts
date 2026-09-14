@@ -1,7 +1,7 @@
 import { DRESS_CENTER } from '../../data/demo';
 import { initialAttributes } from '../../data/attributes';
-import type { SemanticAttribute } from '../../types';
-import type { AnalysisAttribute } from './types';
+import type { SemanticAttribute } from '../../types.js';
+import type { AnalysisAttribute } from './types.js';
 
 function slugId(value: string, index: number) {
   const slug = value

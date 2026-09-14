@@ -1,4 +1,17 @@
-import type { AnalyzeErrorBody, AnalyzeRequest, AnalyzeResponse } from './types';
+import type { AnalyzeErrorBody, AnalyzeRequest, AnalyzeResponse } from './types.js';
+
+function parseAnalyzeBody(raw: string): AnalyzeResponse | AnalyzeErrorBody {
+  try {
+    return JSON.parse(raw) as AnalyzeResponse | AnalyzeErrorBody;
+  } catch {
+    const snippet = raw.replace(/\s+/g, ' ').trim().slice(0, 160);
+    throw new Error(
+      snippet.startsWith('{')
+        ? 'Analyze returned invalid JSON'
+        : snippet || 'Analyze failed',
+    );
+  }
+}
 
 export async function requestAnalyze(
   payload: AnalyzeRequest,
@@ -8,7 +21,7 @@ export async function requestAnalyze(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  const data = (await res.json()) as AnalyzeResponse | AnalyzeErrorBody;
+  const data = parseAnalyzeBody(await res.text());
   if (!res.ok) {
     const message = 'error' in data ? data.error : 'Analyze failed';
     throw new Error(message);

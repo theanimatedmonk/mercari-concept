@@ -1,6 +1,6 @@
-import { analyzeWithGemini } from './gemini';
-import { analyzeWithGrok } from './grok';
-import type { AnalyzeRequest, AnalyzeResponse } from './types';
+import { analyzeWithGemini } from './gemini.js';
+import { analyzeWithGrok } from './grok.js';
+import type { AnalyzeRequest, AnalyzeResponse } from './types.js';
 
 function env(name: string) {
   const runtime = globalThis as { process?: { env?: Record<string, string | undefined> } };
