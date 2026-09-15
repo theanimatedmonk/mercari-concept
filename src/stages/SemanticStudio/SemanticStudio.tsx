@@ -7,7 +7,12 @@ import { products as fallbackProducts } from '../../data/products';
 import { useCatalog } from '../../lib/catalog/useCatalog';
 import { layoutAttributes } from '../../lib/llm/layoutAttributes';
 import type { AnalyzeResponse } from '../../lib/llm/types';
-import { rankProducts, spreadFromCenter, weightFromDistance } from '../../lib/scoring';
+import {
+  pickCoachPills,
+  rankProducts,
+  spreadFromCenter,
+  weightFromDistance,
+} from '../../lib/scoring';
 import type { SemanticAttribute } from '../../types';
 import AttributeBubble from './AttributeBubble';
 import CanvasEdit from './CanvasEdit';
@@ -32,6 +37,9 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
   const [deleteArmed, setDeleteArmed] = useState(false);
   const [coachStep, setCoachStep] = useState(0);
   const [tourOn, setTourOn] = useState(false);
+  const [coachPick, setCoachPick] = useState<{ far: string; near: string } | null>(
+    null,
+  );
   const [listingOpen, setListingOpen] = useState(false);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [spread, setSpread] = useState(1);
@@ -43,8 +51,16 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
     setAttributes(pills);
   }, [analysis]);
 
+  const attributesRef = useRef(attributes);
+  attributesRef.current = attributes;
+  const spreadRef = useRef(spread);
+  spreadRef.current = spread;
+
   useEffect(() => {
-    const id = window.setTimeout(() => setTourOn(true), 4000);
+    const id = window.setTimeout(() => {
+      setCoachPick(pickCoachPills(attributesRef.current, spreadRef.current));
+      setTourOn(true);
+    }, 4000);
     return () => window.clearTimeout(id);
   }, []);
 
@@ -156,6 +172,14 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
 
   const visible = attributes.filter((a) => a.state !== 'deleted');
   const coach = tourOn && coachStep >= 0 ? COACH_STEPS[coachStep] : undefined;
+  const coachTarget =
+    !coach || !coachPick
+      ? undefined
+      : coach.target === 'delete'
+        ? 'delete'
+        : coach.target === 'far'
+          ? coachPick.far
+          : coachPick.near;
 
   return (
     <div className="studio">
@@ -204,7 +228,7 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
               attr={attr}
               spread={spread}
               canvasRef={canvasRef}
-              highlighted={coach?.target === attr.id}
+              highlighted={coachTarget === attr.id}
               onMove={onMove}
               onDragStart={() => setDraggingId(attr.id)}
               onLock={onLock}
@@ -216,8 +240,8 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
           ))}
         </AnimatePresence>
         <DeleteZone
-          active={deleteArmed || coach?.target === 'delete'}
-          highlighted={coach?.target === 'delete'}
+          active={deleteArmed || coachTarget === 'delete'}
+          highlighted={coachTarget === 'delete'}
         />
         </div>
       </section>
@@ -228,10 +252,11 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
         onOpenListing={() => setListingOpen(true)}
       />
       </div>
-      {coach ? <div className="studio__veil" /> : null}
-      {coach ? (
+      {coach && coachTarget ? <div className="studio__veil" /> : null}
+      {coach && coachTarget ? (
         <CanvasCoachmark
           step={coachStep}
+          targetId={coachTarget}
           canvasRef={canvasRef}
           onNext={() => setCoachStep((n) => n + 1)}
           onBack={() => setCoachStep((n) => Math.max(0, n - 1))}

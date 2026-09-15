@@ -9,6 +9,21 @@ export function distancePercent(x: number, y: number) {
   return Math.hypot(x - DRESS_CENTER.x, y - DRESS_CENTER.y);
 }
 
+/** Farthest and closest visible pills, for coachmark targeting. */
+export function pickCoachPills(
+  attributes: SemanticAttribute[],
+  spread = 1,
+): { far: string; near: string } | null {
+  const live = attributes.filter((item) => item.state !== 'deleted');
+  if (!live.length) return null;
+  const ranked = [...live].sort((a, b) => {
+    const pa = spreadFromCenter(a.x, a.y, spread);
+    const pb = spreadFromCenter(b.x, b.y, spread);
+    return distancePercent(pb.x, pb.y) - distancePercent(pa.x, pa.y);
+  });
+  return { far: ranked[0].id, near: ranked[ranked.length - 1].id };
+}
+
 export function spreadFromCenter(x: number, y: number, spread: number) {
   return {
     x: clamp(DRESS_CENTER.x + (x - DRESS_CENTER.x) * spread, 7, 93),

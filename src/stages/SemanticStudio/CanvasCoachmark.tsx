@@ -6,28 +6,28 @@ export const COACH_STEPS = [
   {
     title: 'Pull closer',
     body: 'Want more of this? Bring it closer.',
-    target: 'statement',
+    target: 'far' as const,
     lock: false,
     prefer: 'above' as const,
   },
   {
     title: 'Push away',
     body: 'Still relevant, just not as much.',
-    target: 'sculptural',
+    target: 'near' as const,
     lock: false,
     prefer: 'below' as const,
   },
   {
     title: 'Lock it in',
     body: 'Make this a non-negotiable.',
-    target: 'elegant',
+    target: 'near' as const,
     lock: true,
     prefer: 'above' as const,
   },
   {
     title: 'Let it go',
     body: "Drop what doesn't feel right.",
-    target: 'delete',
+    target: 'delete' as const,
     lock: false,
     prefer: 'above' as const,
   },
@@ -37,6 +37,7 @@ export type CoachStep = (typeof COACH_STEPS)[number];
 
 type Props = {
   step: number;
+  targetId: string;
   canvasRef: React.RefObject<HTMLElement | null>;
   onNext: () => void;
   onBack: () => void;
@@ -48,6 +49,7 @@ const ARROW = 28;
 
 export default function CanvasCoachmark({
   step,
+  targetId,
   canvasRef,
   onNext,
   onBack,
@@ -63,8 +65,8 @@ export default function CanvasCoachmark({
     if (!canvas || !bubble || !current) return;
 
     const selector = current.lock
-      ? `[data-coach-target="${current.target}"] .bubble__lock`
-      : `[data-coach-target="${current.target}"]`;
+      ? `[data-coach-target="${targetId}"] .bubble__lock`
+      : `[data-coach-target="${targetId}"]`;
     const target = canvas.querySelector(selector);
     if (!target) return;
 
@@ -83,10 +85,11 @@ export default function CanvasCoachmark({
     left = Math.max(12, Math.min(left, c.width - b.width - 12));
     top = Math.max(12, Math.min(top, c.height - b.height - 12));
     setBox({ left, top, side });
-  }, [canvasRef, current]);
+  }, [canvasRef, current, targetId]);
 
   useLayoutEffect(() => {
     layout();
+    const frame = window.requestAnimationFrame(layout);
     const canvas = canvasRef.current;
     const bubble = bubbleRef.current;
     const ro = new ResizeObserver(layout);
@@ -94,6 +97,7 @@ export default function CanvasCoachmark({
     if (bubble) ro.observe(bubble);
     window.addEventListener('resize', layout);
     return () => {
+      window.cancelAnimationFrame(frame);
       ro.disconnect();
       window.removeEventListener('resize', layout);
     };
