@@ -4,6 +4,11 @@ function parseAnalyzeBody(raw: string): AnalyzeResponse | AnalyzeErrorBody {
   try {
     return JSON.parse(raw) as AnalyzeResponse | AnalyzeErrorBody;
   } catch {
+    if (/FUNCTION_INVOCATION_FAILED/i.test(raw)) {
+      throw new Error(
+        'Analyze crashed on Vercel. Check GEMINI_API_KEY / XAI_API_KEY and function logs.',
+      );
+    }
     const snippet = raw.replace(/\s+/g, ' ').trim().slice(0, 160);
     throw new Error(
       snippet.startsWith('{')

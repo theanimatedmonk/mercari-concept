@@ -1,18 +1,7 @@
 import { DRESS_CENTER } from '../../data/demo';
-import type { SemanticAttribute } from '../../types.js';
-import type { AnalysisAttribute } from './types.js';
-
-export function slugId(value: string, index: number) {
-  const slug = value
-    .replace(/[^a-zA-Z0-9]+/g, ' ')
-    .trim()
-    .split(/\s+/)
-    .map((part, i) =>
-      i === 0 ? part.toLowerCase() : part.slice(0, 1).toUpperCase() + part.slice(1).toLowerCase(),
-    )
-    .join('');
-  return slug || `attr${index}`;
-}
+import type { SemanticAttribute } from '../../types';
+import type { AnalysisAttribute } from './types';
+import { slugId } from './slugId';
 
 export function layoutAttributes(items: AnalysisAttribute[]): SemanticAttribute[] {
   const used = new Set<string>();

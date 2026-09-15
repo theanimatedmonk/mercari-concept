@@ -1,4 +1,4 @@
-import { slugId } from './layoutAttributes.js';
+import { slugId } from './slugId.js';
 import type { AttributeCategory } from '../../types.js';
 import type { AnalysisAttribute, AnalyzeResponse, TagSide } from './types.js';
 import { TAG_SIDES } from './types.js';
