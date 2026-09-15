@@ -42,6 +42,7 @@ type Props = {
   attr: SemanticAttribute;
   spread?: number;
   highlighted?: boolean;
+  lockHint?: boolean;
   onMove: (id: string, x: number, y: number) => void;
   onDragStart: () => void;
   onLock: (id: string) => void;
@@ -62,6 +63,7 @@ export default function AttributeBubble({
   attr,
   spread = 1,
   highlighted,
+  lockHint,
   onMove,
   onDragStart,
   onLock,
@@ -152,7 +154,9 @@ export default function AttributeBubble({
       data-coach-target={attr.id}
       className={`bubble${more ? ' is-more' : ''}${less ? ' is-less' : ''}${
         locked ? ' is-locked' : ''
-      }${dragging ? ' is-dragging' : ''}${highlighted ? ' is-coach-target' : ''}`}
+      }${dragging ? ' is-dragging' : ''}${highlighted ? ' is-coach-target' : ''}${
+        lockHint ? ' is-coach-lock' : ''
+      }`}
       style={{
         left: `${shown.x}%`,
         top: `${shown.y}%`,
@@ -177,7 +181,7 @@ export default function AttributeBubble({
             {attr.id === 'plum' ? <span className="bubble__swatch" aria-hidden /> : null}
             {attr.label}
           </span>
-          <span className="bubble__lock-wrap">
+          <span className="bubble__lock-wrap" data-coach-lock="">
             <button
               type="button"
               className="bubble__lock"

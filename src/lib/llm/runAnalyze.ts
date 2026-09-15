@@ -13,7 +13,8 @@ export async function runAnalyze(request: AnalyzeRequest): Promise<AnalyzeRespon
   if (!hasImage && !hasText) {
     throw new Error('Provide an image or some text');
   }
+  if (hasImage) return analyzeWithGrok(request);
   const provider = (env('LLM_PROVIDER') || 'gemini').toLowerCase();
-  if (provider === 'grok') return analyzeWithGrok(request);
+  if (provider === 'grok' || provider === 'xai') return analyzeWithGrok(request);
   return analyzeWithGemini(request);
 }

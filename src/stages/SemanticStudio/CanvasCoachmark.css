@@ -1,6 +1,15 @@
 .coachmark {
   position: absolute;
-  z-index: 21;
+  z-index: 30;
+  isolation: isolate;
+  pointer-events: auto;
+}
+
+.coachmark__spot {
+  position: absolute;
+  z-index: 20;
+  border-radius: var(--radius-bubble);
+  box-shadow: 0 0 0 9999px var(--color-overlay-veil);
   pointer-events: none;
 }
 

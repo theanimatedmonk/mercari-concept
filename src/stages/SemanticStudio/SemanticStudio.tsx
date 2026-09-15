@@ -229,6 +229,7 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
               spread={spread}
               canvasRef={canvasRef}
               highlighted={coachTarget === attr.id}
+              lockHint={Boolean(coach?.lock && coachTarget === attr.id)}
               onMove={onMove}
               onDragStart={() => setDraggingId(attr.id)}
               onLock={onLock}
@@ -252,7 +253,6 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
         onOpenListing={() => setListingOpen(true)}
       />
       </div>
-      {coach && coachTarget ? <div className="studio__veil" /> : null}
       {coach && coachTarget ? (
         <CanvasCoachmark
           step={coachStep}

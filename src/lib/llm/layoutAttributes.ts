@@ -1,9 +1,8 @@
 import { DRESS_CENTER } from '../../data/demo';
-import { initialAttributes } from '../../data/attributes';
 import type { SemanticAttribute } from '../../types.js';
 import type { AnalysisAttribute } from './types.js';
 
-function slugId(value: string, index: number) {
+export function slugId(value: string, index: number) {
   const slug = value
     .replace(/[^a-zA-Z0-9]+/g, ' ')
     .trim()
@@ -16,11 +15,15 @@ function slugId(value: string, index: number) {
 }
 
 export function layoutAttributes(items: AnalysisAttribute[]): SemanticAttribute[] {
-  const laid: SemanticAttribute[] = items.map((item, index) => {
+  const used = new Set<string>();
+  return items.map((item, index) => {
+    let id = slugId(item.id || item.label, index);
+    if (used.has(id)) id = `${id}${index}`;
+    used.add(id);
     const angle = -Math.PI / 2 + (index / Math.max(items.length, 1)) * Math.PI * 1.65;
     const dist = 16 + (1 - item.weight) * 24;
     return {
-      id: slugId(item.id || item.label, index),
+      id,
       label: item.label,
       category: item.category,
       weight: item.weight,
@@ -29,15 +32,4 @@ export function layoutAttributes(items: AnalysisAttribute[]): SemanticAttribute[
       state: item.weight <= 0.35 ? 'less-relevant' : 'active',
     };
   });
-
-  if (laid.length >= 6) return laid;
-
-  const used = new Set(laid.map((item) => item.id));
-  for (const pad of initialAttributes) {
-    if (laid.length >= 6) break;
-    if (used.has(pad.id)) continue;
-    used.add(pad.id);
-    laid.push({ ...pad });
-  }
-  return laid;
 }

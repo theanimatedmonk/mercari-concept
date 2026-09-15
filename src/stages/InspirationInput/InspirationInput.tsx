@@ -172,7 +172,7 @@ export default function InspirationInput({
   }, [reading, waiting, analysis, beat, lastBeat, beats.length, imageSrc, context, onContinue]);
 
   const current = beats[beat];
-  const visibleTags = beats.slice(0, beat + 1).filter((item) => item.tag);
+  const visibleTags = beats.slice(0, beat + 1);
   const statusText = waiting
     ? 'Looking at this'
     : current?.text ?? 'Finding the thread';
@@ -385,7 +385,7 @@ export default function InspirationInput({
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ type: 'spring', stiffness: 140, damping: 16 }}
                   >
-                    {item.tag}
+                    {item.label}
                   </motion.span>
                 ))}
               </AnimatePresence>

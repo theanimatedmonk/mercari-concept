@@ -18,6 +18,7 @@ export function analyzeDevPlugin(env: Record<string, string>): Plugin {
     name: 'analyze-dev-api',
     configureServer(server) {
       if (env.GEMINI_API_KEY) process.env.GEMINI_API_KEY = env.GEMINI_API_KEY;
+      if (env.XAI_API_KEY) process.env.XAI_API_KEY = env.XAI_API_KEY;
       if (env.LLM_PROVIDER) process.env.LLM_PROVIDER = env.LLM_PROVIDER;
 
       server.middlewares.use('/api/analyze', (req, res, next) => {

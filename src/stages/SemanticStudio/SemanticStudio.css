@@ -11,14 +11,6 @@
   height: 100%;
 }
 
-.studio__veil {
-  position: absolute;
-  inset: 0;
-  z-index: 20;
-  background: var(--color-overlay-veil);
-  pointer-events: auto;
-}
-
 .canvas {
   position: relative;
   min-width: 0;
@@ -156,6 +148,7 @@
 
 .bubble.is-dragging,
 .bubble.is-coach-target,
+.bubble.is-coach-lock,
 .bubble.is-locked {
   z-index: 6;
   transform: translate(-50%, -50%) scale(1);
@@ -254,6 +247,11 @@
 }
 
 .bubble.is-locked .bubble__lock {
+  color: var(--color-text-primary);
+}
+
+.bubble.is-coach-lock .bubble__lock {
+  opacity: 1;
   color: var(--color-text-primary);
 }
 
