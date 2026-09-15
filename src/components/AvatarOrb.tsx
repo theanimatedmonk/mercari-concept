@@ -20,17 +20,20 @@ type Props = {
 
 export default function AvatarOrb({ pose, compact = false }: Props) {
   const lastPose = useRef<OrbPose | null>(null);
-  const { rive, RiveComponent } = useRive({
-    src: mercariRiv,
-    artboard: 'Mercari',
-    stateMachine: 'mercari',
-    autoplay: true,
-    autoBind: false,
-    layout: new Layout({
-      fit: Fit.Contain,
-      alignment: Alignment.Center,
-    }),
-  });
+  const { rive, RiveComponent } = useRive(
+    {
+      src: mercariRiv,
+      artboard: 'Mercari',
+      stateMachine: 'mercari',
+      autoplay: true,
+      autoBind: false,
+      layout: new Layout({
+        fit: Fit.Contain,
+        alignment: Alignment.Center,
+      }),
+    },
+    { shouldResizeCanvasToContainer: true },
+  );
 
   const viewModel = useViewModel(rive, { name: 'Mercari' });
   const vmi = useViewModelInstance(viewModel, { name: 'Instance', rive });

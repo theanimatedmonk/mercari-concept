@@ -124,6 +124,8 @@
   --size-listing-height: 90dvh;
   --size-canvas-stack: 48dvh;
   --size-panel-sheet: 92dvh;
+  --size-sand: var(--primitive-size-sand);
+  --size-sand-sm: var(--primitive-size-sand-sm);
 
   --shadow-card: var(--primitive-shadow-lift);
   --shadow-elevated: var(--primitive-shadow-soft);
@@ -145,6 +147,8 @@
   --blur-soft: var(--primitive-blur-md);
 
   --z-canvas: var(--primitive-z-base);
+  --z-sand: var(--primitive-z-sand);
+  --z-stage: var(--primitive-z-stage);
   --z-overlay: var(--primitive-z-overlay);
   --z-modal: var(--primitive-z-modal);
 }

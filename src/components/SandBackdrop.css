@@ -1,0 +1,46 @@
+.sand-backdrop__shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: var(--z-canvas);
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  pointer-events: none;
+}
+
+.sand-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: var(--size-sand);
+  z-index: var(--z-sand);
+  pointer-events: none;
+}
+
+.sand-backdrop.is-hidden,
+.sand-backdrop__shade.is-hidden {
+  opacity: 0;
+}
+
+.sand-backdrop__rive,
+.sand-backdrop > div {
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+.sand-backdrop canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+@media (max-width: 48rem) {
+  .sand-backdrop {
+    height: var(--size-sand-sm);
+  }
+}
