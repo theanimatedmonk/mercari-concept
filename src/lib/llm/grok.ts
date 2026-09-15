@@ -1,5 +1,4 @@
 import { ANALYZE_SYSTEM, normalizeAnalyze, parseModelJson } from './parseAnalyze.js';
-import { timedFetch } from './timedFetch.js';
 import type { AnalyzeRequest, AnalyzeResponse } from './types.js';
 
 const MODEL = 'grok-4.6';
@@ -26,12 +25,12 @@ export async function analyzeWithGrok(
       type: 'image_url',
       image_url: {
         url: `data:${mime};base64,${request.imageBase64}`,
-        detail: 'low',
+        detail: 'high',
       },
     });
   }
 
-  const res = await timedFetch('https://api.x.ai/v1/chat/completions', {
+  const res = await fetch('https://api.x.ai/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -40,7 +39,7 @@ export async function analyzeWithGrok(
     body: JSON.stringify({
       model: MODEL,
       temperature: 0.3,
-      max_tokens: 1024,
+      max_tokens: 2048,
       response_format: { type: 'json_object' },
       messages: [{ role: 'user', content }],
     }),
