@@ -1,6 +1,6 @@
 # Mercari concept
 
-Fashion sculpt prototype. Set `GEMINI_API_KEY` (and optional `LLM_PROVIDER=gemini`) in `.env.local` and on Vercel. Never prefix the key with `VITE_`.
+Fashion sculpt prototype. Set `XAI_API_KEY` in `.env.local` and on Vercel. Never prefix the key with `VITE_`.
 
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
