@@ -3,13 +3,14 @@ import type { AnalyzeRequest } from '../src/lib/llm/types.js';
 
 export const config = {
   runtime: 'nodejs',
-  maxDuration: 30,
+  maxDuration: 60,
 };
+
+export const maxDuration = 60;
 
 type VercelReq = {
   method?: string;
   body?: unknown;
-  on?: (event: string, cb: (chunk?: string | Uint8Array) => void) => void;
 };
 
 type VercelRes = {
@@ -35,29 +36,12 @@ function asRequest(value: unknown): AnalyzeRequest {
   };
 }
 
-function toText(value: unknown) {
-  if (typeof value === 'string') return value;
-  if (value instanceof Uint8Array) return new TextDecoder().decode(value);
-  return '';
-}
-
-async function readJson(req: VercelReq): Promise<AnalyzeRequest> {
-  if (typeof req.body === 'string' && req.body.trim()) {
-    return asRequest(JSON.parse(req.body));
+function readJson(req: VercelReq): AnalyzeRequest {
+  const body = req.body;
+  if (typeof body === 'string') {
+    return asRequest(JSON.parse(body || '{}'));
   }
-  if (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) {
-    return asRequest(req.body);
-  }
-  if (typeof req.on !== 'function') return {};
-  const raw = await new Promise<string>((resolve, reject) => {
-    const chunks: string[] = [];
-    req.on?.('data', (chunk) => {
-      chunks.push(toText(chunk));
-    });
-    req.on?.('end', () => resolve(chunks.join('')));
-    req.on?.('error', () => reject(new Error('Failed to read analyze body')));
-  });
-  return asRequest(JSON.parse(raw || '{}'));
+  return asRequest(body);
 }
 
 export default async function handler(req: VercelReq, res: VercelRes) {
@@ -71,8 +55,7 @@ export default async function handler(req: VercelReq, res: VercelRes) {
     return;
   }
   try {
-    const body = await readJson(req);
-    const result = await runAnalyze(body);
+    const result = await runAnalyze(readJson(req));
     res.status(200).json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Analyze failed';

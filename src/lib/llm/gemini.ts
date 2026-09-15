@@ -1,7 +1,8 @@
 import { ANALYZE_SYSTEM, normalizeAnalyze, parseModelJson } from './parseAnalyze.js';
+import { timedFetch } from './timedFetch.js';
 import type { AnalyzeRequest, AnalyzeResponse } from './types.js';
 
-const MODEL = 'gemini-3.6-flash';
+const MODEL = 'gemini-2.5-flash';
 
 function env(name: string) {
   const runtime = globalThis as { process?: { env?: Record<string, string | undefined> } };
@@ -28,7 +29,7 @@ export async function analyzeWithGemini(
     });
   }
 
-  const res = await fetch(
+  const res = await timedFetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(key)}`,
     {
       method: 'POST',
@@ -36,7 +37,8 @@ export async function analyzeWithGemini(
       body: JSON.stringify({
         contents: [{ role: 'user', parts }],
         generationConfig: {
-          temperature: 0.4,
+          temperature: 0.3,
+          maxOutputTokens: 1024,
           responseMimeType: 'application/json',
         },
       }),

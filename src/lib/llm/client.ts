@@ -4,6 +4,9 @@ function parseAnalyzeBody(raw: string): AnalyzeResponse | AnalyzeErrorBody {
   try {
     return JSON.parse(raw) as AnalyzeResponse | AnalyzeErrorBody;
   } catch {
+    if (/FUNCTION_INVOCATION_TIMEOUT/i.test(raw)) {
+      throw new Error('Analyze timed out on Vercel. Try a shorter prompt.');
+    }
     if (/FUNCTION_INVOCATION_FAILED/i.test(raw)) {
       throw new Error(
         'Analyze crashed on Vercel. Check GEMINI_API_KEY / XAI_API_KEY and function logs.',
