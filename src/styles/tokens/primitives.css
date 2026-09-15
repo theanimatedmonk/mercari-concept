@@ -60,6 +60,8 @@
   --primitive-size-composer: 6.5rem;
   --primitive-size-landing: 34rem;
   --primitive-size-listing: 72rem;
+  --primitive-size-sand: 400px;
+  --primitive-size-sand-sm: 200px;
 
   --primitive-radius-sm: 0.25rem;
   --primitive-radius-md: 0.5rem;
@@ -101,6 +103,8 @@
   --primitive-blur-lg: 40px;
 
   --primitive-z-base: 1;
+  --primitive-z-stage: 2;
+  --primitive-z-sand: 3;
   --primitive-z-sticky: 200;
   --primitive-z-overlay: 800;
   --primitive-z-modal: 900;

@@ -1,6 +1,6 @@
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import { useState } from 'react';
-import pageShade from './assets/bg-shade.png';
+import SandBackdrop from './components/SandBackdrop';
 import InspirationInput from './stages/InspirationInput/InspirationInput';
 import NotFashion from './stages/NotFashion/NotFashion';
 import SemanticStudio from './stages/SemanticStudio/SemanticStudio';
@@ -24,11 +24,7 @@ export default function App() {
   return (
     <LayoutGroup>
     <div className="app-shell">
-      <img
-        className={`app-shell__shade${hideShade || stage === 'sculpt' ? ' is-hidden' : ''}`}
-        src={pageShade}
-        alt=""
-      />
+      <SandBackdrop hidden={hideShade || stage === 'sculpt'} />
       <AnimatePresence mode="wait">
         {stage === 'inspiration' ? (
           <motion.div
