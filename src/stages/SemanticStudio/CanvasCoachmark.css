@@ -2,7 +2,7 @@
   position: absolute;
   z-index: 30;
   isolation: isolate;
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 .coachmark__spot {
@@ -39,6 +39,12 @@
 
 .coachmark--below .coachmark__arrow {
   top: -0.35rem;
+}
+
+.coachmark--left .coachmark__arrow {
+  right: -0.35rem;
+  top: 50%;
+  margin-top: -0.375rem;
 }
 
 .coachmark__title {

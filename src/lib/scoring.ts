@@ -9,19 +9,30 @@ export function distancePercent(x: number, y: number) {
   return Math.hypot(x - DRESS_CENTER.x, y - DRESS_CENTER.y);
 }
 
-/** Farthest and closest visible pills, for coachmark targeting. */
+/** Farthest, closest, and a lock-control pill with room for the coach card. */
 export function pickCoachPills(
   attributes: SemanticAttribute[],
   spread = 1,
-): { far: string; near: string } | null {
+): { far: string; near: string; lock: string } | null {
   const live = attributes.filter((item) => item.state !== 'deleted');
   if (!live.length) return null;
-  const ranked = [...live].sort((a, b) => {
-    const pa = spreadFromCenter(a.x, a.y, spread);
-    const pb = spreadFromCenter(b.x, b.y, spread);
-    return distancePercent(pb.x, pb.y) - distancePercent(pa.x, pa.y);
+  const placed = live.map((item) => {
+    const point = spreadFromCenter(item.x, item.y, spread);
+    return { id: item.id, ...point, dist: distancePercent(point.x, point.y) };
   });
-  return { far: ranked[0].id, near: ranked[ranked.length - 1].id };
+  const ranked = [...placed].sort((a, b) => b.dist - a.dist);
+  const far = ranked[0].id;
+  const near = ranked[ranked.length - 1].id;
+  const lockScore = (item: (typeof placed)[number]) => {
+    const midY = 1 - Math.abs(item.y - 48) / 48;
+    const right = item.x >= 52 ? 2 : item.x >= 40 ? 1 : 0;
+    return right + midY + item.x / 100;
+  };
+  const lockPick =
+    [...placed]
+      .filter((item) => item.id !== far)
+      .sort((a, b) => lockScore(b) - lockScore(a))[0] ?? ranked[0];
+  return { far, near, lock: lockPick.id };
 }
 
 export function spreadFromCenter(x: number, y: number, spread: number) {

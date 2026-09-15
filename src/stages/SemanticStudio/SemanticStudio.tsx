@@ -37,9 +37,11 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
   const [deleteArmed, setDeleteArmed] = useState(false);
   const [coachStep, setCoachStep] = useState(0);
   const [tourOn, setTourOn] = useState(false);
-  const [coachPick, setCoachPick] = useState<{ far: string; near: string } | null>(
-    null,
-  );
+  const [coachPick, setCoachPick] = useState<{
+    far: string;
+    near: string;
+    lock: string;
+  } | null>(null);
   const [listingOpen, setListingOpen] = useState(false);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [spread, setSpread] = useState(1);
@@ -178,11 +180,13 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
       : coach.target === 'delete'
         ? 'delete'
         : coach.target === 'far'
-          ? coachPick.far
+        ? coachPick.far
+        : coach.target === 'lock'
+          ? coachPick.lock
           : coachPick.near;
 
   return (
-    <div className="studio">
+    <div className={`studio${coach && coachTarget ? ' is-touring' : ''}`}>
       <div className="studio__layout">
       <section className="canvas">
         <div className="canvas__atmosphere" />

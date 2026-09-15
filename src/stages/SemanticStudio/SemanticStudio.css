@@ -5,6 +5,15 @@
   background: var(--color-bg-canvas);
 }
 
+.studio.is-touring .panel,
+.studio.is-touring .canvas-edit {
+  pointer-events: none;
+}
+
+.studio.is-touring .bubble {
+  pointer-events: none;
+}
+
 .studio__layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(22rem, 34vw);
@@ -52,6 +61,7 @@
   align-items: center;
   gap: var(--space-inline-sm);
   max-width: min(28rem, 70%);
+  pointer-events: none;
 }
 
 .canvas__dress {
@@ -102,7 +112,7 @@
   left: 50%;
   bottom: var(--space-stack-lg);
   transform: translateX(-50%);
-  z-index: 8;
+  z-index: 3;
   min-width: 12rem;
   padding: var(--space-stack-md) var(--space-inline-lg);
   border-radius: var(--radius-card);
@@ -113,6 +123,7 @@
   justify-items: center;
   gap: var(--space-stack-xs);
   text-align: center;
+  pointer-events: none;
   transition:
     background var(--duration-interaction) var(--ease-interaction),
     color var(--duration-interaction) var(--ease-interaction);
@@ -150,8 +161,12 @@
 .bubble.is-coach-target,
 .bubble.is-coach-lock,
 .bubble.is-locked {
-  z-index: 6;
+  z-index: 12;
   transform: translate(-50%, -50%) scale(1);
+}
+
+.bubble.is-coach-lock {
+  z-index: 25;
 }
 
 .bubble__pill {

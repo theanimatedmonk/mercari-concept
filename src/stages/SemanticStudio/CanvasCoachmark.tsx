@@ -20,7 +20,7 @@ export const COACH_STEPS = [
   {
     title: 'Lock it in',
     body: 'Make this a non-negotiable.',
-    target: 'near' as const,
+    target: 'lock' as const,
     lock: true,
     prefer: 'above' as const,
   },
@@ -68,7 +68,7 @@ export default function CanvasCoachmark({
   const [box, setBox] = useState({
     left: 0,
     top: 0,
-    side: 'above' as 'above' | 'below',
+    side: 'above' as 'above' | 'below' | 'left',
     hole: { left: 0, top: 0, width: 0, height: 0 },
     placed: false,
   });
@@ -88,27 +88,77 @@ export default function CanvasCoachmark({
     const t = pointer.getBoundingClientRect();
     const s = spotlight.getBoundingClientRect();
     const b = bubble.getBoundingClientRect();
-    const gap = current.lock ? GAP + 12 : GAP;
-    const roomAbove = t.top - c.top;
-    let side: 'above' | 'below' = current.prefer;
-    if (side === 'above' && roomAbove < b.height + gap + 8) side = 'below';
-    if (side === 'below' && c.bottom - t.bottom < b.height + gap + 8) side = 'above';
+    const gap = GAP;
 
+    let side: 'above' | 'below' | 'left' = current.lock ? 'left' : current.prefer;
     let left = t.left - c.left + t.width / 2 - (b.width - ARROW);
     let top =
       side === 'above' ? t.top - c.top - b.height - gap : t.bottom - c.top + gap;
+
+    if (current.lock) {
+      const lockLeft = t.left - c.left;
+      if (lockLeft > b.width + gap + 12) {
+        side = 'left';
+        left = lockLeft - b.width - gap;
+        top = t.top - c.top + t.height / 2 - b.height / 2;
+      } else {
+        side = 'below';
+        left = t.left - c.left + t.width / 2 - (b.width - ARROW);
+        top = t.bottom - c.top + gap;
+      }
+    } else {
+      const roomAbove = t.top - c.top;
+      if (side === 'above' && roomAbove < b.height + gap + 8) side = 'below';
+      if (side === 'below' && c.bottom - t.bottom < b.height + gap + 8) side = 'above';
+      left = t.left - c.left + t.width / 2 - (b.width - ARROW);
+      top =
+        side === 'above' ? t.top - c.top - b.height - gap : t.bottom - c.top + gap;
+    }
+
     left = Math.max(12, Math.min(left, c.width - b.width - 12));
     top = Math.max(12, Math.min(top, c.height - b.height - 12));
-    const pad = HOLE_PAD;
+
+    const bubbleBox = {
+      left,
+      top,
+      right: left + b.width,
+      bottom: top + b.height,
+    };
+    const lockBox = {
+      left: t.left - c.left,
+      top: t.top - c.top,
+      right: t.right - c.left,
+      bottom: t.bottom - c.top,
+    };
+    const overlapsLock =
+      current.lock &&
+      bubbleBox.left < lockBox.right &&
+      bubbleBox.right > lockBox.left &&
+      bubbleBox.top < lockBox.bottom &&
+      bubbleBox.bottom > lockBox.top;
+    if (overlapsLock) {
+      side = 'below';
+      left = Math.max(
+        12,
+        Math.min(lockBox.left + t.width / 2 - (b.width - ARROW), c.width - b.width - 12),
+      );
+      top = Math.max(
+        12,
+        Math.min(lockBox.bottom + gap, c.height - b.height - 12),
+      );
+    }
+
+    const holeRect = current.lock && t.width >= 8 && t.height >= 8 ? t : s;
+    const pad = current.lock ? HOLE_PAD + 6 : HOLE_PAD;
     setBox({
       left,
       top,
       side,
       hole: {
-        left: s.left - c.left - pad,
-        top: s.top - c.top - pad,
-        width: s.width + pad * 2,
-        height: s.height + pad * 2,
+        left: holeRect.left - c.left - pad,
+        top: holeRect.top - c.top - pad,
+        width: holeRect.width + pad * 2,
+        height: holeRect.height + pad * 2,
       },
       placed: true,
     });
