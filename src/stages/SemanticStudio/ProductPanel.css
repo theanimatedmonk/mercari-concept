@@ -161,6 +161,18 @@
   opacity: 0.92;
 }
 
+.product-card__merchant {
+  display: inline-block;
+  color: var(--color-primary);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-label);
+  text-decoration: none;
+}
+
+.product-card__merchant:hover {
+  text-decoration: underline;
+}
+
 .product-card__why {
   margin-top: 0;
   border: 0;

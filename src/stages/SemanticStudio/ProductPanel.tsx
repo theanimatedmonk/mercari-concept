@@ -44,6 +44,7 @@ type Props = {
   attributes: SemanticAttribute[];
   meaningfulMoves: number;
   onOpenListing?: (product: Product) => void;
+  onOpenPreview?: (product: Product) => void;
 };
 
 function Slot({
@@ -65,6 +66,7 @@ function Slot({
         {showCard && product ? (
           <motion.div
             key={product.id}
+            layout
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
@@ -90,11 +92,23 @@ function Slot({
   );
 }
 
+function openHandler(
+  product: Product | undefined,
+  onOpenListing?: (product: Product) => void,
+  onOpenPreview?: (product: Product) => void,
+) {
+  if (!product) return undefined;
+  if (product.id === LISTING_PRODUCT_ID) return () => onOpenListing?.(product);
+  if (product.productUrl) return () => onOpenPreview?.(product);
+  return undefined;
+}
+
 export default function ProductPanel({
   ranked,
   attributes,
   meaningfulMoves,
   onOpenListing,
+  onOpenPreview,
 }: Props) {
   const phase = panelPhase(attributes, meaningfulMoves);
   const copy = COPY[phase];
@@ -237,11 +251,7 @@ export default function ProductPanel({
                 showCard={Boolean(product && index < revealed)}
                 index={index}
                 attributes={attributes}
-                onOpen={
-                  product?.id === LISTING_PRODUCT_ID
-                    ? () => onOpenListing?.(product)
-                    : undefined
-                }
+                onOpen={openHandler(product, onOpenListing, onOpenPreview)}
               />
             );
           })}
@@ -256,11 +266,7 @@ export default function ProductPanel({
                 showCard={Boolean(product && index < revealed)}
                 index={index}
                 attributes={attributes}
-                onOpen={
-                  product?.id === LISTING_PRODUCT_ID
-                    ? () => onOpenListing?.(product)
-                    : undefined
-                }
+                onOpen={openHandler(product, onOpenListing, onOpenPreview)}
               />
             );
           })}

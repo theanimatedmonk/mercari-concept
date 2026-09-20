@@ -21,6 +21,8 @@ export type ProductCluster =
   | 'contextual-match'
   | 'wrong-direction';
 
+export type MerchantId = 'myntra' | 'amazon' | 'mock';
+
 export type Product = {
   id: string;
   name: string;
@@ -30,6 +32,8 @@ export type Product = {
   image: string;
   attributes: Record<string, number>;
   cluster: ProductCluster;
+  merchant?: MerchantId;
+  productUrl?: string;
 };
 
 export type JourneyStage = 'inspiration' | 'focus' | 'sculpt' | 'not-fashion';

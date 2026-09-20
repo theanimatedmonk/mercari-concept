@@ -4,12 +4,11 @@ import AvatarOrb from '../../components/AvatarOrb';
 import { DRESS_CENTER, expansions } from '../../data/demo';
 import { LISTING_PRODUCT_ID, listingSimilarIds } from '../../data/listing';
 import { products as fallbackProducts } from '../../data/products';
-import { useCatalog } from '../../lib/catalog/useCatalog';
+import { useRecommendationFeed } from '../../lib/recommendation/useRecommendationFeed';
 import { layoutAttributes } from '../../lib/llm/layoutAttributes';
 import type { AnalyzeResponse } from '../../lib/llm/types';
 import {
   pickCoachPills,
-  rankProducts,
   spreadFromCenter,
   weightFromDistance,
 } from '../../lib/scoring';
@@ -19,7 +18,9 @@ import CanvasEdit from './CanvasEdit';
 import CanvasCoachmark, { COACH_STEPS } from './CanvasCoachmark';
 import DeleteZone from './DeleteZone';
 import ProductPanel from './ProductPanel';
+import ProductPreviewModal from './ProductPreviewModal';
 import ProductListing from '../ProductListing/ProductListing';
+import type { Product } from '../../types';
 import './SemanticStudio.css';
 
 type Props = {
@@ -30,9 +31,23 @@ type Props = {
 
 export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Props) {
   const pills = layoutAttributes(analysis.attributes);
-  const { catalog } = useCatalog(analysis.catalogQuery, analysis.attributes);
   const canvasRef = useRef<HTMLElement>(null);
   const [attributes, setAttributes] = useState<SemanticAttribute[]>(pills);
+  const inspirationForApi = useMemo(() => {
+    if (!imageSrc) return undefined;
+    if (imageSrc.startsWith('http://') || imageSrc.startsWith('https://')) {
+      return imageSrc;
+    }
+    if (imageSrc.startsWith('/') && typeof window !== 'undefined') {
+      return `${window.location.origin}${imageSrc}`;
+    }
+    return undefined;
+  }, [imageSrc]);
+  const { catalog } = useRecommendationFeed(
+    attributes,
+    analysis.catalogQuery,
+    inspirationForApi,
+  );
   const [moves, setMoves] = useState(0);
   const [deleteArmed, setDeleteArmed] = useState(false);
   const [coachStep, setCoachStep] = useState(0);
@@ -43,11 +58,10 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
     lock: string;
   } | null>(null);
   const [listingOpen, setListingOpen] = useState(false);
+  const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [spread, setSpread] = useState(1);
-  const rankedHold = useRef(
-    rankProducts(fallbackProducts, pills).map((row) => row.product),
-  );
+  const rankedHold = useRef(fallbackProducts);
 
   useEffect(() => {
     setAttributes(pills);
@@ -76,10 +90,9 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
 
   const ranked = useMemo(() => {
     if (draggingId) return rankedHold.current;
-    const next = rankProducts(catalog, attributes).map((row) => row.product);
-    rankedHold.current = next;
-    return next;
-  }, [attributes, catalog, draggingId]);
+    rankedHold.current = catalog;
+    return catalog;
+  }, [catalog, draggingId]);
 
   function onMove(id: string, x: number, y: number) {
     setAttributes((list) =>
@@ -255,6 +268,7 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
         attributes={attributes}
         meaningfulMoves={Math.min(moves, 12)}
         onOpenListing={() => setListingOpen(true)}
+        onOpenPreview={(product) => setPreviewProduct(product)}
       />
       </div>
       {coach && coachTarget ? (
@@ -265,6 +279,13 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
           onNext={() => setCoachStep((n) => n + 1)}
           onBack={() => setCoachStep((n) => Math.max(0, n - 1))}
           onDone={() => setCoachStep(-1)}
+        />
+      ) : null}
+      {previewProduct ? (
+        <ProductPreviewModal
+          product={previewProduct}
+          attributes={attributes}
+          onClose={() => setPreviewProduct(null)}
         />
       ) : null}
       <AnimatePresence>
