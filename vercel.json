@@ -3,6 +3,9 @@
     "api/analyze.ts": {
       "maxDuration": 120
     },
+    "api/style-on-me.ts": {
+      "maxDuration": 120
+    },
     "api/catalog/search.ts": {
       "maxDuration": 30
     },

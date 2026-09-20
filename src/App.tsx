@@ -1,30 +1,66 @@
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import SandBackdrop from './components/SandBackdrop';
 import InspirationInput from './stages/InspirationInput/InspirationInput';
 import NotFashion from './stages/NotFashion/NotFashion';
 import SemanticStudio from './stages/SemanticStudio/SemanticStudio';
 import type { AnalyzeResponse } from './lib/llm/types';
+import {
+  clearSession,
+  flushSession,
+  hydrateSession,
+  startSession,
+} from './lib/session';
 import type { JourneyStage } from './types';
 import './AppShell.css';
 
 export default function App() {
+  const [booted, setBooted] = useState(false);
+  const [resume, setResume] = useState(false);
   const [stage, setStage] = useState<JourneyStage>('inspiration');
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalyzeResponse | null>(null);
   const [hideShade, setHideShade] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    void hydrateSession().then((session) => {
+      if (cancelled) return;
+      if (session?.analysis) {
+        setImageSrc(session.imageSrc);
+        setAnalysis(session.analysis);
+        setStage('sculpt');
+        setResume(true);
+      }
+      setBooted(true);
+    });
+    function onHide() {
+      void flushSession();
+    }
+    window.addEventListener('pagehide', onHide);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('pagehide', onHide);
+    };
+  }, []);
+
   function goHome() {
+    void clearSession();
+    setResume(false);
     setHideShade(false);
     setImageSrc(null);
     setAnalysis(null);
     setStage('inspiration');
   }
 
+  if (!booted) {
+    return <div className="app-shell" />;
+  }
+
   return (
     <LayoutGroup>
     <div className="app-shell">
-      <SandBackdrop hidden={hideShade || stage === 'sculpt'} />
+      {stage === 'inspiration' ? <SandBackdrop hidden={hideShade} /> : null}
       <AnimatePresence mode="wait">
         {stage === 'inspiration' ? (
           <motion.div
@@ -37,15 +73,23 @@ export default function App() {
             <InspirationInput
               onReadingChange={setHideShade}
               onNotFashion={() => {
+                void clearSession();
+                setResume(false);
                 setHideShade(false);
                 setImageSrc(null);
                 setAnalysis(null);
                 setStage('not-fashion');
               }}
               onContinue={(payload) => {
-                setImageSrc(payload.imageSrc);
-                setAnalysis(payload.analysis);
-                setStage('sculpt');
+                void startSession({
+                  imageSrc: payload.imageSrc,
+                  analysis: payload.analysis,
+                }).then((session) => {
+                  setResume(false);
+                  setImageSrc(session.imageSrc);
+                  setAnalysis(session.analysis);
+                  setStage('sculpt');
+                });
               }}
             />
           </motion.div>
@@ -72,6 +116,7 @@ export default function App() {
             <SemanticStudio
               imageSrc={imageSrc}
               analysis={analysis}
+              resume={resume}
               onStartOver={goHome}
             />
           </motion.div>

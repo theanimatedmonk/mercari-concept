@@ -1,0 +1,122 @@
+.style-dock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--space-stack-md);
+  z-index: var(--z-sticky);
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--space-inline-md);
+  pointer-events: none;
+}
+
+.style-dock__card {
+  pointer-events: auto;
+  width: min(18.5rem, 100%);
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-overlay-deep);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-elevated);
+  backdrop-filter: blur(var(--blur-glow));
+  -webkit-backdrop-filter: blur(var(--blur-glow));
+}
+
+.style-dock__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-sm);
+  width: 100%;
+  padding: var(--space-stack-md) var(--space-inline-md);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.style-dock__label {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--font-weight-label);
+}
+
+.style-dock__plus {
+  flex-shrink: 0;
+}
+
+.style-dock__thumb,
+.style-dock__swatch,
+.style-dock__check {
+  position: relative;
+  flex-shrink: 0;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  border-radius: var(--radius-control);
+  overflow: hidden;
+  background: var(--color-bg-subtle);
+}
+
+.style-dock__thumb {
+  width: var(--size-control);
+  height: var(--size-control);
+}
+
+.style-dock__thumb img,
+.style-dock__swatch img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.style-dock__check {
+  display: grid;
+  place-items: center;
+  color: var(--color-success);
+  background: transparent;
+}
+
+.style-dock__list {
+  margin: 0;
+  padding: 0 var(--space-inline-sm) var(--space-stack-sm);
+  list-style: none;
+  overflow: hidden;
+}
+
+.style-dock__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-sm);
+  width: 100%;
+  padding: var(--space-stack-sm) var(--space-inline-sm);
+  border: 0;
+  border-radius: var(--radius-card);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.style-dock__row:hover {
+  background: var(--color-dock-hover);
+}
+
+.style-dock__row-copy {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-size-body-sm);
+}
+
+.style-dock__swatch {
+  width: var(--size-control);
+  height: var(--size-control);
+}
+
+@media (max-width: 48rem) {
+  .style-dock {
+    bottom: var(--space-stack-lg);
+  }
+}

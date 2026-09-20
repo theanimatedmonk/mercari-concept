@@ -1,4 +1,5 @@
 import { DRESS_CENTER } from '../data/demo';
+import { deriveAttributes } from './catalog/deriveAttributes';
 import type { Product, SemanticAttribute } from '../types';
 
 export function clamp(n: number, min: number, max: number) {
@@ -61,10 +62,21 @@ export function resolvedWeight(attr: SemanticAttribute) {
   return attr.weight;
 }
 
+function scoresForProduct(product: Product, attributes: SemanticAttribute[]) {
+  return {
+    ...product.attributes,
+    ...deriveAttributes(
+      product.name,
+      attributes.map((attr) => ({ id: attr.id, label: attr.label })),
+    ),
+  };
+}
+
 export function scoreProduct(product: Product, attributes: SemanticAttribute[]) {
+  const scores = scoresForProduct(product, attributes);
   let score = 0;
   for (const attr of attributes) {
-    const value = product.attributes[attr.id] ?? 0;
+    const value = scores[attr.id] ?? 0;
     if (attr.state === 'deleted') {
       score -= value * 1.4;
       continue;
@@ -85,12 +97,13 @@ export function rankProducts(products: Product[], attributes: SemanticAttribute[
 }
 
 export function whyThis(product: Product, attributes: SemanticAttribute[]) {
+  const scores = scoresForProduct(product, attributes);
   const matches: string[] = [];
   const less: string[] = [];
 
   for (const attr of attributes) {
     if (attr.state === 'deleted') continue;
-    const value = product.attributes[attr.id] ?? 0;
+    const value = scores[attr.id] ?? 0;
     const weight = resolvedWeight(attr);
     if (value >= 0.55 && weight >= 0.55) matches.push(attr.label);
     if (value >= 0.5 && weight <= 0.35) less.push(attr.label);

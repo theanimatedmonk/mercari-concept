@@ -14,16 +14,7 @@ export type DummyJsonList = {
   products: DummyJsonProduct[];
 };
 
-export const FASHION_CATEGORIES = [
-  'womens-dresses',
-  'womens-shoes',
-  'womens-bags',
-  'mens-shirts',
-  'mens-shoes',
-  'tops',
-  'sunglasses',
-  'womens-jewellery',
-] as const;
+export const FASHION_CATEGORIES = ['womens-dresses'] as const;
 
 export const FASHION_CATEGORY_SET = new Set<string>(FASHION_CATEGORIES);
 

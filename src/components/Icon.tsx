@@ -3,6 +3,8 @@ import './Icon.css';
 
 export type IconSize = 'sm' | 'md' | 'lg';
 
+
+
 export interface IconProps extends SVGAttributes<SVGSVGElement> {
   children: React.ReactNode;
   viewBox: string;
