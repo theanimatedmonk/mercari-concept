@@ -1,16 +1,21 @@
 .style-dock {
-  --style-dock-panel: max(22rem, 34vw);
-  --style-dock-width: min(18.5rem, calc(var(--style-dock-panel) - 2 * var(--space-inline-lg)));
-  position: fixed;
-  left: calc(
-    100% - var(--style-dock-panel) + (var(--style-dock-panel) - var(--style-dock-width)) / 2
-  );
-  right: auto;
-  bottom: max(var(--space-stack-md), env(safe-area-inset-bottom));
-  z-index: calc(var(--z-overlay) + 1);
-  width: var(--style-dock-width);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--space-stack-md);
+  z-index: var(--z-sticky);
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--space-inline-md);
+  pointer-events: none;
+}
+
+.style-dock__shell {
+  pointer-events: auto;
+  width: min(18.5rem, 100%);
+  overflow: hidden;
   border-radius: var(--radius-card);
-  background: var(--color-dock-glass);
+  background: var(--color-overlay-deep);
   color: var(--color-text-inverse);
   box-shadow: var(--shadow-elevated);
   backdrop-filter: blur(var(--blur-glow));
@@ -20,7 +25,8 @@
 .style-dock__card {
   width: 100%;
   overflow: hidden;
-  border-radius: inherit;
+  background: transparent;
+  color: inherit;
 }
 
 .style-dock__toggle {
@@ -118,10 +124,20 @@
 
 @media (max-width: 48rem) {
   .style-dock {
-    left: 0;
-    right: 0;
-    width: min(18.5rem, calc(100% - 2 * var(--space-inline-md)));
-    margin-inline: auto;
-    bottom: max(var(--space-stack-lg), env(safe-area-inset-bottom));
+    bottom: var(--space-stack-lg);
   }
+}
+
+.style-dock.is-page {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: max(var(--space-stack-lg), env(safe-area-inset-bottom));
+  z-index: calc(var(--z-overlay) + 1);
+}
+
+.style-dock.is-page .style-dock__shell {
+  background: var(--color-overlay-scan);
+  backdrop-filter: blur(var(--blur-glow));
+  -webkit-backdrop-filter: blur(var(--blur-glow));
 }
