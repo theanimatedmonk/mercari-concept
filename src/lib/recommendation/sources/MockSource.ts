@@ -1,6 +1,6 @@
-import type { ProductSource } from './ProductSource';
-import type { CatalogProduct } from '../types';
-import { MOCK_CATALOG } from './mockCatalog';
+import type { ProductSource } from './ProductSource.js';
+import type { CatalogProduct } from '../types.js';
+import { MOCK_CATALOG } from './mockCatalog.js';
 
 function tokenize(query: string) {
   return query

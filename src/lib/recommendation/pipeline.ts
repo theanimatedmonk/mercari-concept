@@ -1,7 +1,7 @@
-import { getCachedProducts, setCachedProducts } from './cache';
-import type { CatalogProduct, RetrievedProduct } from './types';
-import type { ProductSource } from './sources/ProductSource';
-import { mockSource } from './sources/MockSource';
+import { getCachedProducts, setCachedProducts } from './cache.js';
+import type { CatalogProduct, RetrievedProduct } from './types.js';
+import type { ProductSource } from './sources/ProductSource.js';
+import { mockSource } from './sources/MockSource.js';
 
 function mergeProducts(rows: RetrievedProduct[]) {
   const map = new Map<string, RetrievedProduct>();

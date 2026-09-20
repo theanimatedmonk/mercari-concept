@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { LISTING_PRODUCT_ID } from '../../data/listing';
-import { products as fallbackProducts } from '../../data/products';
-import type { SemanticAttribute } from '../../types';
-import { withHeroListing } from '../catalog/fetchFashion';
-import { retrievalQueryKey, snapshotIntent, snapshotIntentForRetrieval } from './intent';
-import { catalogToProduct } from './mapProduct';
-import { buildProductQueries } from './queryBuilder';
-import { retrieveProducts } from './pipeline';
-import { rankCatalogProducts } from './ranking';
-import type { RetrievedProduct } from './types';
+import { LISTING_PRODUCT_ID } from '../../data/listing.js';
+import { products as fallbackProducts } from '../../data/products.js';
+import type { SemanticAttribute } from '../../types.js';
+import { withHeroListing } from '../catalog/fetchFashion.js';
+import { retrievalQueryKey, snapshotIntent, snapshotIntentForRetrieval } from './intent.js';
+import { catalogToProduct } from './mapProduct.js';
+import { buildProductQueries } from './queryBuilder.js';
+import { retrieveProducts } from './pipeline.js';
+import { rankCatalogProducts } from './ranking.js';
+import type { RetrievedProduct } from './types.js';
 
 export function useRecommendationFeed(
   attributes: SemanticAttribute[],

@@ -1,7 +1,7 @@
-import { catalogEnv } from '../env';
-import { parseProductFeed } from '../feedParse';
-import type { CatalogProduct } from '../types';
-import type { ProductSource } from './ProductSource';
+import { catalogEnv } from '../env.js';
+import { parseProductFeed } from '../feedParse.js';
+import type { CatalogProduct } from '../types.js';
+import type { ProductSource } from './ProductSource.js';
 
 const FEED_TTL_MS = 1000 * 60 * 30;
 let cachedFeed: { at: number; products: CatalogProduct[] } | null = null;

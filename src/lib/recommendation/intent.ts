@@ -1,7 +1,7 @@
-import type { SemanticAttribute } from '../../types';
-import { resolvedWeight } from '../scoring';
-import type { IntentAttribute, IntentSnapshot } from './types';
-import { buildProductQueries } from './queryBuilder';
+import type { SemanticAttribute } from '../../types.js';
+import { resolvedWeight } from '../scoring.js';
+import type { IntentAttribute, IntentSnapshot } from './types.js';
+import { buildProductQueries } from './queryBuilder.js';
 
 const RETRIEVAL_WEIGHT = 0.6;
 

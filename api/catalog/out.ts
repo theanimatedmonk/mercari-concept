@@ -5,6 +5,9 @@ export const config = {
 const ALLOWED = [
   'myntra.com',
   'www.myntra.com',
+  'amazon.in',
+  'www.amazon.in',
+  'amzn.in',
   'amazon.com',
   'www.amazon.com',
   'amzn.to',

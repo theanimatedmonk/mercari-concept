@@ -1,5 +1,5 @@
-import { deriveAttributes } from '../catalog/deriveAttributes';
-import type { CatalogProduct, MerchantId } from './types';
+import { deriveAttributes } from '../catalog/deriveAttributes.js';
+import type { CatalogProduct, MerchantId } from './types.js';
 
 type FeedRow = Record<string, string>;
 

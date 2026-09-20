@@ -29,6 +29,14 @@ export function analyzeDevPlugin(env: Record<string, string>): Plugin {
         process.env.AMAZON_CREATORS_API_ENDPOINT = env.AMAZON_CREATORS_API_ENDPOINT;
       }
       if (env.AMAZON_ASSOCIATE_TAG) process.env.AMAZON_ASSOCIATE_TAG = env.AMAZON_ASSOCIATE_TAG;
+      if (env.AMAZON_MARKETPLACE) process.env.AMAZON_MARKETPLACE = env.AMAZON_MARKETPLACE;
+      if (env.AMAZON_PAAPI_ACCESS_KEY) {
+        process.env.AMAZON_PAAPI_ACCESS_KEY = env.AMAZON_PAAPI_ACCESS_KEY;
+      }
+      if (env.AMAZON_PAAPI_SECRET_KEY) {
+        process.env.AMAZON_PAAPI_SECRET_KEY = env.AMAZON_PAAPI_SECRET_KEY;
+      }
+      if (env.AMAZON_SEARCH_INDEX) process.env.AMAZON_SEARCH_INDEX = env.AMAZON_SEARCH_INDEX;
       if (env.CATALOG_USE_MOCK_FALLBACK) {
         process.env.CATALOG_USE_MOCK_FALLBACK = env.CATALOG_USE_MOCK_FALLBACK;
       }

@@ -1,4 +1,4 @@
-import type { AttributeCategory } from '../../types';
+import type { AttributeCategory } from '../../types.js';
 
 export type MerchantId = 'myntra' | 'amazon' | 'mock';
 

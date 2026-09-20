@@ -1,4 +1,4 @@
-import type { IntentSnapshot } from './types';
+import type { IntentSnapshot } from './types.js';
 
 const DRESS_TAIL = 'dress';
 
