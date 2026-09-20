@@ -230,15 +230,19 @@
   top: var(--space-stack-sm);
   right: var(--space-stack-sm);
   z-index: 2;
-  width: var(--icon-size-lg);
-  height: var(--icon-size-lg);
+  width: var(--size-control);
+  height: var(--size-control);
   border: 0;
-  border-radius: var(--radius-control);
-  background: var(--color-dock);
+  border-radius: var(--radius-bubble);
+  background: color-mix(in srgb, var(--color-bg-inverse) 50%, transparent);
   color: var(--color-text-inverse);
   display: grid;
-  align-items: center;  
-  justify-content: center;
+  place-items: center;
+}
+
+.product-card__style .icon {
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
 }
 
 .product-card__style-tip {
