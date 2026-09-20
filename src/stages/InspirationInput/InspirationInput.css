@@ -32,6 +32,25 @@
   grid-row: 1;
 }
 
+.inspiration.is-reading.is-prompt {
+  grid-template-rows: auto auto;
+  align-content: center;
+  justify-items: center;
+  gap: var(--space-stack-xl);
+}
+
+.inspiration.is-reading.is-prompt .inspiration__hero {
+  grid-column: auto;
+  grid-row: auto;
+}
+
+.inspiration.is-reading.is-prompt .inspiration__orb-dock {
+  position: relative;
+  top: auto;
+  left: auto;
+  z-index: 4;
+}
+
 .inspiration__orb-dock {
   display: flex;
   align-items: center;
@@ -95,10 +114,93 @@
   gap: var(--space-stack-md);
 }
 
+.inspiration__hero--prompt {
+  width: min(32rem, 92vw);
+  align-content: start;
+  grid-auto-rows: min-content;
+}
+
 .inspiration__hero-stage {
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 4;
+}
+
+.inspiration__hero-stage--prompt {
+  aspect-ratio: auto;
+  display: grid;
+  place-items: center;
+  padding: var(--space-stack-md) var(--space-inline-xl);
+}
+
+.inspiration__prompt-wrap {
+  position: relative;
+  width: min(18rem, 100%);
+}
+
+.inspiration__prompt-wrap .inspiration__tag--left,
+.inspiration__prompt-wrap .inspiration__tag--left-high,
+.inspiration__prompt-wrap .inspiration__tag--left-low {
+  left: auto;
+  right: calc(100% - var(--space-inline-md));
+}
+
+.inspiration__prompt-wrap .inspiration__tag--left-high {
+  top: 0;
+  bottom: auto;
+}
+
+.inspiration__prompt-wrap .inspiration__tag--left {
+  top: 42%;
+  bottom: auto;
+}
+
+.inspiration__prompt-wrap .inspiration__tag--left-low {
+  top: auto;
+  bottom: 0;
+}
+
+.inspiration__prompt-wrap .inspiration__tag--right,
+.inspiration__prompt-wrap .inspiration__tag--right-high,
+.inspiration__prompt-wrap .inspiration__tag--right-low {
+  right: auto;
+  left: calc(100% - var(--space-inline-md));
+}
+
+.inspiration__prompt-wrap .inspiration__tag--right-high {
+  top: 0;
+  bottom: auto;
+}
+
+.inspiration__prompt-wrap .inspiration__tag--right {
+  top: 50%;
+  bottom: auto;
+}
+
+.inspiration__prompt-wrap .inspiration__tag--right-low {
+  top: auto;
+  bottom: 0;
+}
+
+.inspiration__prompt {
+  margin: 0;
+  width: 100%;
+  max-height: var(--size-composer);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  padding: var(--space-stack-md) var(--space-inline-lg);
+  border: 1px solid color-mix(in srgb, var(--color-glow-hero) 70%, var(--color-border-subtle));
+  border-radius: var(--radius-panel);
+  background: var(--color-bg-prompt);
+  box-shadow: 0 0 var(--space-stack-2xl) var(--color-glow-hero);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body-sm);
+  line-height: var(--line-height-body);
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .inspiration__hero-frame {
@@ -261,8 +363,16 @@
   box-shadow: var(--shadow-elevated);
 }
 
-.inspiration__bar.is-dragging {
-  box-shadow: var(--shadow-glow);
+.inspiration__bar.is-dictating .inspiration__query {
+  color: var(--color-text-secondary);
+}
+
+.inspiration__bar-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-sm);
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .inspiration__query {
@@ -306,8 +416,77 @@
   place-items: center;
 }
 
-.inspiration__bar-btn.is-listening {
-  color: var(--color-accent);
+.inspiration__bar-btn.is-listening,
+.inspiration__mic.is-listening {
+  background: color-mix(
+    in srgb,
+    var(--color-text-muted) 16%,
+    var(--color-bg-elevated)
+  );
+  color: var(--color-delete);
+}
+
+.inspiration__stop {
+  display: block;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  border-radius: calc(var(--radius-control) / 2);
+  background: var(--color-delete);
+}
+
+.inspiration__freq {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-inline-xs);
+  height: var(--icon-size-md);
+  flex-shrink: 0;
+  color: var(--color-dictate);
+}
+
+.inspiration__freq span {
+  width: var(--space-stack-xs);
+  height: 100%;
+  border-radius: var(--radius-bubble);
+  background: currentColor;
+  transform: scaleY(0.32);
+  transform-origin: center;
+  animation: inspiration-freq 0.9s var(--ease-interaction) infinite;
+}
+
+.inspiration__freq span:nth-child(1) {
+  animation-duration: 0.78s;
+  animation-delay: -0.2s;
+}
+
+.inspiration__freq span:nth-child(2) {
+  animation-duration: 1.05s;
+  animation-delay: -0.45s;
+}
+
+.inspiration__freq span:nth-child(3) {
+  animation-duration: 0.64s;
+  animation-delay: -0.1s;
+}
+
+.inspiration__freq span:nth-child(4) {
+  animation-duration: 0.92s;
+  animation-delay: -0.6s;
+}
+
+.inspiration__freq span:nth-child(5) {
+  animation-duration: 1.18s;
+  animation-delay: -0.35s;
+}
+
+@keyframes inspiration-freq {
+  0%,
+  100% {
+    transform: scaleY(0.28);
+  }
+  50% {
+    transform: scaleY(1);
+  }
 }
 
 .inspiration__submit {
@@ -319,6 +498,11 @@
   color: var(--color-text-on-primary);
   display: grid;
   place-items: center;
+}
+
+.inspiration__submit:disabled {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
 }
 
 .inspiration__examples {
@@ -360,6 +544,11 @@
 @media (prefers-reduced-motion: reduce) {
   .inspiration__example {
     animation: none;
+  }
+
+  .inspiration__freq span {
+    animation: none;
+    transform: scaleY(0.55);
   }
 }
 
@@ -472,6 +661,7 @@
 
 .inspiration__composer {
   position: relative;
+  --inspiration-control-inset: var(--space-inline-md);
 }
 
 .inspiration__composer textarea {
@@ -487,10 +677,16 @@
   outline: none;
 }
 
+.inspiration__composer .inspiration__freq {
+  position: absolute;
+  left: var(--inspiration-control-inset);
+  bottom: var(--inspiration-control-inset);
+}
+
 .inspiration__mic {
   position: absolute;
-  right: var(--space-stack-sm);
-  bottom: var(--space-stack-sm);
+  right: var(--inspiration-control-inset);
+  bottom: var(--inspiration-control-inset);
   width: var(--size-control);
   height: var(--size-control);
   margin: 0;
@@ -502,10 +698,6 @@
   display: grid;
   place-items: center;
   line-height: 0;
-}
-
-.inspiration__mic.is-listening {
-  color: var(--color-accent);
 }
 
 .inspiration__done {
@@ -551,6 +743,11 @@
     border-radius: var(--radius-sheet);
   }
 
+  .inspiration__bar-field {
+    width: auto;
+    align-self: start;
+  }
+
   .inspiration__query {
     width: auto;
     align-self: start;
@@ -573,6 +770,19 @@
 
   .inspiration__hero {
     width: min(16rem, 78vw);
+  }
+
+  .inspiration__hero--prompt {
+    width: 100%;
+  }
+
+  .inspiration__prompt-wrap {
+    width: min(12.5rem, 56%);
+  }
+
+  .inspiration.is-reading.is-prompt {
+    gap: var(--space-stack-xl);
+    padding-top: var(--space-stack-2xl);
   }
 
   .inspiration__orb-dock--corner {

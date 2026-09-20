@@ -1,7 +1,9 @@
-import { Clapperboard, IceCream, Mic, Plus, SquarePen, X } from 'lucide-react';
+import { Clapperboard, IceCream, Plus, SquarePen, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DEMO_CONTEXT, DEMO_INSPIRATION } from '../../data/demo';
+import useDictation from '../../lib/useDictation';
+import DictateButton, { VoiceFreq } from '../InspirationInput/DictateButton';
 import '../InspirationInput/InspirationInput.css';
 import './CanvasEdit.css';
 
@@ -14,6 +16,11 @@ export default function CanvasEdit({ onStartOver }: Props) {
   const [open, setOpen] = useState(false);
   const [tasteOpen, setTasteOpen] = useState(false);
   const [context, setContext] = useState(DEMO_CONTEXT);
+  const dictation = useDictation(context, setContext);
+
+  useEffect(() => {
+    if (!tasteOpen) dictation.stop();
+  }, [tasteOpen, dictation.stop]);
 
   useEffect(() => {
     if (!open) return;
@@ -99,15 +106,21 @@ export default function CanvasEdit({ onStartOver }: Props) {
                       sense of it together.
                     </p>
                   </div>
-                  <div className="inspiration__composer">
+                  <div className={`inspiration__composer${dictation.listening ? ' is-dictating' : ''}`}>
                     <textarea
                       value={context}
-                      onChange={(e) => setContext(e.target.value)}
+                      onChange={(e) => {
+                        if (dictation.listening) dictation.stop();
+                        setContext(e.target.value);
+                      }}
                       placeholder="Add a little context…"
                     />
-                    <button type="button" className="inspiration__mic" aria-label="Speak">
-                      <Mic size={16} />
-                    </button>
+                    {dictation.listening ? <VoiceFreq /> : null}
+                    <DictateButton
+                      className="inspiration__mic"
+                      listening={dictation.listening}
+                      onClick={dictation.toggle}
+                    />
                   </div>
                   <div className="inspiration__media">
                     <div className="inspiration__thumb-wrap">

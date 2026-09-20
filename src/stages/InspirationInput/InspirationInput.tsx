@@ -3,14 +3,14 @@ import { ArrowUp, Plus, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import AvatarOrb from '../../components/AvatarOrb';
 import ImageMark from '../../components/icons/ImageMark';
-import MicMark from '../../components/icons/MicMark';
 import exampleImage from '../../assets/lander-images/image_text.png';
 import exampleText from '../../assets/lander-images/text.png';
 import exampleVoice from '../../assets/lander-images/voice.png';
-import { DEMO_CONTEXT } from '../../data/demo';
 import generatedSound from '../../assets/audio files/generated.mp3';
 import { imageUrlToBase64, requestAnalyze } from '../../lib/llm/client';
 import type { AnalyzeResponse } from '../../lib/llm/types';
+import useDictation from '../../lib/useDictation';
+import DictateButton, { VoiceFreq } from './DictateButton';
 import './InspirationInput.css';
 
 const EXAMPLES = [
@@ -44,7 +44,7 @@ export default function InspirationInput({
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [context, setContext] = useState('');
   const [dragging, setDragging] = useState(false);
-  const [listening, setListening] = useState(false);
+  const dictation = useDictation(context, setContext);
   const [reading, setReading] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const [beat, setBeat] = useState(0);
@@ -58,9 +58,12 @@ export default function InspirationInput({
     onReadingChange?.(reading);
   }, [reading, onReadingChange]);
 
+  useEffect(() => {
+    if (reading) dictation.stop();
+  }, [reading, dictation.stop]);
+
   function useFile(file: File) {
     setImageSrc(URL.createObjectURL(file));
-    setContext((value) => value.trim() || DEMO_CONTEXT);
     setAnalyzeError(null);
   }
 
@@ -92,9 +95,9 @@ export default function InspirationInput({
     return () => window.removeEventListener('paste', onWindowPaste);
   }, [imageSrc]);
 
-  function onMic() {
-    setListening(true);
-    window.setTimeout(() => setListening(false), 900);
+  function onContextChange(value: string) {
+    if (dictation.listening) dictation.stop();
+    setContext(value);
   }
 
   function canSubmit() {
@@ -103,6 +106,7 @@ export default function InspirationInput({
 
   async function submit() {
     if (!canSubmit() || reading) return;
+    dictation.stop();
     continued.current = false;
     generatedPlayed.current = false;
     setAnalyzeError(null);
@@ -174,11 +178,30 @@ export default function InspirationInput({
   const current = beats[beat];
   const visibleTags = beats.slice(0, beat + 1);
   const statusText = waiting
-    ? 'Looking at this'
+    ? imageSrc
+      ? 'Looking at this'
+      : 'Reading this'
     : current?.text ?? 'Finding the thread';
+  const promptTags = (
+    <AnimatePresence>
+      {visibleTags.map((item) => (
+        <motion.span
+          key={item.id}
+          className={`inspiration__tag inspiration__tag--${item.tagSide ?? 'left'}`}
+          initial={{ opacity: 0, scale: 0.72 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 140, damping: 16 }}
+        >
+          {item.label}
+        </motion.span>
+      ))}
+    </AnimatePresence>
+  );
 
   return (
-    <section className={`inspiration${reading ? ' is-reading' : ''}`}>
+    <section
+      className={`inspiration${reading ? ' is-reading' : ''}${reading && !imageSrc ? ' is-prompt' : ''}`}
+    >
       <input
         ref={fileRef}
         type="file"
@@ -192,7 +215,7 @@ export default function InspirationInput({
       />
 
       <div
-        className={`inspiration__orb-dock${reading ? ' inspiration__orb-dock--corner' : ''}`}
+        className={`inspiration__orb-dock${reading && imageSrc ? ' inspiration__orb-dock--corner' : ''}`}
       >
         <motion.div
           layout="position"
@@ -217,7 +240,7 @@ export default function InspirationInput({
                 </p>
               </header>
               <div
-                className={`inspiration__bar${dragging ? ' is-dragging' : ''}`}
+                className={`inspiration__bar${dragging ? ' is-dragging' : ''}${dictation.listening ? ' is-dictating' : ''}`}
                 onDragOver={(e) => {
                   e.preventDefault();
                   setDragging(true);
@@ -226,47 +249,51 @@ export default function InspirationInput({
                 onDrop={onDrop}
                 onPaste={onPaste}
               >
-                <input
-                  className="inspiration__query"
-                  value={context}
-                  onChange={(e) => setContext(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key !== 'Enter') return;
-                    e.preventDefault();
-                    submitFromBar();
-                  }}
-                  placeholder="Start with anything..."
-                  aria-label="Start with anything..."
-                />
+                <div className="inspiration__bar-field">
+                  {dictation.listening ? <VoiceFreq /> : null}
+                  <input
+                    className="inspiration__query"
+                    value={context}
+                    onChange={(e) => onContextChange(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key !== 'Enter') return;
+                      e.preventDefault();
+                      if (dictation.listening) return;
+                      submitFromBar();
+                    }}
+                    placeholder="Start with anything..."
+                    aria-label="Start with anything..."
+                  />
+                </div>
                 <div className="inspiration__bar-actions">
-                  <button
-                    type="button"
+                  {dictation.listening ? null : (
+                    <button
+                      type="button"
+                      className="inspiration__bar-btn"
+                      aria-label="Add an image"
+                      onClick={() => fileRef.current?.click()}
+                    >
+                      <ImageMark />
+                    </button>
+                  )}
+                  <DictateButton
                     className="inspiration__bar-btn"
-                    aria-label="Add an image"
-                    onClick={() => fileRef.current?.click()}
-                  >
-                    <ImageMark />
-                  </button>
-                  <button
-                    type="button"
-                    className={`inspiration__bar-btn${listening ? ' is-listening' : ''}`}
-                    aria-label="Speak"
-                    onClick={onMic}
-                  >
-                    <MicMark />
-                  </button>
+                    listening={dictation.listening}
+                    onClick={dictation.toggle}
+                  />
                   <button
                     type="button"
                     className="inspiration__submit"
                     aria-label="Continue"
+                    disabled={dictation.listening}
                     onClick={submitFromBar}
                   >
                     <ArrowUp size={18} strokeWidth={2.4} />
                   </button>
                 </div>
               </div>
-              {analyzeError ? (
-                <p className="inspiration__error">{analyzeError}</p>
+              {analyzeError || dictation.error ? (
+                <p className="inspiration__error">{analyzeError || dictation.error}</p>
               ) : null}
               <div className="inspiration__examples">
                 {EXAMPLES.map((item) => (
@@ -321,25 +348,23 @@ export default function InspirationInput({
                 </button>
               </div>
               <div className="inspiration__remember-wrap">
-                <h2 className="inspiration__remember">Tell me a bit more...</h2>
-                <div className="inspiration__composer">
+                <div className={`inspiration__composer${dictation.listening ? ' is-dictating' : ''}`}>
                   <textarea
                     value={context}
-                    onChange={(e) => setContext(e.target.value)}
-                    placeholder="Add a little context…"
+                    onChange={(e) => onContextChange(e.target.value)}
+                    placeholder="What caught your eye in this image?"
+                    aria-label="What caught your eye in this image?"
                   />
-                  <button
-                    type="button"
-                    className={`inspiration__mic${listening ? ' is-listening' : ''}`}
-                    onClick={onMic}
-                    aria-label="Speak"
-                  >
-                    <MicMark />
-                  </button>
+                  {dictation.listening ? <VoiceFreq /> : null}
+                  <DictateButton
+                    className="inspiration__mic"
+                    listening={dictation.listening}
+                    onClick={dictation.toggle}
+                  />
                 </div>
               </div>
-              {analyzeError ? (
-                <p className="inspiration__error">{analyzeError}</p>
+              {analyzeError || dictation.error ? (
+                <p className="inspiration__error">{analyzeError || dictation.error}</p>
               ) : null}
               <button type="button" className="inspiration__done" onClick={() => void submit()}>
                 Let's find something great
@@ -348,7 +373,7 @@ export default function InspirationInput({
           )}
         </div>
       ) : (
-        <div className="inspiration__hero">
+        <div className={`inspiration__hero${imageSrc ? '' : ' inspiration__hero--prompt'}`}>
           {imageSrc ? (
             <div className="inspiration__hero-stage">
               <motion.div
@@ -376,21 +401,16 @@ export default function InspirationInput({
                   })}
                 </div>
               </motion.div>
-              <AnimatePresence>
-                {visibleTags.map((item) => (
-                  <motion.span
-                    key={item.id}
-                    className={`inspiration__tag inspiration__tag--${item.tagSide ?? 'left'}`}
-                    initial={{ opacity: 0, scale: 0.72 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 140, damping: 16 }}
-                  >
-                    {item.label}
-                  </motion.span>
-                ))}
-              </AnimatePresence>
+              {promptTags}
             </div>
-          ) : null}
+          ) : (
+            <div className="inspiration__hero-stage inspiration__hero-stage--prompt">
+              <div className="inspiration__prompt-wrap">
+                <p className="inspiration__prompt">{context.trim()}</p>
+                {promptTags}
+              </div>
+            </div>
+          )}
           <AnimatePresence mode="wait">
             <motion.p
               key={waiting ? 'waiting' : current?.id ?? 'status'}
