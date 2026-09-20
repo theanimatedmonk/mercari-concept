@@ -4,8 +4,30 @@ import type { AnalysisAttribute } from '../../lib/llm/types';
 
 export const GENERATE_BEAT_MS = 360;
 const WAITING_BEAT_MS = 900;
-const WAITING_IMAGE = ['Looking at this', 'Finding the thread', 'Picking up the mood'];
-const WAITING_TEXT = ['Reading this', 'Finding the thread', 'Holding the thought'];
+const WAITING_IMAGE = [
+  'Looking at this',
+  'Finding the thread',
+  'Picking up the mood',
+  'Sitting with this',
+  'Catching the feeling',
+  'Noticing the details',
+  'Following the shape',
+  'Letting it settle',
+  'Sensing the vibe',
+  'Holding onto this',
+];
+const WAITING_TEXT = [
+  'Reading this',
+  'Finding the thread',
+  'Holding the thought',
+  'Sitting with this',
+  'Catching the feeling',
+  'Listening to this',
+  'Letting it settle',
+  'Following the idea',
+  'Sensing the vibe',
+  'Keeping this close',
+];
 const SCAN_COLS = 12;
 const SCAN_ROWS = 16;
 const SCAN_DOTS = SCAN_COLS * SCAN_ROWS;
