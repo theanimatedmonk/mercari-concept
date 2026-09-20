@@ -9,10 +9,13 @@
 }
 
 html,
-body,
-#root {
+body {
   min-height: 100%;
   margin: 0;
+}
+
+#root {
+  min-height: 100%;
   overflow-x: hidden;
 }
 
