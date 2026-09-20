@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import CheckCircleMark from '../../components/icons/CheckCircleMark';
 import ChevronRightMark from '../../components/icons/ChevronRightMark';
@@ -9,8 +8,6 @@ import ScanOverlay from './ScanOverlay';
 import type { StyleJob } from './styleOnMeTypes';
 import './StyleJobsDock.css';
 
-const MOBILE = '(max-width: 48rem)';
-
 type Props = {
   jobs: StyleJob[];
   expanded: boolean;
@@ -19,18 +16,6 @@ type Props = {
 };
 
 export default function StyleJobsDock({ jobs, expanded, onToggle, onOpen }: Props) {
-  const [page, setPage] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia(MOBILE).matches,
-  );
-
-  useEffect(() => {
-    const mq = window.matchMedia(MOBILE);
-    const apply = () => setPage(mq.matches);
-    apply();
-    mq.addEventListener('change', apply);
-    return () => mq.removeEventListener('change', apply);
-  }, []);
-
   if (!jobs.length) return null;
 
   const generating = jobs.filter((job) => job.status === 'generating');
@@ -38,14 +23,9 @@ export default function StyleJobsDock({ jobs, expanded, onToggle, onOpen }: Prop
   const busy = generating.length > 0;
   const latest = generating[0] ?? jobs[0];
 
-  const node = (
-    <div className={`style-dock${page ? ' is-page' : ''}`}>
-      <div className="style-dock__shell">
-      <motion.div
-        className={`style-dock__card${expanded ? ' is-open' : ''}`}
-        layout
-        transition={{ type: 'spring', stiffness: 380, damping: 36 }}
-      >
+  return createPortal(
+    <div className="style-dock">
+      <div className={`style-dock__card${expanded ? ' is-open' : ''}`}>
         <button
           type="button"
           className="style-dock__toggle"
@@ -117,10 +97,8 @@ export default function StyleJobsDock({ jobs, expanded, onToggle, onOpen }: Prop
             </motion.ul>
           ) : null}
         </AnimatePresence>
-      </motion.div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
-
-  return page ? createPortal(node, document.body) : node;
 }
