@@ -1,5 +1,5 @@
-import { products as demoProducts } from '../../../data/products';
-import type { CatalogProduct, MerchantId } from '../types';
+import { products as demoProducts } from '../../../data/products.js';
+import type { CatalogProduct, MerchantId } from '../types.js';
 
 const MERCHANTS: MerchantId[] = ['myntra', 'mock', 'amazon'];
 

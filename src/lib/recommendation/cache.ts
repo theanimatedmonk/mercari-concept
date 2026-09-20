@@ -1,4 +1,4 @@
-import type { CatalogProduct } from './types';
+import type { CatalogProduct } from './types.js';
 
 const TTL_MS = 1000 * 60 * 30;
 const store = new Map<string, { at: number; products: CatalogProduct[] }>();

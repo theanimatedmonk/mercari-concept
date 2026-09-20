@@ -1,9 +1,9 @@
-import { catalogEnv, catalogFlag } from '../env';
-import type { CatalogProduct } from '../types';
-import type { ProductSource } from './ProductSource';
-import { amazonSource } from './AmazonSource';
-import { mockSource } from './MockSource';
-import { myntraSource } from './MyntraSource';
+import { catalogEnv, catalogFlag } from '../env.js';
+import type { CatalogProduct } from '../types.js';
+import type { ProductSource } from './ProductSource.js';
+import { amazonConfigured, amazonSource } from './AmazonSource.js';
+import { mockSource } from './MockSource.js';
+import { myntraSource } from './MyntraSource.js';
 
 function dedupe(products: CatalogProduct[]) {
   const map = new Map<string, CatalogProduct>();
@@ -33,7 +33,7 @@ export class CompositeSource implements ProductSource {
 export function createServerCatalogSource(): ProductSource {
   const sources: ProductSource[] = [];
   if (catalogEnv('MYNTRA_AFFILIATE_FEED_URL')) sources.push(myntraSource);
-  if (catalogEnv('AMAZON_CREATORS_API_KEY')) sources.push(amazonSource);
+  if (amazonConfigured()) sources.push(amazonSource);
   if (!sources.length) return mockSource;
   return new CompositeSource(sources);
 }

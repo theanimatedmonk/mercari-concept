@@ -1,8 +1,8 @@
-import type { RetrievedProduct } from './types';
-import type { ProductSource } from './sources/ProductSource';
-import { createServerCatalogSource } from './sources/CompositeSource';
-import { getServerCachedProducts, setServerCachedProducts } from './serverCache';
-import { attachVisualScores } from './visualSimilarity';
+import type { RetrievedProduct } from './types.js';
+import type { ProductSource } from './sources/ProductSource.js';
+import { createServerCatalogSource } from './sources/CompositeSource.js';
+import { getServerCachedProducts, setServerCachedProducts } from './serverCache.js';
+import { attachVisualScores } from './visualSimilarity.js';
 
 function mergeProducts(rows: RetrievedProduct[]) {
   const map = new Map<string, RetrievedProduct>();

@@ -1,5 +1,5 @@
-import type { Product } from '../../types';
-import type { CatalogProduct, RankedCatalogProduct } from './types';
+import type { Product } from '../../types.js';
+import type { CatalogProduct, RankedCatalogProduct } from './types.js';
 
 function formatPrice(product: CatalogProduct) {
   if (product.price == null) return '';

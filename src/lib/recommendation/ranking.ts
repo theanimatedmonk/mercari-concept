@@ -1,4 +1,4 @@
-import type { IntentSnapshot, RankedCatalogProduct, RetrievedProduct } from './types';
+import type { IntentSnapshot, RankedCatalogProduct, RetrievedProduct } from './types.js';
 
 function semanticMatch(
   intent: IntentSnapshot,
