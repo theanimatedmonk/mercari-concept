@@ -1,3 +1,4 @@
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Clapperboard, IceCream, Plus, SquarePen, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -6,6 +7,24 @@ import useDictation from '../../lib/useDictation';
 import DictateButton, { VoiceFreq } from '../InspirationInput/DictateButton';
 import '../InspirationInput/InspirationInput.css';
 import './CanvasEdit.css';
+
+const MOBILE = '(max-width: 48rem)';
+const SHEET_SPRING = { type: 'spring' as const, stiffness: 420, damping: 38, mass: 0.86 };
+const VEIL_TWEEN = { duration: 0.22, ease: [0.2, 0.8, 0.2, 1] as const };
+
+function useMobile() {
+  const [mobile, setMobile] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(MOBILE).matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE);
+    const apply = () => setMobile(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+  return mobile;
+}
 
 type PromptDraft = {
   imageSrc: string | null;
@@ -64,11 +83,21 @@ export default function CanvasEdit({
   const rootRef = useRef<HTMLDivElement>(null);
   const layerRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const pendingTaste = useRef(false);
+  const pendingRetaste = useRef<PromptDraft | null>(null);
+  const mobile = useMobile();
+  const reduceMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
   const [tasteOpen, setTasteOpen] = useState(false);
   const [draftContext, setDraftContext] = useState(context);
   const [draftImage, setDraftImage] = useState<string | null>(imageSrc);
   const dictation = useDictation(draftContext, setDraftContext);
+  const instant = Boolean(reduceMotion);
+  const veilMotion = instant ? { duration: 0 } : VEIL_TWEEN;
+  const sheetMotion = instant ? { duration: 0 } : SHEET_SPRING;
+  const sheetSlide = mobile
+    ? { hidden: { y: '100%' }, show: { y: 0 } }
+    : { hidden: { y: 16, opacity: 0 }, show: { y: 0, opacity: 1 } };
 
   function closeTaste() {
     dictation.stop();
@@ -79,9 +108,14 @@ export default function CanvasEdit({
   }
 
   function openTaste() {
-    setOpen(false);
     setDraftContext(context);
     setDraftImage(imageSrc);
+    if (mobile && open) {
+      pendingTaste.current = true;
+      setOpen(false);
+      return;
+    }
+    setOpen(false);
     setTasteOpen(true);
   }
 
@@ -106,10 +140,11 @@ export default function CanvasEdit({
   function submitTaste() {
     if (!canSubmit() || busy) return;
     dictation.stop();
-    const nextImage = draftImage;
-    const nextContext = draftContext.trim();
+    pendingRetaste.current = {
+      imageSrc: draftImage,
+      context: draftContext.trim(),
+    };
     setTasteOpen(false);
-    onRetaste({ imageSrc: nextImage, context: nextContext });
   }
 
   useEffect(() => {
@@ -153,16 +188,41 @@ export default function CanvasEdit({
           </div>
         ) : null}
       </div>
-      {open
-        ? createPortal(
-            <div className="canvas-edit__layer" ref={layerRef}>
-              <button
+      {createPortal(
+        <AnimatePresence
+          onExitComplete={() => {
+            if (!pendingTaste.current) return;
+            pendingTaste.current = false;
+            setTasteOpen(true);
+          }}
+        >
+          {open ? (
+            <motion.div
+              key="edit-layer"
+              className="canvas-edit__layer"
+              ref={layerRef}
+              initial={false}
+              exit={{ opacity: 1 }}
+              transition={instant ? { duration: 0 } : { duration: 0.42 }}
+            >
+              <motion.button
                 type="button"
                 className="canvas-edit__veil"
                 aria-label="Close"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={veilMotion}
                 onClick={() => setOpen(false)}
               />
-              <div className="canvas-edit__sheet" role="menu">
+              <motion.div
+                className="canvas-edit__sheet"
+                role="menu"
+                initial={sheetSlide.hidden}
+                animate={sheetSlide.show}
+                exit={sheetSlide.hidden}
+                transition={sheetMotion}
+              >
                 <div className="canvas-edit__handle" aria-hidden />
                 <EditMenuItems
                   busy={busy}
@@ -172,18 +232,31 @@ export default function CanvasEdit({
                     onStartOver();
                   }}
                 />
-              </div>
-            </div>,
-            document.body,
-          )
-        : null}
-      {tasteOpen
-        ? createPortal(
-            <div
+              </motion.div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>,
+        document.body,
+      )}
+      {createPortal(
+        <AnimatePresence
+          onExitComplete={() => {
+            const draft = pendingRetaste.current;
+            if (!draft) return;
+            pendingRetaste.current = null;
+            onRetaste(draft);
+          }}
+        >
+          {tasteOpen ? (
+            <motion.div
+              key="taste"
               className="studio-taste"
               role="dialog"
               aria-modal="true"
               aria-labelledby="studio-taste-title"
+              initial={false}
+              exit={{ opacity: 1 }}
+              transition={instant ? { duration: 0 } : { duration: 0.42 }}
             >
               <input
                 ref={fileRef}
@@ -196,13 +269,23 @@ export default function CanvasEdit({
                   e.target.value = '';
                 }}
               />
-              <button
+              <motion.button
                 type="button"
                 className="studio-taste__veil"
                 aria-label="Close"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={veilMotion}
                 onClick={closeTaste}
               />
-              <div className="inspiration__sheet studio-taste__sheet">
+              <motion.div
+                className="inspiration__sheet studio-taste__sheet"
+                initial={sheetSlide.hidden}
+                animate={sheetSlide.show}
+                exit={sheetSlide.hidden}
+                transition={sheetMotion}
+              >
                 <div className="studio-taste__handle" aria-hidden />
                 <button
                   type="button"
@@ -295,11 +378,12 @@ export default function CanvasEdit({
                 >
                   Let's go!
                 </button>
-              </div>
-            </div>,
-            document.body,
-          )
-        : null}
+              </motion.div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>,
+        document.body,
+      )}
     </>
   );
 }

@@ -10,7 +10,7 @@
   pointer-events: none;
 }
 
-.style-dock__card {
+.style-dock__shell {
   pointer-events: auto;
   width: min(18.5rem, 100%);
   overflow: hidden;
@@ -20,6 +20,13 @@
   box-shadow: var(--shadow-elevated);
   backdrop-filter: blur(var(--blur-glow));
   -webkit-backdrop-filter: blur(var(--blur-glow));
+}
+
+.style-dock__card {
+  width: 100%;
+  overflow: hidden;
+  background: transparent;
+  color: inherit;
 }
 
 .style-dock__toggle {
@@ -129,6 +136,8 @@
   z-index: calc(var(--z-overlay) + 1);
 }
 
-.style-dock.is-page .style-dock__card {
+.style-dock.is-page .style-dock__shell {
   background: var(--color-overlay-scan);
+  backdrop-filter: blur(var(--blur-glow));
+  -webkit-backdrop-filter: blur(var(--blur-glow));
 }

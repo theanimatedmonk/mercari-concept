@@ -40,6 +40,7 @@ export default function StyleJobsDock({ jobs, expanded, onToggle, onOpen }: Prop
 
   const node = (
     <div className={`style-dock${page ? ' is-page' : ''}`}>
+      <div className="style-dock__shell">
       <motion.div
         className={`style-dock__card${expanded ? ' is-open' : ''}`}
         layout
@@ -117,6 +118,7 @@ export default function StyleJobsDock({ jobs, expanded, onToggle, onOpen }: Prop
           ) : null}
         </AnimatePresence>
       </motion.div>
+      </div>
     </div>
   );
 

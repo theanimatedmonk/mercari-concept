@@ -142,6 +142,7 @@
     position: fixed;
     inset: 0;
     z-index: var(--z-modal);
+    overflow: hidden;
   }
 
   .canvas-edit__veil {
@@ -194,6 +195,7 @@
     flex-direction: column;
     justify-content: flex-end;
     align-items: stretch;
+    overflow: hidden;
   }
 
   .studio-taste__sheet {
