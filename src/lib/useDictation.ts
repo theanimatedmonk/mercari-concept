@@ -84,13 +84,13 @@ export default function useDictation(
       return;
     }
 
-    const Ctor = speechCtor();
-    if (!Ctor) {
+    const Engine = speechCtor();
+    if (!Engine) {
       setError('Dictation isn’t available in this browser.');
       return;
     }
 
-    function listen(rec: SpeechRec) {
+    function listen(rec: SpeechRec, Recognition: SpeechRecCtor) {
       rec.continuous = true;
       rec.interimResults = true;
       rec.lang = navigator.language || 'en-US';
@@ -131,8 +131,8 @@ export default function useDictation(
         restartRef.current = window.setTimeout(() => {
           restartRef.current = null;
           if (!wantRef.current) return;
-          const next = new Ctor();
-          listen(next);
+          const next = new Recognition();
+          listen(next, Recognition);
           recRef.current = next;
           try {
             next.start();
@@ -148,8 +148,8 @@ export default function useDictation(
     setError(null);
     baseRef.current = textRef.current.trimEnd();
     finalsRef.current = '';
-    const rec = new Ctor();
-    listen(rec);
+    const rec = new Engine();
+    listen(rec, Engine);
     recRef.current = rec;
     wantRef.current = true;
     try {
