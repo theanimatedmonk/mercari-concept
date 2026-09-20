@@ -39,6 +39,7 @@
   --color-text-accent: var(--primitive-gold-600);
 
   --color-coachmark: var(--primitive-coach-500);
+  --color-dictate: var(--primitive-coach-500);
   --color-coachmark-nav: var(--primitive-coach-700);
   --color-coachmark-skip: rgb(255 255 255 / 0.22);
   --color-text-on-coachmark: var(--primitive-white);
@@ -55,6 +56,11 @@
   --color-glow: rgb(196 165 116 / 0.45);
   --color-glow-dress: rgb(255 255 255 / 0.55);
   --color-glow-hero: rgb(196 92 180 / 0.45);
+  --color-bg-prompt: color-mix(
+    in srgb,
+    var(--primitive-style-pink) 18%,
+    var(--primitive-white)
+  );
   --color-sparkle-status: var(--primitive-intent-vibe);
   --color-pill-plum: #7a2d62;
   --color-overlay-veil: rgb(18 16 14 / 0.28);
@@ -173,4 +179,9 @@
   --color-border-default: var(--primitive-ink-700);
   --color-border-subtle: var(--primitive-ink-800);
   --color-border-focus: var(--primitive-ink-400);
+  --color-bg-prompt: color-mix(
+    in srgb,
+    var(--primitive-style-pink) 28%,
+    var(--primitive-ink-900)
+  );
 }
