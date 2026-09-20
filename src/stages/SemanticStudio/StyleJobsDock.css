@@ -120,3 +120,15 @@
     bottom: var(--space-stack-lg);
   }
 }
+
+.style-dock.is-page {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: max(var(--space-stack-lg), env(safe-area-inset-bottom));
+  z-index: calc(var(--z-overlay) + 1);
+}
+
+.style-dock.is-page .style-dock__card {
+  background: var(--color-overlay-scan);
+}
