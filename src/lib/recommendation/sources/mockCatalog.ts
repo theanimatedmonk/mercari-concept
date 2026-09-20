@@ -1,4 +1,5 @@
 import { products as demoProducts } from '../../../data/products.js';
+import { isDressListing } from '../dressFilter.js';
 import type { CatalogProduct, MerchantId } from '../types.js';
 
 const MERCHANTS: MerchantId[] = ['myntra', 'mock', 'amazon'];
@@ -17,24 +18,26 @@ function externalUrl(merchant: MerchantId, id: string) {
   return `https://example.com/products/${id}`;
 }
 
-export const MOCK_CATALOG: CatalogProduct[] = demoProducts.map((item, index) => {
-  const merchant = merchantForIndex(index);
-  const price = Number.parseInt(item.price.replace(/[^\d]/g, ''), 10) || undefined;
-  const brand = item.seller.replace(/^@/, '');
-  return {
-    id: `mock-${item.id}`,
-    merchant,
-    merchantProductId: item.id,
-    title: item.name,
-    brand,
-    price,
-    currency: 'USD',
-    imageUrl: item.image,
-    productUrl: externalUrl(merchant, item.id),
-    affiliateUrl: externalUrl(merchant, item.id),
-    category: 'dress',
-    availability: true,
-    attributes: Object.keys(item.attributes),
-    attributeScores: { ...item.attributes },
-  };
-});
+export const MOCK_CATALOG: CatalogProduct[] = demoProducts
+  .filter((item) => isDressListing(item.name, '', item.image))
+  .map((item, index) => {
+    const merchant = merchantForIndex(index);
+    const price = Number.parseInt(item.price.replace(/[^\d]/g, ''), 10) || undefined;
+    const brand = item.seller.replace(/^@/, '');
+    return {
+      id: `mock-${item.id}`,
+      merchant,
+      merchantProductId: item.id,
+      title: item.name,
+      brand,
+      price,
+      currency: 'USD',
+      imageUrl: item.image,
+      productUrl: externalUrl(merchant, item.id),
+      affiliateUrl: externalUrl(merchant, item.id),
+      category: 'dress',
+      availability: true,
+      attributes: Object.keys(item.attributes),
+      attributeScores: { ...item.attributes },
+    };
+  });

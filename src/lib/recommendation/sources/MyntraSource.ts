@@ -1,4 +1,5 @@
 import { catalogEnv } from '../env.js';
+import { isDressListing } from '../dressFilter.js';
 import { parseProductFeed } from '../feedParse.js';
 import type { CatalogProduct } from '../types.js';
 import type { ProductSource } from './ProductSource.js';
@@ -48,6 +49,7 @@ export class MyntraSource implements ProductSource {
       if (!feed.length) return [];
       const tokens = tokenize(query);
       return feed
+        .filter((product) => isDressListing(product.title, product.category ?? '', product.imageUrl))
         .map((product) => ({ product, score: scoreProduct(product, tokens) }))
         .filter((row) => row.score > 0 || tokens.length === 0)
         .sort((a, b) => b.score - a.score)

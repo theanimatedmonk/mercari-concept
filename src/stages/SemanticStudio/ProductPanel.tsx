@@ -5,6 +5,8 @@ import { LISTING_PRODUCT_ID } from '../../data/listing';
 import { panelPhase } from '../../lib/scoring';
 import type { Product, SemanticAttribute } from '../../types';
 import ProductCard from './ProductCard';
+import StyleJobsDock from './StyleJobsDock';
+import type { StyleJob, StyleJobStatus } from './styleOnMeTypes';
 import './ProductPanel.css';
 
 const COPY = {
@@ -43,8 +45,15 @@ type Props = {
   ranked: Product[];
   attributes: SemanticAttribute[];
   meaningfulMoves: number;
-  onOpenListing?: (product: Product) => void;
   onOpenPreview?: (product: Product) => void;
+  jobs?: StyleJob[];
+  dockOpen?: boolean;
+  onToggleDock?: () => void;
+  onOpenJob?: (job: StyleJob) => void;
+  styleStateFor?: (productId: string) => StyleJobStatus | 'idle';
+  styledImageFor?: (productId: string) => string | undefined;
+  canStyle?: (productId: string) => boolean;
+  onStyleMe?: (product: Product) => void;
 };
 
 function Slot({
@@ -53,12 +62,18 @@ function Slot({
   index,
   attributes,
   onOpen,
+  styleState,
+  styledImage,
+  onStyleMe,
 }: {
   product?: Product;
   showCard: boolean;
   index: number;
   attributes: SemanticAttribute[];
   onOpen?: () => void;
+  styleState?: StyleJobStatus | 'idle';
+  styledImage?: string;
+  onStyleMe?: () => void;
 }) {
   return (
     <div className="panel__slot">
@@ -71,7 +86,14 @@ function Slot({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <ProductCard product={product} attributes={attributes} onOpen={onOpen} />
+            <ProductCard
+              product={product}
+              attributes={attributes}
+              onOpen={onOpen}
+              styleState={styleState}
+              styledImage={styledImage}
+              onStyleMe={onStyleMe}
+            />
           </motion.div>
         ) : (
           <motion.div
@@ -94,21 +116,25 @@ function Slot({
 
 function openHandler(
   product: Product | undefined,
-  onOpenListing?: (product: Product) => void,
   onOpenPreview?: (product: Product) => void,
 ) {
   if (!product) return undefined;
-  if (product.id === LISTING_PRODUCT_ID) return () => onOpenListing?.(product);
-  if (product.productUrl) return () => onOpenPreview?.(product);
-  return undefined;
+  return () => onOpenPreview?.(product);
 }
 
 export default function ProductPanel({
   ranked,
   attributes,
   meaningfulMoves,
-  onOpenListing,
   onOpenPreview,
+  jobs = [],
+  dockOpen = false,
+  onToggleDock,
+  onOpenJob,
+  styleStateFor,
+  styledImageFor,
+  canStyle,
+  onStyleMe,
 }: Props) {
   const phase = panelPhase(attributes, meaningfulMoves);
   const copy = COPY[phase];
@@ -240,38 +266,60 @@ export default function ProductPanel({
           Filter
         </button>
       </header>
-      <div className="panel__grid">
-        <div className="panel__col">
-          {left.map((index) => {
-            const product = visible[index];
-            return (
-              <Slot
-                key={product?.id ?? `slot-${index}`}
-                product={product}
-                showCard={Boolean(product && index < revealed)}
-                index={index}
-                attributes={attributes}
-                onOpen={openHandler(product, onOpenListing, onOpenPreview)}
-              />
-            );
-          })}
-        </div>
-        <div className="panel__col">
-          {right.map((index) => {
-            const product = visible[index];
-            return (
-              <Slot
-                key={product?.id ?? `slot-${index}`}
-                product={product}
-                showCard={Boolean(product && index < revealed)}
-                index={index}
-                attributes={attributes}
-                onOpen={openHandler(product, onOpenListing, onOpenPreview)}
-              />
-            );
-          })}
+      <div className={`panel__body${jobs.length ? ' has-dock' : ''}`}>
+        <div className="panel__grid">
+          <div className="panel__col">
+            {left.map((index) => {
+              const product = visible[index];
+              return (
+                <Slot
+                  key={product?.id ?? `slot-${index}`}
+                  product={product}
+                  showCard={Boolean(product && index < revealed)}
+                  index={index}
+                  attributes={attributes}
+                  onOpen={openHandler(product, onOpenPreview)}
+                  styleState={product ? styleStateFor?.(product.id) : undefined}
+                  styledImage={product ? styledImageFor?.(product.id) : undefined}
+                  onStyleMe={
+                    product && onStyleMe && (canStyle?.(product.id) ?? true)
+                      ? () => onStyleMe(product)
+                      : undefined
+                  }
+                />
+              );
+            })}
+          </div>
+          <div className="panel__col">
+            {right.map((index) => {
+              const product = visible[index];
+              return (
+                <Slot
+                  key={product?.id ?? `slot-${index}`}
+                  product={product}
+                  showCard={Boolean(product && index < revealed)}
+                  index={index}
+                  attributes={attributes}
+                  onOpen={openHandler(product, onOpenPreview)}
+                  styleState={product ? styleStateFor?.(product.id) : undefined}
+                  styledImage={product ? styledImageFor?.(product.id) : undefined}
+                  onStyleMe={
+                    product && onStyleMe && (canStyle?.(product.id) ?? true)
+                      ? () => onStyleMe(product)
+                      : undefined
+                  }
+                />
+              );
+            })}
+          </div>
         </div>
       </div>
+      <StyleJobsDock
+        jobs={jobs}
+        expanded={dockOpen}
+        onToggle={() => onToggleDock?.()}
+        onOpen={(job) => onOpenJob?.(job)}
+      />
     </motion.aside>
   );
 }

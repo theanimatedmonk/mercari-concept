@@ -1,7 +1,8 @@
 import type { Plugin } from 'vite';
 import { serverRetrieveCatalog } from './src/lib/recommendation/serverRetrieve';
 import { runAnalyze } from './src/lib/llm/runAnalyze';
-import type { AnalyzeRequest } from './src/lib/llm/types';
+import { runStyleOnMe } from './src/lib/llm/styleOnMe';
+import type { AnalyzeRequest, StyleOnMeRequest } from './src/lib/llm/types';
 
 function readBody(req: { on: (event: string, cb: (chunk?: Buffer) => void) => void }) {
   return new Promise<string>((resolve, reject) => {
@@ -97,6 +98,35 @@ export function analyzeDevPlugin(env: Record<string, string>): Plugin {
             res.end(JSON.stringify({ products }));
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Catalog search failed';
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: message }));
+          }
+        })();
+      });
+
+      server.middlewares.use('/api/style-on-me', (req, res, next) => {
+        void (async () => {
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+          res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+          if (req.method === 'OPTIONS') {
+            res.statusCode = 204;
+            res.end();
+            return;
+          }
+          if (req.method !== 'POST') {
+            next();
+            return;
+          }
+          try {
+            const raw = await readBody(req);
+            const body = JSON.parse(raw || '{}') as StyleOnMeRequest;
+            const result = await runStyleOnMe(body);
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(result));
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Style it on me failed';
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify({ error: message }));

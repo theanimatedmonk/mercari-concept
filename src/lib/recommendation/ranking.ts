@@ -1,4 +1,17 @@
 import type { IntentSnapshot, RankedCatalogProduct, RetrievedProduct } from './types.js';
+import { isDressListing } from './dressFilter.js';
+import { deriveAttributes } from '../catalog/deriveAttributes.js';
+
+function scoresForIntent(product: RetrievedProduct, intent: IntentSnapshot) {
+  const blob = [product.title, product.brand ?? '', ...(product.attributes ?? [])].join(' ');
+  return {
+    ...product.attributeScores,
+    ...deriveAttributes(
+      blob,
+      intent.attributes.map((attr) => ({ id: attr.id, label: attr.label })),
+    ),
+  };
+}
 
 function semanticMatch(
   intent: IntentSnapshot,
@@ -40,12 +53,14 @@ export function rankCatalogProducts(
   queryCount: number,
 ): RankedCatalogProduct[] {
   const scored = products.map((product) => {
-    const semantic = semanticMatch(intent, product.attributeScores);
+    const attributeScores = scoresForIntent(product, intent);
+    const semantic = semanticMatch(intent, attributeScores);
     const relevance = queryRelevance(product, queryCount);
     const visual = product.visualScore ?? 0;
     const rankScore = semantic * 0.6 + relevance * 0.2 + visual * 0.15;
     return {
       ...product,
+      attributeScores,
       semanticMatch: semantic,
       queryRelevance: relevance,
       rankScore,
@@ -67,5 +82,5 @@ export function rankCatalogProducts(
   }
 
   diversified.sort((a, b) => b.rankScore - a.rankScore);
-  return diversified;
+  return diversified.filter((row) => isDressListing(row.title, row.category ?? '', row.imageUrl));
 }

@@ -2,37 +2,42 @@ import { AnimatePresence } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import AvatarOrb from '../../components/AvatarOrb';
 import { DRESS_CENTER, expansions } from '../../data/demo';
-import { LISTING_PRODUCT_ID, listingSimilarIds } from '../../data/listing';
 import { products as fallbackProducts } from '../../data/products';
+import { isDressListing } from '../../lib/recommendation/dressFilter';
 import { useRecommendationFeed } from '../../lib/recommendation/useRecommendationFeed';
 import { layoutAttributes } from '../../lib/llm/layoutAttributes';
 import type { AnalyzeResponse } from '../../lib/llm/types';
+import { patchSession, peekSession } from '../../lib/session';
 import {
   pickCoachPills,
   spreadFromCenter,
   weightFromDistance,
 } from '../../lib/scoring';
-import type { SemanticAttribute } from '../../types';
+import type { Product, SemanticAttribute } from '../../types';
 import AttributeBubble from './AttributeBubble';
 import CanvasEdit from './CanvasEdit';
 import CanvasCoachmark, { COACH_STEPS } from './CanvasCoachmark';
 import DeleteZone from './DeleteZone';
 import ProductPanel from './ProductPanel';
 import ProductPreviewModal from './ProductPreviewModal';
-import ProductListing from '../ProductListing/ProductListing';
-import type { Product } from '../../types';
+import PhotoUploader from './PhotoUploader';
+import useStyleOnMe from './useStyleOnMe';
 import './SemanticStudio.css';
 
 type Props = {
   imageSrc: string | null;
   analysis: AnalyzeResponse;
+  resume?: boolean;
   onStartOver: () => void;
 };
 
-export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Props) {
+export default function SemanticStudio({ imageSrc, analysis, resume = false, onStartOver }: Props) {
   const pills = layoutAttributes(analysis.attributes);
+  const stored = resume ? peekSession() : null;
   const canvasRef = useRef<HTMLElement>(null);
-  const [attributes, setAttributes] = useState<SemanticAttribute[]>(pills);
+  const [attributes, setAttributes] = useState<SemanticAttribute[]>(
+    stored?.attributes?.length ? stored.attributes : pills,
+  );
   const inspirationForApi = useMemo(() => {
     if (!imageSrc) return undefined;
     if (imageSrc.startsWith('http://') || imageSrc.startsWith('https://')) {
@@ -48,24 +53,29 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
     analysis.catalogQuery,
     inspirationForApi,
   );
-  const [moves, setMoves] = useState(0);
+  const [moves, setMoves] = useState(stored?.moves ?? 0);
   const [deleteArmed, setDeleteArmed] = useState(false);
-  const [coachStep, setCoachStep] = useState(0);
+  const [coachStep, setCoachStep] = useState(resume ? -1 : 0);
   const [tourOn, setTourOn] = useState(false);
   const [coachPick, setCoachPick] = useState<{
     far: string;
     near: string;
     lock: string;
   } | null>(null);
-  const [listingOpen, setListingOpen] = useState(false);
-  const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
+  const [preview, setPreview] = useState<{ product: Product; image?: string } | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [spread, setSpread] = useState(1);
-  const rankedHold = useRef(fallbackProducts);
+  const rankedHold = useRef(fallbackProducts.filter((item) => isDressListing(item.name, '', item.image)));
+  const styleOnMe = useStyleOnMe((target) => setPreview(target), {
+    selfie: stored?.selfie ?? null,
+    jobs: stored?.jobs ?? [],
+    dockOpen: stored?.dockOpen ?? false,
+  });
 
   useEffect(() => {
+    if (resume) return;
     setAttributes(pills);
-  }, [analysis]);
+  }, [analysis, resume]);
 
   const attributesRef = useRef(attributes);
   attributesRef.current = attributes;
@@ -73,12 +83,17 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
   spreadRef.current = spread;
 
   useEffect(() => {
+    if (resume) return;
     const id = window.setTimeout(() => {
       setCoachPick(pickCoachPills(attributesRef.current, spreadRef.current));
       setTourOn(true);
     }, 4000);
     return () => window.clearTimeout(id);
-  }, []);
+  }, [resume]);
+
+  useEffect(() => {
+    patchSession({ attributes, moves, coachDone: coachStep < 0 || resume });
+  }, [attributes, moves, coachStep, resume]);
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 48rem)');
@@ -267,8 +282,20 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
         ranked={ranked}
         attributes={attributes}
         meaningfulMoves={Math.min(moves, 12)}
-        onOpenListing={() => setListingOpen(true)}
-        onOpenPreview={(product) => setPreviewProduct(product)}
+        onOpenPreview={(product) =>
+          setPreview({
+            product,
+            image: styleOnMe.styledImageFor(product.id),
+          })
+        }
+        jobs={styleOnMe.jobs}
+        dockOpen={styleOnMe.dockOpen}
+        onToggleDock={() => styleOnMe.setDockOpen((open) => !open)}
+        onOpenJob={styleOnMe.openJob}
+        styleStateFor={styleOnMe.styleStateFor}
+        styledImageFor={styleOnMe.styledImageFor}
+        canStyle={styleOnMe.canStyle}
+        onStyleMe={styleOnMe.requestStyle}
       />
       </div>
       {coach && coachTarget ? (
@@ -281,33 +308,32 @@ export default function SemanticStudio({ imageSrc, analysis, onStartOver }: Prop
           onDone={() => setCoachStep(-1)}
         />
       ) : null}
-      {previewProduct ? (
+      {preview ? (
         <ProductPreviewModal
-          product={previewProduct}
+          key={preview.product.id}
+          product={preview.product}
+          generatedImage={styleOnMe.styledImageFor(preview.product.id)}
+          selfiePreview={styleOnMe.selfie?.preview}
           attributes={attributes}
-          onClose={() => setPreviewProduct(null)}
+          styling={styleOnMe.styleStateFor(preview.product.id) === 'generating'}
+          canStyle={styleOnMe.canStyle(preview.product.id)}
+          onStyleMe={() => styleOnMe.requestStyle(preview.product)}
+          onChangeSelfie={() => styleOnMe.openUploader(preview.product)}
+          onClose={() => setPreview(null)}
         />
       ) : null}
-      <AnimatePresence>
-        {listingOpen ? (
-          <ProductListing
-            key="listing"
-            product={
-              catalog.find((item) => item.id === LISTING_PRODUCT_ID) ??
-              fallbackProducts.find((item) => item.id === LISTING_PRODUCT_ID) ??
-              catalog[0]
-            }
-            similar={listingSimilarIds
-              .map(
-                (id) =>
-                  catalog.find((item) => item.id === id) ??
-                  fallbackProducts.find((item) => item.id === id),
-              )
-              .filter((item): item is (typeof catalog)[number] => Boolean(item))}
-            onClose={() => setListingOpen(false)}
-          />
-        ) : null}
-      </AnimatePresence>
+      {styleOnMe.uploaderFor ? (
+        <PhotoUploader
+          initial={styleOnMe.selfie}
+          onClose={styleOnMe.closeUploader}
+          onPick={styleOnMe.onUploaderPick}
+        />
+      ) : null}
+      {styleOnMe.toast ? (
+        <div className="studio__toast" role="status">
+          {styleOnMe.toast}
+        </div>
+      ) : null}
     </div>
   );
 }

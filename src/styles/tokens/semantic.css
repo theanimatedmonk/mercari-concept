@@ -59,6 +59,11 @@
   --color-pill-plum: #7a2d62;
   --color-overlay-veil: rgb(18 16 14 / 0.28);
   --color-overlay-deep: rgb(18 16 14 / 0.72);
+  --color-overlay-scan: rgb(18 16 14 / 0.46);
+  --color-success: var(--primitive-success-500);
+  --color-dock: rgb(18 16 14 / 0.92);
+  --color-dock-hover: rgb(255 255 255 / 0.08);
+  --z-sticky: var(--primitive-z-sticky);
   --color-shimmer: rgb(255 255 255 / 0.22);
   --color-scan-dot: rgb(255 255 255 / 0.92);
   --color-ring-soft: rgb(255 255 255 / 0.35);

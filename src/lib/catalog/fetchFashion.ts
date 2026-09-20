@@ -1,6 +1,7 @@
 import { LISTING_PRODUCT_ID } from '../../data/listing';
 import { products as fallbackProducts } from '../../data/products';
 import type { Product } from '../../types';
+import { isDressListing } from '../recommendation/dressFilter';
 import { deriveAttributes } from './deriveAttributes';
 import {
   catalogId,
@@ -63,7 +64,11 @@ export async function fetchFashionCatalog(pills?: PillHint[]): Promise<Product[]
     FASHION_CATEGORIES.map((category) => fetchCategory(category)),
   );
   const items = batches.flatMap((batch) => (batch.status === 'fulfilled' ? batch.value : []));
-  return uniqueProducts(items.map((item) => mapDummyProduct(item, pills)));
+  return uniqueProducts(
+    items
+      .map((item) => mapDummyProduct(item, pills))
+      .filter((item) => isDressListing(item.name, 'womens-dresses', item.image)),
+  );
 }
 
 export async function searchFashionCatalog(
@@ -81,5 +86,9 @@ export async function searchFashionCatalog(
     FASHION_CATEGORY_SET.has(item.category),
   );
   if (fashion.length === 0) return fetchFashionCatalog(pills);
-  return uniqueProducts(fashion.map((item) => mapDummyProduct(item, pills)));
+  return uniqueProducts(
+    fashion
+      .filter((item) => isDressListing(item.title, item.category, item.thumbnail))
+      .map((item) => mapDummyProduct(item, pills)),
+  );
 }

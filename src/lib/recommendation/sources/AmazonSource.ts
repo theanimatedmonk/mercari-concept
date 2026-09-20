@@ -1,6 +1,7 @@
 import { catalogEnv } from '../env.js';
 import { deriveAttributes } from '../../catalog/deriveAttributes.js';
 import { amazonLocale, amazonPaapiConfigured, searchPaapi } from '../amazonPaapi.js';
+import { isDressListing } from '../dressFilter.js';
 import type { CatalogProduct } from '../types.js';
 import type { ProductSource } from './ProductSource.js';
 
@@ -94,9 +95,9 @@ function mapItem(item: AmazonItem): CatalogProduct | null {
   const asin = item.asin?.trim();
   if (!title || !imageUrl || !productUrl || !asin) return null;
 
-  return {
+  const mapped = {
     id: `amazon-${asin}`,
-    merchant: 'amazon',
+    merchant: 'amazon' as const,
     merchantProductId: asin,
     title,
     brand: item.brand,
@@ -113,6 +114,7 @@ function mapItem(item: AmazonItem): CatalogProduct | null {
       .filter((part) => part.length > 3),
     attributeScores: deriveAttributes(title),
   };
+  return isDressListing(mapped.title, mapped.category, mapped.imageUrl) ? mapped : null;
 }
 
 function collectItems(body: unknown): unknown[] {

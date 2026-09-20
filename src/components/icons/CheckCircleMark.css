@@ -1,0 +1,9 @@
+.check-circle-mark .check-circle-mark__disk {
+  fill: currentColor;
+  stroke: none;
+}
+
+.check-circle-mark .check-circle-mark__tick {
+  fill: none;
+  stroke: var(--color-text-on-primary);
+}

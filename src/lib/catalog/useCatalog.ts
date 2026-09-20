@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react';
 import { products as fallbackProducts } from '../../data/products';
 import type { Product } from '../../types';
+import { isDressListing } from '../recommendation/dressFilter';
 import {
   fetchFashionCatalog,
   searchFashionCatalog,
   withHeroListing,
 } from './fetchFashion';
 
+const dressFallback = fallbackProducts.filter((item) => isDressListing(item.name, '', item.image));
+
 type PillHint = { id: string; label: string };
 
 export function useCatalog(query = '', pills: PillHint[] = []) {
-  const [catalog, setCatalog] = useState<Product[]>(fallbackProducts);
+  const [catalog, setCatalog] = useState<Product[]>(dressFallback);
   const [source, setSource] = useState<'live' | 'fallback'>('fallback');
   const hintKey = pills.map((pill) => `${pill.id}:${pill.label}`).join('|');
 
@@ -33,7 +36,7 @@ export function useCatalog(query = '', pills: PillHint[] = []) {
       })
       .catch(() => {
         if (cancelled) return;
-        setCatalog(fallbackProducts);
+        setCatalog(dressFallback);
         setSource('fallback');
       });
     return () => {

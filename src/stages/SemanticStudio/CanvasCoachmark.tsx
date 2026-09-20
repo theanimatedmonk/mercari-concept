@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import './CanvasCoachmark.css';
 
 export const COACH_STEPS = [
@@ -83,40 +84,39 @@ export default function CanvasCoachmark({
     const lock = spotlight.querySelector('[data-coach-lock]');
     const pointer = current.lock && lock instanceof HTMLElement ? lock : spotlight;
 
-    const origin = canvas.closest('.studio') ?? canvas;
-    const c = origin.getBoundingClientRect();
     const t = pointer.getBoundingClientRect();
     const s = spotlight.getBoundingClientRect();
     const b = bubble.getBoundingClientRect();
     const gap = GAP;
+    const viewW = window.innerWidth;
+    const viewH = window.innerHeight;
 
     let side: 'above' | 'below' | 'left' = current.lock ? 'left' : current.prefer;
-    let left = t.left - c.left + t.width / 2 - (b.width - ARROW);
+    let left = t.left + t.width / 2 - (b.width - ARROW);
     let top =
-      side === 'above' ? t.top - c.top - b.height - gap : t.bottom - c.top + gap;
+      side === 'above' ? t.top - b.height - gap : t.bottom + gap;
 
     if (current.lock) {
-      const lockLeft = t.left - c.left;
-      if (lockLeft > b.width + gap + 12) {
+      if (t.left > b.width + gap + 12) {
         side = 'left';
-        left = lockLeft - b.width - gap;
-        top = t.top - c.top + t.height / 2 - b.height / 2;
+        left = t.left - b.width - gap;
+        top = t.top + t.height / 2 - b.height / 2;
       } else {
         side = 'below';
-        left = t.left - c.left + t.width / 2 - (b.width - ARROW);
-        top = t.bottom - c.top + gap;
+        left = t.left + t.width / 2 - (b.width - ARROW);
+        top = t.bottom + gap;
       }
     } else {
-      const roomAbove = t.top - c.top;
+      const roomAbove = t.top;
       if (side === 'above' && roomAbove < b.height + gap + 8) side = 'below';
-      if (side === 'below' && c.bottom - t.bottom < b.height + gap + 8) side = 'above';
-      left = t.left - c.left + t.width / 2 - (b.width - ARROW);
+      if (side === 'below' && viewH - t.bottom < b.height + gap + 8) side = 'above';
+      left = t.left + t.width / 2 - (b.width - ARROW);
       top =
-        side === 'above' ? t.top - c.top - b.height - gap : t.bottom - c.top + gap;
+        side === 'above' ? t.top - b.height - gap : t.bottom + gap;
     }
 
-    left = Math.max(12, Math.min(left, c.width - b.width - 12));
-    top = Math.max(12, Math.min(top, c.height - b.height - 12));
+    left = Math.max(12, Math.min(left, viewW - b.width - 12));
+    top = Math.max(12, Math.min(top, viewH - b.height - 12));
 
     const bubbleBox = {
       left,
@@ -124,28 +124,16 @@ export default function CanvasCoachmark({
       right: left + b.width,
       bottom: top + b.height,
     };
-    const lockBox = {
-      left: t.left - c.left,
-      top: t.top - c.top,
-      right: t.right - c.left,
-      bottom: t.bottom - c.top,
-    };
     const overlapsLock =
       current.lock &&
-      bubbleBox.left < lockBox.right &&
-      bubbleBox.right > lockBox.left &&
-      bubbleBox.top < lockBox.bottom &&
-      bubbleBox.bottom > lockBox.top;
+      bubbleBox.left < t.right &&
+      bubbleBox.right > t.left &&
+      bubbleBox.top < t.bottom &&
+      bubbleBox.bottom > t.top;
     if (overlapsLock) {
       side = 'below';
-      left = Math.max(
-        12,
-        Math.min(lockBox.left + t.width / 2 - (b.width - ARROW), c.width - b.width - 12),
-      );
-      top = Math.max(
-        12,
-        Math.min(lockBox.bottom + gap, c.height - b.height - 12),
-      );
+      left = Math.max(12, Math.min(t.left + t.width / 2 - (b.width - ARROW), viewW - b.width - 12));
+      top = Math.max(12, Math.min(t.bottom + gap, viewH - b.height - 12));
     }
 
     const holeRect = current.lock && t.width >= 8 && t.height >= 8 ? t : s;
@@ -155,8 +143,8 @@ export default function CanvasCoachmark({
       top,
       side,
       hole: {
-        left: holeRect.left - c.left - pad,
-        top: holeRect.top - c.top - pad,
+        left: holeRect.left - pad,
+        top: holeRect.top - pad,
         width: holeRect.width + pad * 2,
         height: holeRect.height + pad * 2,
       },
@@ -192,7 +180,7 @@ export default function CanvasCoachmark({
   const last = step >= COACH_STEPS.length - 1;
   const first = step <= 0;
 
-  return (
+  return createPortal(
     <>
       {box.placed ? (
         <div
@@ -206,41 +194,42 @@ export default function CanvasCoachmark({
           aria-hidden
         />
       ) : null}
-    <div
-      className={`coachmark coachmark--${box.side}`}
-      style={{ left: box.left, top: box.top }}
-    >
-      <div ref={bubbleRef} className="coachmark__bubble">
-        <span className="coachmark__arrow" aria-hidden />
-        <h2 className="coachmark__title">{current.title}</h2>
-        <p className="coachmark__body">{current.body}</p>
-        <div className="coachmark__bar">
-          <button type="button" className="coachmark__skip" onClick={onDone}>
-            {last ? 'Finish' : 'Skip'}
-          </button>
-          <div className="coachmark__nav">
-            <button
-              type="button"
-              className="coachmark__back"
-              aria-label="Back"
-              disabled={first}
-              onClick={onBack}
-            >
-              <ChevronLeft size={16} />
+      <div
+        className={`coachmark coachmark--${box.side}`}
+        style={{ left: box.left, top: box.top }}
+      >
+        <div ref={bubbleRef} className="coachmark__bubble">
+          <span className="coachmark__arrow" aria-hidden />
+          <h2 className="coachmark__title">{current.title}</h2>
+          <p className="coachmark__body">{current.body}</p>
+          <div className="coachmark__bar">
+            <button type="button" className="coachmark__skip" onClick={onDone}>
+              {last ? 'Finish' : 'Skip'}
             </button>
-            <button
-              type="button"
-              className="coachmark__next"
-              aria-label="Next"
-              disabled={last}
-              onClick={onNext}
-            >
-              <ChevronRight size={16} />
-            </button>
+            <div className="coachmark__nav">
+              <button
+                type="button"
+                className="coachmark__back"
+                aria-label="Back"
+                disabled={first}
+                onClick={onBack}
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <button
+                type="button"
+                className="coachmark__next"
+                aria-label="Next"
+                disabled={last}
+                onClick={onNext}
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    </>
+    </>,
+    document.body,
   );
 }

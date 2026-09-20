@@ -5,13 +5,37 @@
   background: var(--color-bg-canvas);
 }
 
-.studio.is-touring .panel,
+.studio.is-touring .panel {
+  pointer-events: none;
+}
+
 .studio.is-touring .canvas-edit {
   pointer-events: none;
 }
 
 .studio.is-touring .bubble {
   pointer-events: none;
+}
+
+.studio.is-touring .bubble.is-coach-target,
+.studio.is-touring .bubble.is-coach-lock {
+  pointer-events: auto;
+}
+
+.studio__toast {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-stack-xl);
+  z-index: calc(var(--z-modal) + 2);
+  transform: translateX(-50%);
+  padding: var(--space-stack-sm) var(--space-inline-md);
+  border-radius: var(--radius-bubble);
+  background: var(--color-dock);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-elevated);
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--font-weight-label);
+  white-space: nowrap;
 }
 
 .studio__layout {
@@ -333,6 +357,7 @@
   .canvas {
     height: 100%;
     min-height: 0;
+    z-index: var(--z-canvas);
   }
 
   .canvas__field {

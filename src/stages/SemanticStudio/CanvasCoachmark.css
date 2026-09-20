@@ -1,13 +1,13 @@
 .coachmark {
-  position: absolute;
-  z-index: 30;
+  position: fixed;
+  z-index: 1000;
   isolation: isolate;
   pointer-events: none;
 }
 
 .coachmark__spot {
-  position: absolute;
-  z-index: 20;
+  position: fixed;
+  z-index: 999;
   border-radius: var(--radius-bubble);
   box-shadow: 0 0 0 9999px var(--color-overlay-veil);
   pointer-events: none;
@@ -16,6 +16,7 @@
 .coachmark__bubble {
   pointer-events: auto;
   position: relative;
+  z-index: 1;
   width: min(17rem, 78vw);
   padding: var(--space-stack-md);
   background: var(--color-coachmark);
@@ -67,6 +68,13 @@
   justify-content: space-between;
   gap: var(--space-inline-sm);
   margin-top: var(--space-stack-md);
+}
+
+.coachmark__skip,
+.coachmark__back,
+.coachmark__next {
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .coachmark__skip {

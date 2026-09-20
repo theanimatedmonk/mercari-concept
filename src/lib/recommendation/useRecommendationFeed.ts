@@ -6,6 +6,7 @@ import { withHeroListing } from '../catalog/fetchFashion.js';
 import { retrievalQueryKey, snapshotIntent, snapshotIntentForRetrieval } from './intent.js';
 import { catalogToProduct } from './mapProduct.js';
 import { buildProductQueries } from './queryBuilder.js';
+import { isDressListing } from './dressFilter.js';
 import { retrieveProducts } from './pipeline.js';
 import { rankCatalogProducts } from './ranking.js';
 import type { RetrievedProduct } from './types.js';
@@ -50,8 +51,10 @@ export function useRecommendationFeed(
     const intent = snapshotIntent(attributes, catalogQuery);
     const queries = buildProductQueries(snapshotIntentForRetrieval(attributes, catalogQuery));
     const rows = rankCatalogProducts(intent, pool, queries.length);
-    const products = rows.map(catalogToProduct);
-    if (products.length === 0) return fallbackProducts;
+    const products = rows.map(catalogToProduct).filter((item) => isDressListing(item.name, '', item.image));
+    if (products.length === 0) {
+      return fallbackProducts.filter((item) => isDressListing(item.name, '', item.image));
+    }
     return withHeroListing(products);
   }, [attributes, catalogQuery, pool]);
 

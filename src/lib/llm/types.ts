@@ -36,3 +36,17 @@ export type AnalyzeResponse = {
 export type AnalyzeErrorBody = {
   error: string;
 };
+
+export type StyleOnMeRequest = {
+  productImageUrl?: string;
+  productImageBase64?: string;
+  productMimeType?: string;
+  userImageBase64: string;
+  userMimeType?: string;
+  productName?: string;
+};
+
+export type StyleOnMeResponse = {
+  imageBase64: string;
+  mimeType: string;
+};
