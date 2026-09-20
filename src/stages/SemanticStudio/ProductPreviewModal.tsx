@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import CloseMark from '../../components/icons/CloseMark';
 import DownloadMark from '../../components/icons/DownloadMark';
@@ -8,6 +8,8 @@ import { merchantLabel, merchantShopUrl } from '../../lib/recommendation/mapProd
 import { merchantMark } from '../../lib/recommendation/merchantMark';
 import { whyThis } from '../../lib/scoring';
 import type { Product, SemanticAttribute } from '../../types';
+import ScanOverlay from './ScanOverlay';
+import { STYLE_BEATS } from './styleOnMeTypes';
 import './ProductPreviewModal.css';
 
 type Props = {
@@ -47,9 +49,26 @@ export default function ProductPreviewModal({
   const [index, setIndex] = useState(0);
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [pageW, setPageW] = useState(0);
+  const [beat, setBeat] = useState(0);
+  const mediaRef = useRef<HTMLDivElement>(null);
   const drag = useRef({ start: 0, width: 1, active: false });
 
   const last = Math.max(0, slides.length - 1);
+  const many = slides.length > 1;
+  const current = slides[Math.min(index, last)] ?? slides[0];
+  const onCatalog = current === product.image;
+  const shift = -index * pageW + dragX;
+
+  useLayoutEffect(() => {
+    const el = mediaRef.current;
+    if (!el) return;
+    const apply = () => setPageW(el.clientWidth);
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     setIndex((n) => Math.min(n, last));
@@ -65,13 +84,46 @@ export default function ProductPreviewModal({
     return () => window.removeEventListener('keydown', onKey);
   }, [last, slides.length]);
 
+  useEffect(() => {
+    if (!styling) {
+      setBeat(0);
+      return;
+    }
+    const id = window.setInterval(
+      () => setBeat((n) => (n + 1) % STYLE_BEATS.length),
+      1400,
+    );
+    return () => window.clearInterval(id);
+  }, [styling]);
+
   function settle(delta: number, width: number) {
-    const threshold = Math.max(40, width * 0.18);
+    const threshold = Math.max(32, width * 0.12);
     if (delta < -threshold) setIndex((n) => Math.min(n + 1, last));
     else if (delta > threshold) setIndex((n) => Math.max(n - 1, 0));
     setDragX(0);
     setDragging(false);
     drag.current.active = false;
+  }
+
+  function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
+    if (!many || styling) return;
+    if ((event.target as HTMLElement).closest('button, a')) return;
+    const width = event.currentTarget.clientWidth || pageW || 1;
+    drag.current = { start: event.clientX, width, active: true };
+    setDragging(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
+    if (!drag.current.active) return;
+    let dx = event.clientX - drag.current.start;
+    if ((index === 0 && dx > 0) || (index === last && dx < 0)) dx *= 0.32;
+    setDragX(dx);
+  }
+
+  function onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
+    if (!drag.current.active) return;
+    settle(event.clientX - drag.current.start, drag.current.width);
   }
 
   async function download() {
@@ -90,10 +142,6 @@ export default function ProductPreviewModal({
     }
   }
 
-  const many = slides.length > 1;
-  const current = slides[Math.min(index, last)] ?? slides[0];
-  const onCatalog = current === product.image;
-
   return createPortal(
     <div className="product-preview" role="dialog" aria-modal="true" aria-labelledby="product-preview-title">
       <button type="button" className="product-preview__veil" aria-label="Close" onClick={onClose} />
@@ -102,27 +150,11 @@ export default function ProductPreviewModal({
           <CloseMark />
         </button>
         <div
-          className={`product-preview__media${onCatalog ? ' is-catalog' : ''}${selfiePreview ? ' has-selfie' : ''}${many ? ' has-slides' : ''}`}
-          onPointerDown={(event) => {
-            if (!many) return;
-            drag.current = {
-              start: event.clientX,
-              width: event.currentTarget.clientWidth || 1,
-              active: true,
-            };
-            setDragging(true);
-            event.currentTarget.setPointerCapture(event.pointerId);
-          }}
-          onPointerMove={(event) => {
-            if (!drag.current.active) return;
-            let dx = event.clientX - drag.current.start;
-            if ((index === 0 && dx > 0) || (index === last && dx < 0)) dx *= 0.32;
-            setDragX(dx);
-          }}
-          onPointerUp={(event) => {
-            if (!drag.current.active) return;
-            settle(event.clientX - drag.current.start, drag.current.width);
-          }}
+          ref={mediaRef}
+          className={`product-preview__media${onCatalog ? ' is-catalog' : ''}${selfiePreview ? ' has-selfie' : ''}${many ? ' has-slides' : ''}${styling ? ' is-styling' : ''}`}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
           onPointerCancel={() => {
             if (!drag.current.active) return;
             settle(0, drag.current.width);
@@ -130,20 +162,24 @@ export default function ProductPreviewModal({
         >
           <div
             className={`product-preview__track${dragging ? ' is-dragging' : ''}`}
-            style={{
-              transform: `translate3d(calc(${-index * 100}% + ${dragX}px), 0, 0)`,
-            }}
+            style={{ transform: `translate3d(${shift}px, 0, 0)` }}
           >
             {slides.map((src) => (
-              <img
+              <div
                 key={src}
-                className="product-preview__image"
-                src={src}
-                alt={product.name}
-                draggable={false}
-              />
+                className="product-preview__slide"
+                style={pageW ? { width: pageW } : undefined}
+              >
+                <img
+                  className="product-preview__image"
+                  src={src}
+                  alt={product.name}
+                  draggable={false}
+                />
+              </div>
             ))}
           </div>
+          {styling ? <ScanOverlay label={STYLE_BEATS[beat]} /> : null}
           {onCatalog && !styling && canStyle ? (
             <button
               type="button"
@@ -155,16 +191,18 @@ export default function ProductPreviewModal({
               Style it on me
             </button>
           ) : null}
-          <button
-            type="button"
-            className="product-preview__download"
-            aria-label="Download photo"
-            onPointerDown={(event) => event.stopPropagation()}
-            onClick={() => void download()}
-          >
-            <DownloadMark />
-          </button>
-          {selfiePreview ? (
+          {!styling ? (
+            <button
+              type="button"
+              className="product-preview__download"
+              aria-label="Download photo"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={() => void download()}
+            >
+              <DownloadMark />
+            </button>
+          ) : null}
+          {selfiePreview && !styling ? (
             <button
               type="button"
               className="product-preview__selfie"
@@ -175,7 +213,7 @@ export default function ProductPreviewModal({
               <img src={selfiePreview} alt="" />
             </button>
           ) : null}
-          {many ? (
+          {many && !styling ? (
             <div className="product-preview__dots" role="tablist" aria-label="Photos">
               {slides.map((src, i) => (
                 <button
