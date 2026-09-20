@@ -1,5 +1,5 @@
-import { runAnalyze } from '../src/lib/llm/runAnalyze.js';
-import type { AnalyzeRequest } from '../src/lib/llm/types.js';
+import { runAnalyze, streamAnalyzeEvents } from '../src/lib/llm/runAnalyze.js';
+import type { AnalyzeRequest, AnalyzeStreamEvent } from '../src/lib/llm/types.js';
 
 export const config = {
   runtime: 'nodejs',
@@ -17,6 +17,7 @@ type VercelRes = {
   setHeader: (name: string, value: string) => void;
   status: (code: number) => VercelRes;
   json: (body: unknown) => void;
+  write?: (chunk: string) => void;
   end: () => void;
 };
 
@@ -54,11 +55,31 @@ export default async function handler(req: VercelReq, res: VercelRes) {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
+  const wantsStream = Boolean(res.write);
   try {
-    const result = await runAnalyze(readJson(req));
-    res.status(200).json(result);
+    const body = readJson(req);
+    if (!wantsStream) {
+      const result = await runAnalyze(body);
+      res.status(200).json(result);
+      return;
+    }
+    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.status(200);
+    const send = (event: AnalyzeStreamEvent) => {
+      res.write?.(`data: ${JSON.stringify(event)}\n\n`);
+    };
+    await streamAnalyzeEvents(body, send);
+    res.end();
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Analyze failed';
+    if (wantsStream && res.write) {
+      res.write(`data: ${JSON.stringify({ type: 'error', error: message })}\n\n`);
+      res.end();
+      return;
+    }
     res.status(500).json({ error: message });
   }
 }

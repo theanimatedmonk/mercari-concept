@@ -48,6 +48,62 @@ function asAttribute(value: unknown, index: number): AnalysisAttribute | null {
   return { id, label, category, weight, text, tag, tagSide };
 }
 
+function extractJsonObjectsAfterKey(raw: string, key: string): unknown[] {
+  const marker = new RegExp(`"${key}"\\s*:\\s*\\[`);
+  const found = marker.exec(raw);
+  if (!found) return [];
+  const objects: unknown[] = [];
+  let depth = 0;
+  let inStr = false;
+  let escape = false;
+  let start = -1;
+  for (let i = found.index + found[0].length; i < raw.length; i += 1) {
+    const ch = raw[i];
+    if (inStr) {
+      if (escape) escape = false;
+      else if (ch === '\\') escape = true;
+      else if (ch === '"') inStr = false;
+      continue;
+    }
+    if (ch === '"') {
+      inStr = true;
+      continue;
+    }
+    if (ch === '{') {
+      if (depth === 0) start = i;
+      depth += 1;
+      continue;
+    }
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0 && start >= 0) {
+        try {
+          objects.push(JSON.parse(raw.slice(start, i + 1)));
+        } catch {
+          /* object still incomplete */
+        }
+        start = -1;
+      }
+      continue;
+    }
+    if (ch === ']' && depth === 0) break;
+  }
+  return objects;
+}
+
+export function readStreamedAttributes(raw: string): {
+  fashion: boolean | null;
+  attributes: AnalysisAttribute[];
+} {
+  const fashionMatch = raw.match(/"fashion"\s*:\s*(true|false)/);
+  const fashion = fashionMatch ? fashionMatch[1] === 'true' : null;
+  if (fashion === false) return { fashion, attributes: [] };
+  const attributes = extractJsonObjectsAfterKey(raw, 'attributes')
+    .map((item, index) => asAttribute(item, index))
+    .filter((item): item is AnalysisAttribute => Boolean(item));
+  return { fashion, attributes };
+}
+
 export function normalizeAnalyze(parsed: Record<string, unknown>): AnalyzeResponse {
   const fashion = Boolean(parsed.fashion);
   if (!fashion) {

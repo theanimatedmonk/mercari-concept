@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import generatedSound from '../../assets/audio files/generated.mp3';
-import { imageUrlToBase64, requestAnalyze } from '../../lib/llm/client';
-import type { AnalyzeResponse } from '../../lib/llm/types';
-import { GENERATE_BEAT_MS } from '../InspirationInput/GeneratingHero';
+import { imageUrlToBase64, requestAnalyzeStream } from '../../lib/llm/client';
+import { createRevealQueue } from '../../lib/llm/revealQueue';
+import type { AnalysisAttribute, AnalyzeResponse } from '../../lib/llm/types';
 
 export type PromptDraft = {
   imageSrc: string | null;
@@ -11,8 +11,8 @@ export type PromptDraft = {
 
 type GenerateState = PromptDraft & {
   analysis: AnalyzeResponse | null;
+  attributes: AnalysisAttribute[];
   waiting: boolean;
-  beat: number;
 };
 
 const NOT_FASHION = "That doesn't look like fashion. Try another thought or photo.";
@@ -30,39 +30,6 @@ export default function usePromptGenerate(
   completeRef.current = onComplete;
   errorRef.current = onError;
 
-  const beats = current?.analysis?.attributes ?? [];
-  const lastBeat = Math.max(beats.length - 1, 0);
-
-  useEffect(() => {
-    if (!current || current.waiting || !current.analysis?.fashion) return;
-    if (beats.length === 0 || current.beat >= lastBeat) {
-      if (!played.current) {
-        played.current = true;
-        const audio = audioRef.current ?? new Audio(generatedSound);
-        audioRef.current = audio;
-        audio.currentTime = 0;
-        void audio.play().catch(() => undefined);
-      }
-    const done = window.setTimeout(() => {
-      if (finished.current || !current.analysis) return;
-      finished.current = true;
-      const result = current.analysis;
-      void Promise.resolve(
-        completeRef.current({
-          imageSrc: current.imageSrc,
-          context: current.context,
-          analysis: result,
-        }),
-      ).finally(() => setCurrent(null));
-    }, 900);
-      return () => window.clearTimeout(done);
-    }
-    const id = window.setTimeout(() => {
-      setCurrent((prev) => (prev ? { ...prev, beat: prev.beat + 1 } : prev));
-    }, GENERATE_BEAT_MS);
-    return () => window.clearTimeout(id);
-  }, [current, lastBeat, beats.length]);
-
   async function start(draft: PromptDraft) {
     finished.current = false;
     played.current = false;
@@ -70,8 +37,21 @@ export default function usePromptGenerate(
       imageSrc: draft.imageSrc,
       context: draft.context,
       analysis: null,
+      attributes: [],
       waiting: true,
-      beat: 0,
+    });
+    const queue = createRevealQueue((attribute) => {
+      setCurrent((prev) =>
+        prev
+          ? {
+              ...prev,
+              waiting: false,
+              attributes: prev.attributes.some((item) => item.id === attribute.id)
+                ? prev.attributes
+                : [...prev.attributes, attribute],
+            }
+          : prev,
+      );
     });
     try {
       const payload: { text?: string; imageBase64?: string; mimeType?: string } = {};
@@ -81,18 +61,35 @@ export default function usePromptGenerate(
         payload.imageBase64 = image.imageBase64;
         payload.mimeType = image.mimeType;
       }
-      const result = await requestAnalyze(payload);
+      const result = await requestAnalyzeStream(payload, queue.push);
       if (!result.fashion) {
+        queue.stop();
         setCurrent(null);
         errorRef.current(NOT_FASHION);
         return;
       }
-      setCurrent((prev) =>
-        prev
-          ? { ...prev, analysis: result, waiting: false, beat: 0 }
-          : prev,
-      );
+      await queue.done();
+      setCurrent((prev) => (prev ? { ...prev, analysis: result, waiting: false } : prev));
+      if (!played.current) {
+        played.current = true;
+        const audio = audioRef.current ?? new Audio(generatedSound);
+        audioRef.current = audio;
+        audio.currentTime = 0;
+        void audio.play().catch(() => undefined);
+      }
+      window.setTimeout(() => {
+        if (finished.current) return;
+        finished.current = true;
+        void Promise.resolve(
+          completeRef.current({
+            imageSrc: draft.imageSrc,
+            context: draft.context,
+            analysis: result,
+          }),
+        ).finally(() => setCurrent(null));
+      }, 800);
     } catch (error) {
+      queue.stop();
       setCurrent(null);
       errorRef.current(
         error instanceof Error ? error.message : 'Could not read that. Try again.',
@@ -104,8 +101,8 @@ export default function usePromptGenerate(
     active: Boolean(current),
     imageSrc: current?.imageSrc ?? null,
     context: current?.context ?? '',
-    beats,
-    beat: current?.beat ?? 0,
+    beats: current?.attributes ?? [],
+    beat: Math.max((current?.attributes.length ?? 1) - 1, 0),
     waiting: current?.waiting ?? false,
     start,
   };

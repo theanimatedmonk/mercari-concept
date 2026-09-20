@@ -37,6 +37,11 @@ export type AnalyzeErrorBody = {
   error: string;
 };
 
+export type AnalyzeStreamEvent =
+  | { type: 'attribute'; attribute: AnalysisAttribute }
+  | { type: 'done'; result: AnalyzeResponse }
+  | { type: 'error'; error: string };
+
 export type StyleOnMeRequest = {
   productImageUrl?: string;
   productImageBase64?: string;

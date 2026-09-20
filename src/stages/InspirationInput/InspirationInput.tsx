@@ -7,11 +7,12 @@ import exampleImage from '../../assets/lander-images/image_text.png';
 import exampleText from '../../assets/lander-images/text.png';
 import exampleVoice from '../../assets/lander-images/voice.png';
 import generatedSound from '../../assets/audio files/generated.mp3';
-import { imageUrlToBase64, requestAnalyze } from '../../lib/llm/client';
-import type { AnalyzeResponse } from '../../lib/llm/types';
+import { imageUrlToBase64, requestAnalyzeStream } from '../../lib/llm/client';
+import { createRevealQueue } from '../../lib/llm/revealQueue';
+import type { AnalysisAttribute, AnalyzeResponse } from '../../lib/llm/types';
 import useDictation from '../../lib/useDictation';
 import DictateButton, { VoiceFreq } from './DictateButton';
-import GeneratingHero, { GENERATE_BEAT_MS } from './GeneratingHero';
+import GeneratingHero from './GeneratingHero';
 import './InspirationInput.css';
 
 const EXAMPLES = [
@@ -44,7 +45,7 @@ export default function InspirationInput({
   const dictation = useDictation(context, setContext);
   const [reading, setReading] = useState(false);
   const [waiting, setWaiting] = useState(false);
-  const [beat, setBeat] = useState(0);
+  const [pills, setPills] = useState<AnalysisAttribute[]>([]);
   const [analysis, setAnalysis] = useState<AnalyzeResponse | null>(null);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const continued = useRef(false);
@@ -108,9 +109,15 @@ export default function InspirationInput({
     generatedPlayed.current = false;
     setAnalyzeError(null);
     setAnalysis(null);
-    setBeat(0);
+    setPills([]);
     setReading(true);
     setWaiting(true);
+    const queue = createRevealQueue((attribute) => {
+      setWaiting(false);
+      setPills((list) =>
+        list.some((item) => item.id === attribute.id) ? list : [...list, attribute],
+      );
+    });
     try {
       const payload: { text?: string; imageBase64?: string; mimeType?: string } = {};
       const text = context.trim();
@@ -120,14 +127,17 @@ export default function InspirationInput({
         payload.imageBase64 = image.imageBase64;
         payload.mimeType = image.mimeType;
       }
-      const result = await requestAnalyze(payload);
+      const result = await requestAnalyzeStream(payload, queue.push);
       if (!result.fashion) {
+        queue.stop();
         onNotFashion();
         return;
       }
+      await queue.done();
       setAnalysis(result);
       setWaiting(false);
     } catch (error) {
+      queue.stop();
       setReading(false);
       setWaiting(false);
       setAnalyzeError(
@@ -144,33 +154,29 @@ export default function InspirationInput({
     fileRef.current?.click();
   }
 
-  const beats = analysis?.attributes ?? [];
-  const lastBeat = Math.max(beats.length - 1, 0);
+  const beats = pills;
+  const beat = Math.max(pills.length - 1, 0);
 
   useEffect(() => {
     if (!reading || waiting || !analysis?.fashion) return;
-    if (beats.length === 0 || beat >= lastBeat) {
-      if (!generatedPlayed.current) {
-        generatedPlayed.current = true;
-        const audio = generatedAudio.current ?? new Audio(generatedSound);
-        generatedAudio.current = audio;
-        audio.currentTime = 0;
-        void audio.play().catch(() => undefined);
-      }
-      const done = window.setTimeout(() => {
-        if (continued.current) return;
-        continued.current = true;
-        onContinue({
-          imageSrc,
-          context: context.trim(),
-          analysis,
-        });
-      }, 900);
-      return () => window.clearTimeout(done);
+    if (!generatedPlayed.current) {
+      generatedPlayed.current = true;
+      const audio = generatedAudio.current ?? new Audio(generatedSound);
+      generatedAudio.current = audio;
+      audio.currentTime = 0;
+      void audio.play().catch(() => undefined);
     }
-    const id = window.setTimeout(() => setBeat((n) => n + 1), GENERATE_BEAT_MS);
-    return () => window.clearTimeout(id);
-  }, [reading, waiting, analysis, beat, lastBeat, beats.length, imageSrc, context, onContinue]);
+    const done = window.setTimeout(() => {
+      if (continued.current) return;
+      continued.current = true;
+      onContinue({
+        imageSrc,
+        context: context.trim(),
+        analysis,
+      });
+    }, 800);
+    return () => window.clearTimeout(done);
+  }, [reading, waiting, analysis, imageSrc, context, onContinue]);
 
   return (
     <section

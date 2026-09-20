@@ -1,7 +1,11 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import type { AnalysisAttribute } from '../../lib/llm/types';
 
-export const GENERATE_BEAT_MS = 1400;
+export const GENERATE_BEAT_MS = 360;
+const WAITING_BEAT_MS = 900;
+const WAITING_IMAGE = ['Looking at this', 'Finding the thread', 'Picking up the mood'];
+const WAITING_TEXT = ['Reading this', 'Finding the thread', 'Holding the thought'];
 const SCAN_COLS = 12;
 const SCAN_ROWS = 16;
 const SCAN_DOTS = SCAN_COLS * SCAN_ROWS;
@@ -25,12 +29,24 @@ export default function GeneratingHero({
   compact = false,
   layoutId,
 }: Props) {
-  const current = beats[beat];
-  const visibleTags = beats.slice(0, beat + 1);
+  const [waitLine, setWaitLine] = useState(0);
+  const waitingLines = imageSrc ? WAITING_IMAGE : WAITING_TEXT;
+
+  useEffect(() => {
+    if (!waiting) {
+      setWaitLine(0);
+      return;
+    }
+    const id = window.setInterval(() => {
+      setWaitLine((n) => (n + 1) % waitingLines.length);
+    }, WAITING_BEAT_MS);
+    return () => window.clearInterval(id);
+  }, [waiting, waitingLines.length]);
+
+  const current = beats[beat] ?? beats[beats.length - 1];
+  const visibleTags = waiting ? [] : beats;
   const statusText = waiting
-    ? imageSrc
-      ? 'Looking at this'
-      : 'Reading this'
+    ? waitingLines[waitLine] ?? waitingLines[0]
     : current?.text ?? 'Finding the thread';
   const promptTags = (
     <AnimatePresence>
@@ -87,7 +103,7 @@ export default function GeneratingHero({
       )}
       <AnimatePresence mode="wait">
         <motion.p
-          key={waiting ? 'waiting' : current?.id ?? 'status'}
+          key={waiting ? `waiting-${waitLine}` : current?.id ?? 'status'}
           className="inspiration__status-copy"
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
