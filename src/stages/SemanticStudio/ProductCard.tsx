@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import SparkleMark from '../../components/icons/SparkleMark';
+import { merchantLabel, merchantShopUrl } from '../../lib/recommendation/mapProduct';
 import { whyThis } from '../../lib/scoring';
 import type { Product, SemanticAttribute } from '../../types';
 
@@ -13,6 +14,8 @@ type Props = {
 export default function ProductCard({ product, attributes, onOpen }: Props) {
   const [open, setOpen] = useState(false);
   const explanation = whyThis(product, attributes);
+  const merchant = merchantLabel(product.merchant);
+  const externalUrl = merchantShopUrl(product);
 
   return (
     <article className={`product-card${onOpen ? ' is-openable' : ''}`}>
@@ -37,7 +40,18 @@ export default function ProductCard({ product, attributes, onOpen }: Props) {
         )}
         <p className="product-card__meta">
           {product.condition} · {product.seller}
+          {merchant ? ` · ${merchant}` : ''}
         </p>
+        {externalUrl && !onOpen ? (
+          <a
+            className="product-card__merchant"
+            href={externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View on {merchant ?? 'store'} →
+          </a>
+        ) : null}
         <button
           type="button"
           className="product-card__why"

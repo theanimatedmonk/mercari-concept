@@ -1,4 +1,5 @@
 import type { Plugin } from 'vite';
+import { serverRetrieveCatalog } from './src/lib/recommendation/serverRetrieve';
 import { runAnalyze } from './src/lib/llm/runAnalyze';
 import type { AnalyzeRequest } from './src/lib/llm/types';
 
@@ -18,6 +19,82 @@ export function analyzeDevPlugin(env: Record<string, string>): Plugin {
     name: 'analyze-dev-api',
     configureServer(server) {
       if (env.XAI_API_KEY) process.env.XAI_API_KEY = env.XAI_API_KEY;
+      if (env.MYNTRA_AFFILIATE_FEED_URL) {
+        process.env.MYNTRA_AFFILIATE_FEED_URL = env.MYNTRA_AFFILIATE_FEED_URL;
+      }
+      if (env.AMAZON_CREATORS_API_KEY) {
+        process.env.AMAZON_CREATORS_API_KEY = env.AMAZON_CREATORS_API_KEY;
+      }
+      if (env.AMAZON_CREATORS_API_ENDPOINT) {
+        process.env.AMAZON_CREATORS_API_ENDPOINT = env.AMAZON_CREATORS_API_ENDPOINT;
+      }
+      if (env.AMAZON_ASSOCIATE_TAG) process.env.AMAZON_ASSOCIATE_TAG = env.AMAZON_ASSOCIATE_TAG;
+      if (env.CATALOG_USE_MOCK_FALLBACK) {
+        process.env.CATALOG_USE_MOCK_FALLBACK = env.CATALOG_USE_MOCK_FALLBACK;
+      }
+
+      server.middlewares.use('/api/catalog/out', (req, res, next) => {
+        if (req.method !== 'GET') {
+          next();
+          return;
+        }
+        const url = new URL(req.url ?? '/', 'http://localhost');
+        const target = url.searchParams.get('target') ?? url.searchParams.get('url') ?? '';
+        if (!target) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ error: 'Missing target URL' }));
+          return;
+        }
+        try {
+          const parsed = new URL(target);
+          res.statusCode = 302;
+          res.setHeader('Location', parsed.toString());
+          res.end();
+        } catch {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ error: 'Invalid target URL' }));
+        }
+      });
+
+      server.middlewares.use('/api/catalog/search', (req, res, next) => {
+        void (async () => {
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+          res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+          if (req.method === 'OPTIONS') {
+            res.statusCode = 204;
+            res.end();
+            return;
+          }
+          if (req.method !== 'POST') {
+            next();
+            return;
+          }
+          try {
+            const raw = await readBody(req);
+            const body = JSON.parse(raw || '{}') as {
+              queries?: string[];
+              inspirationImageUrl?: string;
+            };
+            const queries = Array.isArray(body.queries)
+              ? body.queries.filter((item): item is string => typeof item === 'string')
+              : [];
+            const products = await serverRetrieveCatalog(
+              queries.length ? queries : ['evening dress'],
+              typeof body.inspirationImageUrl === 'string'
+                ? body.inspirationImageUrl
+                : undefined,
+            );
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ products }));
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Catalog search failed';
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: message }));
+          }
+        })();
+      });
 
       server.middlewares.use('/api/analyze', (req, res, next) => {
         void (async () => {

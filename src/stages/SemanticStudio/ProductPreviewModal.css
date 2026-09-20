@@ -1,0 +1,93 @@
+.product-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: var(--space-page-y) var(--space-page-x);
+}
+
+.product-preview__veil {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: var(--color-overlay-veil);
+}
+
+.product-preview__sheet {
+  position: relative;
+  z-index: 1;
+  width: min(22rem, 100%);
+  max-height: calc(100dvh - var(--space-stack-xl));
+  overflow: auto;
+  border-radius: var(--radius-sheet);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--shadow-elevated);
+}
+
+.product-preview__close {
+  position: absolute;
+  top: var(--space-stack-sm);
+  right: var(--space-stack-sm);
+  z-index: 2;
+  border: 0;
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-bubble);
+  width: var(--size-control);
+  height: var(--size-control);
+  display: grid;
+  place-items: center;
+}
+
+.product-preview__image {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  display: block;
+}
+
+.product-preview__body {
+  padding: var(--space-stack-md);
+  display: grid;
+  gap: var(--space-stack-sm);
+}
+
+.product-preview__title {
+  margin: 0;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-heading);
+}
+
+.product-preview__price,
+.product-preview__meta {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body-sm);
+}
+
+.product-preview__why {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-inline-sm);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+}
+
+.product-preview__why ul {
+  margin: var(--space-stack-xs) 0 0;
+  padding-left: var(--space-inline-md);
+}
+
+.product-preview__cta {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: var(--space-stack-xs);
+  padding: var(--space-stack-sm) var(--space-inline-md);
+  border-radius: var(--radius-bubble);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  text-decoration: none;
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--font-weight-label);
+}
