@@ -60,10 +60,22 @@
   background: var(--color-bg-hover);
 }
 
+.canvas-edit__btn:disabled,
+.canvas-edit__item:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.canvas-edit__layer,
+.canvas-edit__handle,
+.studio-taste__handle {
+  display: none;
+}
+
 .studio-taste {
   position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: var(--z-modal);
   display: grid;
   place-items: center;
   padding: var(--space-page-y) var(--space-page-x);
@@ -86,15 +98,118 @@
   padding-right: var(--icon-size-lg);
 }
 
+.studio-taste .inspiration__composer {
+  display: grid;
+  gap: var(--space-stack-md);
+  padding: var(--space-stack-md) var(--space-inline-md);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-card);
+  background: var(--color-bg-elevated);
+}
+
+.studio-taste .inspiration__composer textarea {
+  height: var(--size-composer);
+  max-height: var(--size-composer);
+  min-height: 0;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.studio-taste .inspiration__composer.has-upload:not(.is-dictating) textarea {
+  padding-right: 0;
+}
+
+.studio-taste .inspiration__composer-actions {
+  position: static;
+  justify-content: flex-end;
+}
+
+.studio-taste .inspiration__composer .inspiration__freq {
+  position: static;
+  margin-right: auto;
+}
+
 @media (max-width: 48rem) {
-  .studio-taste {
-    padding: var(--space-stack-md) var(--space-inline-md);
+  .canvas-edit__menu {
+    display: none;
+  }
+
+  .canvas-edit__layer {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+  }
+
+  .canvas-edit__veil {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: var(--color-overlay-veil);
+  }
+
+  .canvas-edit__sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    gap: var(--space-stack-xs);
+    padding: 0 var(--space-inline-md)
+      max(var(--space-stack-lg), env(safe-area-inset-bottom));
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .canvas-edit__handle,
+  .studio-taste__handle {
+    display: flex;
+    justify-content: center;
     align-items: center;
+    width: 100%;
+    height: var(--size-control);
+  }
+
+  .canvas-edit__handle::before,
+  .studio-taste__handle::before {
+    content: '';
+    width: var(--space-inline-xl);
+    height: var(--space-stack-xs);
+    border-radius: var(--radius-bubble);
+    background: var(--color-border-default);
+  }
+
+  .canvas-edit__sheet .canvas-edit__item {
+    padding: var(--space-stack-md) var(--space-inline-sm);
+    font-size: var(--font-size-body);
+  }
+
+  .studio-taste {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
   }
 
   .studio-taste__sheet {
     width: 100%;
-    max-height: calc(100dvh - var(--space-stack-xl));
+    max-height: var(--size-panel-sheet);
     overflow: auto;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    padding: 0 var(--space-stack-lg)
+      max(var(--space-stack-lg), env(safe-area-inset-bottom));
+  }
+
+  .studio-taste .inspiration__close {
+    display: none;
+  }
+
+  .studio-taste .inspiration__remember {
+    padding-right: 0;
   }
 }

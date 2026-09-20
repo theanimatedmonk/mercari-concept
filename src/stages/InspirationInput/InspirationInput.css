@@ -120,6 +120,18 @@
   grid-auto-rows: min-content;
 }
 
+.inspiration__hero--canvas {
+  width: min(16rem, 62%);
+}
+
+.inspiration__hero--canvas.inspiration__hero--prompt {
+  width: min(22rem, 86%);
+}
+
+.inspiration__hero--canvas .inspiration__status-copy {
+  font-size: var(--font-size-body-sm);
+}
+
 .inspiration__hero-stage {
   position: relative;
   width: 100%;
@@ -683,6 +695,26 @@
   bottom: var(--inspiration-control-inset);
 }
 
+.inspiration__composer.has-upload:not(.is-dictating) textarea {
+  padding-right: calc(
+    var(--size-control) * 2 + var(--space-inline-sm) + var(--inspiration-control-inset)
+  );
+}
+
+.inspiration__composer-actions {
+  position: absolute;
+  right: var(--inspiration-control-inset);
+  bottom: var(--inspiration-control-inset);
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-sm);
+}
+
+.inspiration__composer-actions .inspiration__mic,
+.inspiration__composer-actions .inspiration__bar-btn {
+  position: static;
+}
+
 .inspiration__mic {
   position: absolute;
   right: var(--inspiration-control-inset);
@@ -708,6 +740,10 @@
   background: var(--color-primary);
   color: var(--color-text-on-primary);
   font-weight: var(--font-weight-label);
+}
+
+.inspiration__done:disabled {
+  opacity: 0.4;
 }
 
 @media (max-width: 48rem) {
@@ -774,6 +810,14 @@
 
   .inspiration__hero--prompt {
     width: 100%;
+  }
+
+  .inspiration__hero--canvas {
+    width: min(8.5rem, 38%);
+  }
+
+  .inspiration__hero--canvas.inspiration__hero--prompt {
+    width: min(14rem, 72%);
   }
 
   .inspiration__prompt-wrap {

@@ -19,6 +19,7 @@ export default function App() {
   const [resume, setResume] = useState(false);
   const [stage, setStage] = useState<JourneyStage>('inspiration');
   const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [context, setContext] = useState('');
   const [analysis, setAnalysis] = useState<AnalyzeResponse | null>(null);
   const [hideShade, setHideShade] = useState(false);
 
@@ -28,6 +29,7 @@ export default function App() {
       if (cancelled) return;
       if (session?.analysis) {
         setImageSrc(session.imageSrc);
+        setContext(session.context ?? '');
         setAnalysis(session.analysis);
         setStage('sculpt');
         setResume(true);
@@ -49,6 +51,7 @@ export default function App() {
     setResume(false);
     setHideShade(false);
     setImageSrc(null);
+    setContext('');
     setAnalysis(null);
     setStage('inspiration');
   }
@@ -77,16 +80,19 @@ export default function App() {
                 setResume(false);
                 setHideShade(false);
                 setImageSrc(null);
+                setContext('');
                 setAnalysis(null);
                 setStage('not-fashion');
               }}
               onContinue={(payload) => {
                 void startSession({
                   imageSrc: payload.imageSrc,
+                  context: payload.context,
                   analysis: payload.analysis,
                 }).then((session) => {
                   setResume(false);
                   setImageSrc(session.imageSrc);
+                  setContext(session.context);
                   setAnalysis(session.analysis);
                   setStage('sculpt');
                 });
@@ -115,9 +121,15 @@ export default function App() {
           >
             <SemanticStudio
               imageSrc={imageSrc}
+              context={context}
               analysis={analysis}
               resume={resume}
               onStartOver={goHome}
+              onCommitted={(payload) => {
+                setImageSrc(payload.imageSrc);
+                setContext(payload.context);
+                setAnalysis(payload.analysis);
+              }}
             />
           </motion.div>
         ) : null}

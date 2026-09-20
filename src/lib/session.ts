@@ -12,6 +12,7 @@ export type StudioSession = {
   version: 1;
   stage: 'sculpt';
   imageSrc: string | null;
+  context: string;
   analysis: AnalyzeResponse;
   attributes: SemanticAttribute[];
   moves: number;
@@ -35,6 +36,7 @@ function empty(): Partial<StudioSession> {
     version: 1,
     stage: 'sculpt',
     imageSrc: null,
+    context: '',
     attributes: [],
     moves: 0,
     coachDone: false,
@@ -109,7 +111,9 @@ export async function hydrateSession() {
       req.onsuccess = () => resolve((req.result as StudioSession | undefined) ?? null);
       req.onerror = () => reject(req.error);
     });
-    cache = stored?.version === 1 && stored.analysis ? stored : null;
+    cache = stored?.version === 1 && stored.analysis
+      ? { ...stored, context: stored.context ?? '' }
+      : null;
     return cache;
   } catch {
     cache = null;
@@ -151,6 +155,7 @@ export function patchSession(partial: Partial<StudioSession>) {
     version: 1 as const,
     stage: 'sculpt' as const,
     jobs: persistableJobs(partial.jobs ?? cache?.jobs ?? []),
+    context: partial.context ?? cache?.context ?? '',
   };
   if (!next.analysis) return;
   write(next as StudioSession);
@@ -159,12 +164,14 @@ export function patchSession(partial: Partial<StudioSession>) {
 export async function startSession(input: {
   imageSrc: string | null;
   analysis: AnalyzeResponse;
+  context?: string;
 }) {
   const imageSrc = await persistableImage(input.imageSrc);
   const next: StudioSession = {
     version: 1,
     stage: 'sculpt',
     imageSrc,
+    context: input.context?.trim() ?? '',
     analysis: input.analysis,
     attributes: [],
     moves: 0,

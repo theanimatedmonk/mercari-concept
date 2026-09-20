@@ -119,6 +119,15 @@
   background: var(--color-bg-subtle);
 }
 
+.canvas__generating {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  padding: var(--space-stack-md);
+}
+
 .canvas__hint {
   margin: 0;
   max-width: 14rem;

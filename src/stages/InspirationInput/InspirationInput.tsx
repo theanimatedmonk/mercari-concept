@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowUp, Plus, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import AvatarOrb from '../../components/AvatarOrb';
@@ -11,6 +11,7 @@ import { imageUrlToBase64, requestAnalyze } from '../../lib/llm/client';
 import type { AnalyzeResponse } from '../../lib/llm/types';
 import useDictation from '../../lib/useDictation';
 import DictateButton, { VoiceFreq } from './DictateButton';
+import GeneratingHero, { GENERATE_BEAT_MS } from './GeneratingHero';
 import './InspirationInput.css';
 
 const EXAMPLES = [
@@ -19,11 +20,7 @@ const EXAMPLES = [
   { id: 'voice', src: exampleVoice, alt: 'Talk through a feeling' },
 ];
 
-const BEAT_MS = 1400;
 const LAYOUT_SPRING = { type: 'spring' as const, stiffness: 80, damping: 18, mass: 1.05 };
-const SCAN_COLS = 12;
-const SCAN_ROWS = 16;
-const SCAN_DOTS = SCAN_COLS * SCAN_ROWS;
 
 type Props = {
   onContinue: (payload: {
@@ -171,32 +168,9 @@ export default function InspirationInput({
       }, 900);
       return () => window.clearTimeout(done);
     }
-    const id = window.setTimeout(() => setBeat((n) => n + 1), BEAT_MS);
+    const id = window.setTimeout(() => setBeat((n) => n + 1), GENERATE_BEAT_MS);
     return () => window.clearTimeout(id);
   }, [reading, waiting, analysis, beat, lastBeat, beats.length, imageSrc, context, onContinue]);
-
-  const current = beats[beat];
-  const visibleTags = beats.slice(0, beat + 1);
-  const statusText = waiting
-    ? imageSrc
-      ? 'Looking at this'
-      : 'Reading this'
-    : current?.text ?? 'Finding the thread';
-  const promptTags = (
-    <AnimatePresence>
-      {visibleTags.map((item) => (
-        <motion.span
-          key={item.id}
-          className={`inspiration__tag inspiration__tag--${item.tagSide ?? 'left'}`}
-          initial={{ opacity: 0, scale: 0.72 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 140, damping: 16 }}
-        >
-          {item.label}
-        </motion.span>
-      ))}
-    </AnimatePresence>
-  );
 
   return (
     <section
@@ -373,62 +347,14 @@ export default function InspirationInput({
           )}
         </div>
       ) : (
-        <div className={`inspiration__hero${imageSrc ? '' : ' inspiration__hero--prompt'}`}>
-          {imageSrc ? (
-            <div className="inspiration__hero-stage">
-              <motion.div
-                layoutId="inspiration-frame"
-                className="inspiration__hero-frame"
-                transition={LAYOUT_SPRING}
-              >
-                <img
-                  className="inspiration__hero-img"
-                  src={imageSrc}
-                  alt="Inspiration"
-                />
-                <div className="inspiration__scan" aria-hidden>
-                  {Array.from({ length: SCAN_DOTS }, (_, i) => {
-                    const col = i % SCAN_COLS;
-                    const row = Math.floor(i / SCAN_COLS);
-                    const delay = ((col * 0.09 + row * 0.06) % 2.2).toFixed(2);
-                    return (
-                      <span
-                        key={i}
-                        className="inspiration__scan-dot"
-                        style={{ animationDelay: `${delay}s` }}
-                      />
-                    );
-                  })}
-                </div>
-              </motion.div>
-              {promptTags}
-            </div>
-          ) : (
-            <div className="inspiration__hero-stage inspiration__hero-stage--prompt">
-              <div className="inspiration__prompt-wrap">
-                <p className="inspiration__prompt">{context.trim()}</p>
-                {promptTags}
-              </div>
-            </div>
-          )}
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={waiting ? 'waiting' : current?.id ?? 'status'}
-              className="inspiration__status-copy"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.32 }}
-            >
-              {statusText}
-              <span className="inspiration__ellipsis" aria-hidden>
-                <span>.</span>
-                <span>.</span>
-                <span>.</span>
-              </span>
-            </motion.p>
-          </AnimatePresence>
-        </div>
+        <GeneratingHero
+          imageSrc={imageSrc}
+          context={context}
+          beats={beats}
+          beat={beat}
+          waiting={waiting}
+          layoutId={imageSrc ? 'inspiration-frame' : undefined}
+        />
       )}
     </section>
   );

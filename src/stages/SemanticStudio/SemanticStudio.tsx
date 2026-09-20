@@ -7,7 +7,7 @@ import { isDressListing } from '../../lib/recommendation/dressFilter';
 import { useRecommendationFeed } from '../../lib/recommendation/useRecommendationFeed';
 import { layoutAttributes } from '../../lib/llm/layoutAttributes';
 import type { AnalyzeResponse } from '../../lib/llm/types';
-import { patchSession, peekSession } from '../../lib/session';
+import { patchSession, peekSession, persistableImage } from '../../lib/session';
 import {
   pickCoachPills,
   spreadFromCenter,
@@ -21,20 +21,55 @@ import DeleteZone from './DeleteZone';
 import ProductPanel from './ProductPanel';
 import ProductPreviewModal from './ProductPreviewModal';
 import PhotoUploader from './PhotoUploader';
+import GeneratingHero from '../InspirationInput/GeneratingHero';
+import usePromptGenerate from './usePromptGenerate';
 import useStyleOnMe from './useStyleOnMe';
+import '../InspirationInput/InspirationInput.css';
 import './SemanticStudio.css';
 
 type Props = {
   imageSrc: string | null;
+  context: string;
   analysis: AnalyzeResponse;
   resume?: boolean;
   onStartOver: () => void;
+  onCommitted: (payload: {
+    imageSrc: string | null;
+    context: string;
+    analysis: AnalyzeResponse;
+  }) => void;
 };
 
-export default function SemanticStudio({ imageSrc, analysis, resume = false, onStartOver }: Props) {
+export default function SemanticStudio({
+  imageSrc,
+  context,
+  analysis,
+  resume = false,
+  onStartOver,
+  onCommitted,
+}: Props) {
   const pills = layoutAttributes(analysis.attributes);
   const stored = resume ? peekSession() : null;
+  const skipCoachRef = useRef(resume);
   const canvasRef = useRef<HTMLElement>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const generate = usePromptGenerate(async (payload) => {
+    const storedImage = await persistableImage(payload.imageSrc);
+    const nextPills = layoutAttributes(payload.analysis.attributes);
+    setAttributes(nextPills);
+    patchSession({
+      imageSrc: storedImage,
+      context: payload.context,
+      analysis: payload.analysis,
+      attributes: nextPills,
+      coachDone: true,
+    });
+    onCommitted({
+      imageSrc: storedImage,
+      context: payload.context,
+      analysis: payload.analysis,
+    });
+  }, setNotice);
   const [attributes, setAttributes] = useState<SemanticAttribute[]>(
     stored?.attributes?.length ? stored.attributes : pills,
   );
@@ -73,6 +108,12 @@ export default function SemanticStudio({ imageSrc, analysis, resume = false, onS
   });
 
   useEffect(() => {
+    if (!notice) return;
+    const id = window.setTimeout(() => setNotice(null), 2800);
+    return () => window.clearTimeout(id);
+  }, [notice]);
+
+  useEffect(() => {
     if (resume) return;
     setAttributes(pills);
   }, [analysis, resume]);
@@ -85,6 +126,7 @@ export default function SemanticStudio({ imageSrc, analysis, resume = false, onS
   useEffect(() => {
     if (resume) return;
     const id = window.setTimeout(() => {
+      if (skipCoachRef.current) return;
       setCoachPick(pickCoachPills(attributesRef.current, spreadRef.current));
       setTourOn(true);
     }, 4000);
@@ -104,10 +146,23 @@ export default function SemanticStudio({ imageSrc, analysis, resume = false, onS
   }, []);
 
   const ranked = useMemo(() => {
-    if (draggingId) return rankedHold.current;
+    if (draggingId || generate.active) return rankedHold.current;
     rankedHold.current = catalog;
     return catalog;
-  }, [catalog, draggingId]);
+  }, [catalog, draggingId, generate.active]);
+  const panelHold = useRef(attributes);
+  const panelAttributes = useMemo(() => {
+    if (generate.active) return panelHold.current;
+    panelHold.current = attributes;
+    return attributes;
+  }, [attributes, generate.active]);
+
+  function onRetaste(draft: { imageSrc: string | null; context: string }) {
+    skipCoachRef.current = true;
+    setTourOn(false);
+    setCoachStep(-1);
+    void generate.start(draft);
+  }
 
   function onMove(id: string, x: number, y: number) {
     setAttributes((list) =>
@@ -200,8 +255,8 @@ export default function SemanticStudio({ imageSrc, analysis, resume = false, onS
     setMoves((n) => n + 1);
   }
 
-  const visible = attributes.filter((a) => a.state !== 'deleted');
-  const coach = tourOn && coachStep >= 0 ? COACH_STEPS[coachStep] : undefined;
+  const visible = generate.active ? [] : attributes.filter((a) => a.state !== 'deleted');
+  const coach = !generate.active && tourOn && coachStep >= 0 ? COACH_STEPS[coachStep] : undefined;
   const coachTarget =
     !coach || !coachPick
       ? undefined
@@ -216,13 +271,32 @@ export default function SemanticStudio({ imageSrc, analysis, resume = false, onS
   return (
     <div className={`studio${coach && coachTarget ? ' is-touring' : ''}`}>
       <div className="studio__layout">
-      <section className="canvas">
+      <section className={`canvas${generate.active ? ' is-generating' : ''}`}>
         <div className="canvas__atmosphere" />
         <div className="canvas__orb-dock">
-          <AvatarOrb compact pose="idle" />
+          <AvatarOrb compact pose={generate.active ? 'twitch' : 'idle'} />
         </div>
-        <CanvasEdit onStartOver={onStartOver} />
+        <CanvasEdit
+          imageSrc={imageSrc}
+          context={context}
+          busy={generate.active}
+          onStartOver={onStartOver}
+          onRetaste={onRetaste}
+        />
         <div className="canvas__field" ref={canvasRef as React.Ref<HTMLDivElement>}>
+        {generate.active ? (
+          <div className="canvas__generating">
+            <GeneratingHero
+              compact
+              imageSrc={generate.imageSrc}
+              context={generate.context}
+              beats={generate.beats}
+              beat={generate.beat}
+              waiting={generate.waiting}
+            />
+          </div>
+        ) : (
+          <>
         <svg className="canvas__links" aria-hidden>
           {visible.map((attr) => {
             const opacity = 0.14 + attr.weight * 0.4;
@@ -276,11 +350,13 @@ export default function SemanticStudio({ imageSrc, analysis, resume = false, onS
           active={deleteArmed || coachTarget === 'delete'}
           highlighted={coachTarget === 'delete'}
         />
+          </>
+        )}
         </div>
       </section>
       <ProductPanel
         ranked={ranked}
-        attributes={attributes}
+        attributes={panelAttributes}
         meaningfulMoves={Math.min(moves, 12)}
         onOpenPreview={(product) =>
           setPreview({
@@ -314,7 +390,7 @@ export default function SemanticStudio({ imageSrc, analysis, resume = false, onS
           product={preview.product}
           generatedImage={styleOnMe.styledImageFor(preview.product.id)}
           selfiePreview={styleOnMe.selfie?.preview}
-          attributes={attributes}
+          attributes={panelAttributes}
           styling={styleOnMe.styleStateFor(preview.product.id) === 'generating'}
           canStyle={styleOnMe.canStyle(preview.product.id)}
           onStyleMe={() => styleOnMe.requestStyle(preview.product)}
@@ -329,9 +405,9 @@ export default function SemanticStudio({ imageSrc, analysis, resume = false, onS
           onPick={styleOnMe.onUploaderPick}
         />
       ) : null}
-      {styleOnMe.toast ? (
+      {styleOnMe.toast || notice ? (
         <div className="studio__toast" role="status">
-          {styleOnMe.toast}
+          {styleOnMe.toast || notice}
         </div>
       ) : null}
     </div>
