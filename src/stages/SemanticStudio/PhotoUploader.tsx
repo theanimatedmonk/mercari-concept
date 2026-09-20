@@ -98,13 +98,15 @@ export default function PhotoUploader({ initial, onClose, onPick }: Props) {
                 <EditMark />
               </button>
             </div>
-            <button
-              type="button"
-              className="photo-uploader__done"
-              onClick={() => onPick(preview)}
-            >
-              Style it on me
-            </button>
+            {!initial || preview.preview !== initial.preview ? (
+              <button
+                type="button"
+                className="photo-uploader__done"
+                onClick={() => onPick(preview)}
+              >
+                Style it on me
+              </button>
+            ) : null}
           </div>
         ) : (
           <button
