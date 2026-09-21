@@ -1,10 +1,12 @@
 import { catalogEnv } from '../env.js';
 import { catalogTextMatchesToken } from '../dressFilter.js';
 import { parseProductFeed } from '../feedParse.js';
+import { readParsedFeed, writeParsedFeed } from '../parsedFeedCache.js';
 import type { CatalogProduct } from '../types.js';
 import type { ProductSource } from './ProductSource.js';
 
-const FEED_TTL_MS = 1000 * 60 * 30;
+const FEED_TTL_MS = 1000 * 60 * 60 * 6;
+const CACHE_KEY = 'aliexpress';
 const MAX_FEED_BYTES = 28_000_000;
 const MAX_KEEP = 1200;
 
@@ -13,8 +15,6 @@ const SKIP =
 
 const TEE =
   /\b(tops?\s*&\s*tees|t-shirts?|tshirts?|tees?|polo|shirt|shirts|hoodie|sweatshirt)\b/i;
-
-let cachedFeed: { at: number; products: CatalogProduct[] } | null = null;
 
 function tokenize(query: string) {
   return query
@@ -70,15 +70,14 @@ async function loadFeed(): Promise<CatalogProduct[]> {
   const url = catalogEnv('ALIEXPRESS_AFFILIATE_FEED_URL');
   if (!url) return [];
 
-  if (cachedFeed && Date.now() - cachedFeed.at < FEED_TTL_MS) {
-    return cachedFeed.products;
-  }
+  const cached = await readParsedFeed(CACHE_KEY, FEED_TTL_MS);
+  if (cached?.length) return cached;
 
   const text = await downloadCapped(url);
   const products = parseProductFeed(text, 'aliexpress')
     .filter(isTeeListing)
     .slice(0, MAX_KEEP);
-  cachedFeed = { at: Date.now(), products };
+  if (products.length) await writeParsedFeed(CACHE_KEY, products, FEED_TTL_MS);
   return products;
 }
 

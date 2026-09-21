@@ -2,7 +2,7 @@ import { serverRetrieveCatalog } from '../../src/lib/recommendation/serverRetrie
 
 export const config = {
   runtime: 'nodejs',
-  maxDuration: 30,
+  maxDuration: 60,
 };
 
 type SearchBody = {
