@@ -82,5 +82,9 @@ export function rankCatalogProducts(
   }
 
   diversified.sort((a, b) => b.rankScore - a.rankScore);
-  return diversified.filter((row) => isDressListing(row.title, row.category ?? '', row.imageUrl));
+  return diversified.filter((row) =>
+    row.merchant === 'aliexpress'
+      ? true
+      : isDressListing(row.title, row.category ?? '', row.imageUrl),
+  );
 }

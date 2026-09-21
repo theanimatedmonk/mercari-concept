@@ -23,6 +23,14 @@ export function analyzeDevPlugin(env: Record<string, string>): Plugin {
       if (env.MYNTRA_AFFILIATE_FEED_URL) {
         process.env.MYNTRA_AFFILIATE_FEED_URL = env.MYNTRA_AFFILIATE_FEED_URL;
       }
+      if (env.ALIEXPRESS_AFFILIATE_FEED_URL) {
+        process.env.ALIEXPRESS_AFFILIATE_FEED_URL = env.ALIEXPRESS_AFFILIATE_FEED_URL;
+      }
+      if (env.LUXURYCLOSET_AFFILIATE_FEED_URL || env.LUXYRE_AFFILIATE_FEED_URL) {
+        const luxury = env.LUXURYCLOSET_AFFILIATE_FEED_URL || env.LUXYRE_AFFILIATE_FEED_URL;
+        process.env.LUXURYCLOSET_AFFILIATE_FEED_URL = luxury;
+        process.env.LUXYRE_AFFILIATE_FEED_URL = luxury;
+      }
       if (env.AMAZON_CREATORS_API_KEY) {
         process.env.AMAZON_CREATORS_API_KEY = env.AMAZON_CREATORS_API_KEY;
       }

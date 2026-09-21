@@ -1,6 +1,6 @@
 import type { AttributeCategory } from '../../types.js';
 
-export type MerchantId = 'myntra' | 'amazon' | 'mock';
+export type MerchantId = 'myntra' | 'amazon' | 'aliexpress' | 'luxurycloset' | 'mock';
 
 export type IntentAttribute = {
   id: string;
