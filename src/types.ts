@@ -21,7 +21,7 @@ export type ProductCluster =
   | 'contextual-match'
   | 'wrong-direction';
 
-export type MerchantId = 'myntra' | 'amazon' | 'mock';
+export type MerchantId = 'myntra' | 'amazon' | 'aliexpress' | 'luxurycloset' | 'mock';
 
 export type Product = {
   id: string;

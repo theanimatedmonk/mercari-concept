@@ -12,6 +12,15 @@ const ALLOWED = [
   'www.amazon.com',
   'amzn.to',
   'amzn.eu',
+  'rzekl.com',
+  'www.rzekl.com',
+  'aliexpress.com',
+  'www.aliexpress.com',
+  's.click.aliexpress.com',
+  'admitad.com',
+  'theluxurycloset.com',
+  'www.theluxurycloset.com',
+  'cdn.theluxurycloset.com',
 ];
 
 type VercelReq = {

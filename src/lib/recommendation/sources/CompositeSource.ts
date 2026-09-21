@@ -2,6 +2,8 @@ import { catalogEnv, catalogFlag } from '../env.js';
 import type { CatalogProduct } from '../types.js';
 import type { ProductSource } from './ProductSource.js';
 import { amazonConfigured, amazonSource } from './AmazonSource.js';
+import { aliexpressConfigured, aliexpressSource } from './AliExpressSource.js';
+import { luxuryClosetConfigured, luxuryClosetSource } from './LuxuryClosetSource.js';
 import { mockSource } from './MockSource.js';
 import { myntraSource } from './MyntraSource.js';
 
@@ -33,6 +35,8 @@ export class CompositeSource implements ProductSource {
 export function createServerCatalogSource(): ProductSource {
   const sources: ProductSource[] = [];
   if (catalogEnv('MYNTRA_AFFILIATE_FEED_URL')) sources.push(myntraSource);
+  if (luxuryClosetConfigured()) sources.push(luxuryClosetSource);
+  else if (aliexpressConfigured()) sources.push(aliexpressSource);
   if (amazonConfigured()) sources.push(amazonSource);
   if (!sources.length) return mockSource;
   return new CompositeSource(sources);

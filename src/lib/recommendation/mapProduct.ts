@@ -4,7 +4,13 @@ import type { CatalogProduct, RankedCatalogProduct } from './types.js';
 function formatPrice(product: CatalogProduct) {
   if (product.price == null) return '';
   const symbol =
-    product.currency === 'INR' ? '₹' : product.currency === 'EUR' ? '€' : '$';
+    product.currency === 'INR'
+      ? '₹'
+      : product.currency === 'EUR'
+        ? '€'
+        : product.currency === 'AED'
+          ? 'AED '
+          : '$';
   return `${symbol}${Math.round(product.price)}`;
 }
 
@@ -23,7 +29,12 @@ export function catalogToProduct(product: CatalogProduct): Product {
     id: product.merchantProductId ?? product.id,
     name: product.title,
     price: formatPrice(product),
-    condition: product.availability === false ? 'Unavailable' : 'New',
+    condition:
+      product.merchant === 'luxurycloset'
+        ? 'Pre-owned'
+        : product.availability === false
+          ? 'Unavailable'
+          : 'New',
     seller: product.brand ? `@${product.brand.replace(/\s+/g, '').toLowerCase()}` : `@${product.merchant}`,
     image: normalizeCatalogImage(product.imageUrl),
     attributes: product.attributeScores ?? {},
@@ -36,6 +47,8 @@ export function catalogToProduct(product: CatalogProduct): Product {
 export function merchantLabel(merchant: Product['merchant']) {
   if (merchant === 'myntra') return 'Myntra';
   if (merchant === 'amazon') return 'Amazon';
+  if (merchant === 'aliexpress') return 'AliExpress';
+  if (merchant === 'luxurycloset') return 'The Luxury Closet';
   if (merchant === 'mock') return 'Marketplace';
   return undefined;
 }

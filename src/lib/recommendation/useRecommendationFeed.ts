@@ -19,13 +19,17 @@ const dressFallback = fallbackProducts.filter((item) =>
 function fillCatalog(live: Product[]) {
   const out: Product[] = [];
   const seen = new Set<string>();
-  for (const item of [...live, ...dressFallback]) {
+  const liveMerchant = live.some(
+    (item) => item.merchant === 'luxurycloset' || item.merchant === 'aliexpress',
+  );
+  const pad = liveMerchant ? [] : dressFallback;
+  for (const item of [...live, ...pad]) {
     if (seen.has(item.id)) continue;
     seen.add(item.id);
     out.push(item);
     if (out.length >= FEED_CARDS) break;
   }
-  return withHeroListing(out);
+  return liveMerchant ? out : withHeroListing(out);
 }
 
 export function useRecommendationFeed(
@@ -68,7 +72,11 @@ export function useRecommendationFeed(
     const intent = snapshotIntent(attributes, catalogQuery);
     const queries = buildProductQueries(snapshotIntentForRetrieval(attributes, catalogQuery));
     const rows = rankCatalogProducts(intent, pool, queries.length);
-    const products = rows.map(catalogToProduct).filter((item) => isDressListing(item.name, '', item.image));
+    const products = rows
+      .map(catalogToProduct)
+      .filter((item) =>
+        item.merchant === 'aliexpress' ? true : isDressListing(item.name, '', item.image),
+      );
     return fillCatalog(products);
   }, [attributes, catalogQuery, pool]);
 
