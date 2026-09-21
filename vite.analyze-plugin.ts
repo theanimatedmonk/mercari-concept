@@ -49,6 +49,8 @@ export function analyzeDevPlugin(env: Record<string, string>): Plugin {
       if (env.CATALOG_USE_MOCK_FALLBACK) {
         process.env.CATALOG_USE_MOCK_FALLBACK = env.CATALOG_USE_MOCK_FALLBACK;
       }
+      if (env.KV_REST_API_URL) process.env.KV_REST_API_URL = env.KV_REST_API_URL;
+      if (env.KV_REST_API_TOKEN) process.env.KV_REST_API_TOKEN = env.KV_REST_API_TOKEN;
 
       server.middlewares.use('/api/catalog/out', (req, res, next) => {
         if (req.method !== 'GET') {
