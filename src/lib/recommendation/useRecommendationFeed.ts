@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { LISTING_PRODUCT_ID } from '../../data/listing.js';
 import { products as fallbackProducts } from '../../data/products.js';
-import type { SemanticAttribute } from '../../types.js';
+import type { Product, SemanticAttribute } from '../../types.js';
 import { withHeroListing } from '../catalog/fetchFashion.js';
 import { retrievalQueryKey, snapshotIntent, snapshotIntentForRetrieval } from './intent.js';
 import { catalogToProduct } from './mapProduct.js';
@@ -10,6 +10,23 @@ import { isDressListing } from './dressFilter.js';
 import { retrieveProducts } from './pipeline.js';
 import { rankCatalogProducts } from './ranking.js';
 import type { RetrievedProduct } from './types.js';
+
+const FEED_CARDS = 12;
+const dressFallback = fallbackProducts.filter((item) =>
+  isDressListing(item.name, '', item.image),
+);
+
+function fillCatalog(live: Product[]) {
+  const out: Product[] = [];
+  const seen = new Set<string>();
+  for (const item of [...live, ...dressFallback]) {
+    if (seen.has(item.id)) continue;
+    seen.add(item.id);
+    out.push(item);
+    if (out.length >= FEED_CARDS) break;
+  }
+  return withHeroListing(out);
+}
 
 export function useRecommendationFeed(
   attributes: SemanticAttribute[],
@@ -52,10 +69,7 @@ export function useRecommendationFeed(
     const queries = buildProductQueries(snapshotIntentForRetrieval(attributes, catalogQuery));
     const rows = rankCatalogProducts(intent, pool, queries.length);
     const products = rows.map(catalogToProduct).filter((item) => isDressListing(item.name, '', item.image));
-    if (products.length === 0) {
-      return fallbackProducts.filter((item) => isDressListing(item.name, '', item.image));
-    }
-    return withHeroListing(products);
+    return fillCatalog(products);
   }, [attributes, catalogQuery, pool]);
 
   const source = pool.length ? ('live' as const) : ('fallback' as const);

@@ -1,6 +1,7 @@
-import type { ProductSource } from './ProductSource.js';
+import { catalogTextMatchesToken } from '../dressFilter.js';
 import type { CatalogProduct } from '../types.js';
 import { MOCK_CATALOG } from './mockCatalog.js';
+import type { ProductSource } from './ProductSource.js';
 
 function tokenize(query: string) {
   return query
@@ -9,18 +10,18 @@ function tokenize(query: string) {
     .filter((part) => part.length > 2);
 }
 
-function scoreRow(product: CatalogProduct, tokens: string[]) {
-  if (!tokens.length) return 0;
-  const hay = [
-    product.title,
-    product.brand ?? '',
-    ...(product.attributes ?? []),
-  ]
+function haystack(product: CatalogProduct) {
+  return [product.title, product.brand ?? '', ...(product.attributes ?? [])]
     .join(' ')
     .toLowerCase();
+}
+
+function scoreRow(product: CatalogProduct, tokens: string[]) {
+  if (!tokens.length) return 0;
+  const hay = haystack(product);
   let hits = 0;
   for (const token of tokens) {
-    if (hay.includes(token)) hits += 1;
+    if (catalogTextMatchesToken(hay, token)) hits += 1;
   }
   return hits / tokens.length;
 }
@@ -31,12 +32,14 @@ export class MockSource implements ProductSource {
     const ranked = MOCK_CATALOG.map((product) => ({
       product,
       score: scoreRow(product, tokens),
-    }))
-      .filter((row) => row.score > 0 || tokens.length === 0)
-      .sort((a, b) => b.score - a.score);
+    })).sort((a, b) => b.score - a.score);
 
-    const pool = ranked.length ? ranked : MOCK_CATALOG.map((product) => ({ product, score: 0 }));
-    return pool.slice(0, 24).map((row) => row.product);
+    const matched = tokens.length
+      ? ranked.filter((row) => row.score > 0).map((row) => row.product)
+      : ranked.map((row) => row.product);
+    const seen = new Set(matched.map((item) => item.id));
+    const rest = MOCK_CATALOG.filter((item) => !seen.has(item.id));
+    return [...matched, ...rest].slice(0, 24);
   }
 }
 

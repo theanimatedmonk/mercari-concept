@@ -1,5 +1,5 @@
 import { catalogEnv } from '../env.js';
-import { isDressListing } from '../dressFilter.js';
+import { catalogTextMatchesToken, isDressListing } from '../dressFilter.js';
 import { parseProductFeed } from '../feedParse.js';
 import type { CatalogProduct } from '../types.js';
 import type { ProductSource } from './ProductSource.js';
@@ -21,7 +21,7 @@ function scoreProduct(product: CatalogProduct, tokens: string[]) {
     .toLowerCase();
   let hits = 0;
   for (const token of tokens) {
-    if (hay.includes(token)) hits += 1;
+    if (catalogTextMatchesToken(hay, token)) hits += 1;
   }
   return hits / tokens.length;
 }

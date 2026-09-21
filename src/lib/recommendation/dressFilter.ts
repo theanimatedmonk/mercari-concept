@@ -33,6 +33,13 @@ const BLOCKED_IMAGES = new Set([
   'wearable-neckline.jpg',
 ]);
 
+export function catalogTextMatchesToken(hay: string, token: string) {
+  if (hay.includes(token)) return true;
+  if (!DRESS_WORDS.test(token) && token !== 'gown' && token !== 'gowns') return false;
+  if (DRESS_WORDS.test(hay) || /\bgowns?\b/i.test(hay)) return true;
+  return DRESS_CUTS.test(hay);
+}
+
 export function isDressProduct(title: string, category = '') {
   const hay = `${title} ${category}`;
   if (/\b(dress|gown)s?\s+(shoe|heel|sandal|boot|pant|jean|trouser)s?\b/i.test(hay)) {

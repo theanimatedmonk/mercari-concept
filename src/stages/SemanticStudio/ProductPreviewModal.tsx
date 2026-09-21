@@ -175,6 +175,7 @@ export default function ProductPreviewModal({
                   src={src}
                   alt={product.name}
                   draggable={false}
+                  referrerPolicy="no-referrer"
                 />
               </div>
             ))}

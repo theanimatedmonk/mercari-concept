@@ -35,6 +35,12 @@ export default function ProductCard({
   const generating = styleState === 'generating';
   const image = styledImage || product.image;
 
+  const [src, setSrc] = useState(image);
+
+  useEffect(() => {
+    setSrc(image);
+  }, [image]);
+
   useEffect(() => {
     if (!generating) return;
     const id = window.setInterval(
@@ -49,10 +55,30 @@ export default function ProductCard({
       <div className="product-card__media">
         {onOpen ? (
           <button type="button" className="product-card__open" onClick={onOpen}>
-            <img className="product-card__image" src={image} alt={product.name} />
+            <img
+              className="product-card__image"
+              src={src}
+              alt={product.name}
+              referrerPolicy="no-referrer"
+              onError={() => {
+                setSrc((current) =>
+                  current === '/listing/placeholder.svg' ? current : '/listing/placeholder.svg',
+                );
+              }}
+            />
           </button>
         ) : (
-          <img className="product-card__image" src={image} alt={product.name} />
+          <img
+            className="product-card__image"
+            src={src}
+            alt={product.name}
+            referrerPolicy="no-referrer"
+            onError={() => {
+              setSrc((current) =>
+                current === '/listing/placeholder.svg' ? current : '/listing/placeholder.svg',
+              );
+            }}
+          />
         )}
         {generating ? <ScanOverlay label={STYLE_BEATS[beat]} /> : null}
         {onStyleMe && !generating ? (

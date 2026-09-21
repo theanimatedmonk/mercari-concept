@@ -8,6 +8,16 @@ function formatPrice(product: CatalogProduct) {
   return `${symbol}${Math.round(product.price)}`;
 }
 
+export function normalizeCatalogImage(url: string) {
+  const trimmed = url.trim();
+  if (!trimmed) return trimmed;
+  if (trimmed.startsWith('//')) return `https:${trimmed}`;
+  if (/^http:\/\/(?!localhost|127\.0\.0\.1)/i.test(trimmed)) {
+    return `https://${trimmed.slice('http://'.length)}`;
+  }
+  return trimmed;
+}
+
 export function catalogToProduct(product: CatalogProduct): Product {
   return {
     id: product.merchantProductId ?? product.id,
@@ -15,7 +25,7 @@ export function catalogToProduct(product: CatalogProduct): Product {
     price: formatPrice(product),
     condition: product.availability === false ? 'Unavailable' : 'New',
     seller: product.brand ? `@${product.brand.replace(/\s+/g, '').toLowerCase()}` : `@${product.merchant}`,
-    image: product.imageUrl,
+    image: normalizeCatalogImage(product.imageUrl),
     attributes: product.attributeScores ?? {},
     cluster: 'style-match',
     merchant: product.merchant,
