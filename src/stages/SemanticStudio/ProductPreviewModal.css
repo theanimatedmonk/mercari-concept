@@ -237,8 +237,12 @@
 .product-preview__cta-mark {
   width: var(--icon-size-lg);
   height: var(--icon-size-lg);
-  object-fit: cover;
-  border-radius: var(--radius-bubble);
+  object-fit: contain;
+  filter: invert(1);
+}
+
+[data-theme='dark'] .product-preview__cta-mark {
+  filter: none;
 }
 
 @media (max-width: 48rem) {
