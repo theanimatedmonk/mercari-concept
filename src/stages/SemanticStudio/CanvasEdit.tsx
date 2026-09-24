@@ -3,6 +3,8 @@ import { Clapperboard, IceCream, Plus, SquarePen, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import ImageMark from '../../components/icons/ImageMark';
+import { fetchInspirationFromUrl } from '../../lib/llm/client';
+import { splitPromptMedia } from '../../lib/llm/promptMedia';
 import useDictation from '../../lib/useDictation';
 import DictateButton, { VoiceFreq } from '../InspirationInput/DictateButton';
 import '../InspirationInput/InspirationInput.css';
@@ -91,6 +93,10 @@ export default function CanvasEdit({
   const [tasteOpen, setTasteOpen] = useState(false);
   const [draftContext, setDraftContext] = useState(context);
   const [draftImage, setDraftImage] = useState<string | null>(imageSrc);
+  const [tasteError, setTasteError] = useState<string | null>(null);
+  const [linking, setLinking] = useState(false);
+  const [linkFailed, setLinkFailed] = useState(false);
+  const linkingRef = useRef(false);
   const dictation = useDictation(draftContext, setDraftContext);
   const instant = Boolean(reduceMotion);
   const veilMotion = instant ? { duration: 0 } : VEIL_TWEEN;
@@ -110,6 +116,8 @@ export default function CanvasEdit({
   function openTaste() {
     setDraftContext(context);
     setDraftImage(imageSrc);
+    setTasteError(null);
+    setLinkFailed(false);
     if (mobile && open) {
       pendingTaste.current = true;
       setOpen(false);
@@ -120,10 +128,57 @@ export default function CanvasEdit({
   }
 
   function useFile(file: File) {
+    setTasteError(null);
+    setLinkFailed(false);
     setDraftImage((prev) => {
       if (prev?.startsWith('blob:') && prev !== imageSrc) URL.revokeObjectURL(prev);
       return URL.createObjectURL(file);
     });
+  }
+
+  async function attachFromUrl(url: string) {
+    if (linkingRef.current) return null;
+    linkingRef.current = true;
+    dictation.stop();
+    setLinking(true);
+    setLinkFailed(false);
+    setTasteError(null);
+    try {
+      const image = await fetchInspirationFromUrl(url);
+      setDraftImage((prev) => {
+        if (prev?.startsWith('blob:') && prev !== imageSrc) URL.revokeObjectURL(prev);
+        return image.preview;
+      });
+      return image.preview;
+    } catch {
+      setLinkFailed(true);
+      return null;
+    } finally {
+      linkingRef.current = false;
+      setLinking(false);
+    }
+  }
+
+  function onPaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const items = e.clipboardData?.items;
+    const file = items
+      ? [...items].find((item) => item.type.startsWith('image/'))?.getAsFile()
+      : null;
+    if (file) {
+      e.preventDefault();
+      useFile(file);
+      return;
+    }
+    const pasted = e.clipboardData.getData('text');
+    const { url, caption } = splitPromptMedia(pasted);
+    if (!url || draftImage || linking || linkingRef.current) return;
+    e.preventDefault();
+    const keep = [draftContext.trim(), caption].filter(Boolean).join(' ');
+    if (keep !== draftContext) {
+      if (dictation.listening) dictation.stop();
+      setDraftContext(keep);
+    }
+    void attachFromUrl(url);
   }
 
   function removeImage() {
@@ -134,15 +189,25 @@ export default function CanvasEdit({
   }
 
   function canSubmit() {
-    return Boolean(draftImage || draftContext.trim());
+    return !linking && Boolean(draftImage || draftContext.trim());
   }
 
-  function submitTaste() {
+  async function submitTaste() {
     if (!canSubmit() || busy) return;
     dictation.stop();
+    let image = draftImage;
+    let text = draftContext.trim();
+    const split = splitPromptMedia(text);
+    if (!image && split.url) {
+      const preview = await attachFromUrl(split.url);
+      if (!preview) return;
+      image = preview;
+      text = split.caption;
+      setDraftContext(text);
+    }
     pendingRetaste.current = {
-      imageSrc: draftImage,
-      context: draftContext.trim(),
+      imageSrc: image,
+      context: text,
     };
     setTasteOpen(false);
   }
@@ -301,8 +366,7 @@ export default function CanvasEdit({
                       Tell me anything...
                     </h2>
                     <p className="inspiration__remember-sub">
-                      A stray thought, an image, whatever's there. Share it, we'll make
-                      sense of it together.
+                      A stray thought, a Pinterest or Instagram link, or an image.
                     </p>
                   </div>
                   {draftImage ? (
@@ -334,19 +398,39 @@ export default function CanvasEdit({
                       </button>
                     </div>
                   ) : null}
-                  <div className={`inspiration__composer${dictation.listening ? ' is-dictating' : ''}${!draftImage ? ' has-upload' : ''}`}>
-                    <textarea
-                      value={draftContext}
-                      onChange={(e) => {
-                        if (dictation.listening) dictation.stop();
-                        setDraftContext(e.target.value);
-                      }}
-                      placeholder={
-                        draftImage
-                          ? 'What caught your eye in this image?'
-                          : 'Add a little context…'
-                      }
-                    />
+                  <div
+                    className={`inspiration__composer${dictation.listening ? ' is-dictating' : ''}${!draftImage ? ' has-upload' : ''}${linking ? ' is-resolving' : ''}${linkFailed ? ' is-link-failed' : ''}`}
+                    aria-busy={linking}
+                  >
+                    {linking ? (
+                      <span className="inspiration__link-chip is-busy" role="status">
+                        <span className="inspiration__link-spin" aria-hidden />
+                        getting the photo
+                      </span>
+                    ) : linkFailed ? (
+                      <button
+                        type="button"
+                        className="inspiration__link-chip is-failed"
+                        onClick={() => setLinkFailed(false)}
+                      >
+                        Could not get the photo
+                      </button>
+                    ) : (
+                      <textarea
+                        value={draftContext}
+                        onChange={(e) => {
+                          if (dictation.listening) dictation.stop();
+                          setLinkFailed(false);
+                          setDraftContext(e.target.value);
+                        }}
+                        onPaste={onPaste}
+                        placeholder={
+                          draftImage
+                            ? 'What caught your eye in this image?'
+                            : 'A photo, a link, or a thought…'
+                        }
+                      />
+                    )}
                     <div className="inspiration__composer-actions">
                       {dictation.listening ? <VoiceFreq /> : null}
                       {!draftImage && !dictation.listening ? (
@@ -354,6 +438,7 @@ export default function CanvasEdit({
                           type="button"
                           className="inspiration__bar-btn"
                           aria-label="Add an image"
+                          disabled={linking}
                           onClick={() => fileRef.current?.click()}
                         >
                           <ImageMark />
@@ -362,19 +447,20 @@ export default function CanvasEdit({
                       <DictateButton
                         className="inspiration__mic"
                         listening={dictation.listening}
+                        disabled={linking}
                         onClick={dictation.toggle}
                       />
                     </div>
                   </div>
                 </div>
-                {dictation.error ? (
-                  <p className="inspiration__error">{dictation.error}</p>
+                {tasteError || dictation.error ? (
+                  <p className="inspiration__error">{tasteError || dictation.error}</p>
                 ) : null}
                 <button
                   type="button"
                   className="inspiration__done"
-                  disabled={!canSubmit() || dictation.listening}
-                  onClick={submitTaste}
+                  disabled={!canSubmit() || dictation.listening || linking}
+                  onClick={() => void submitTaste()}
                 >
                   Let's go!
                 </button>

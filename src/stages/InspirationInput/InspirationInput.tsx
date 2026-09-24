@@ -7,12 +7,14 @@ import exampleImage from '../../assets/lander-images/image_text.png';
 import exampleText from '../../assets/lander-images/text.png';
 import exampleVoice from '../../assets/lander-images/voice.png';
 import generatedSound from '../../assets/audio files/generated.mp3';
-import { imageUrlToBase64, requestAnalyzeStream } from '../../lib/llm/client';
+import { imageUrlToBase64, fetchInspirationFromUrl, requestAnalyzeStream } from '../../lib/llm/client';
+import { splitPromptMedia } from '../../lib/llm/promptMedia';
 import { createRevealQueue } from '../../lib/llm/revealQueue';
 import type { AnalysisAttribute, AnalyzeResponse } from '../../lib/llm/types';
 import useDictation from '../../lib/useDictation';
 import DictateButton, { VoiceFreq } from './DictateButton';
 import GeneratingHero from './GeneratingHero';
+import useTypedPlaceholder from './useTypedPlaceholder';
 import './InspirationInput.css';
 
 const EXAMPLES = [
@@ -42,7 +44,10 @@ export default function InspirationInput({
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [context, setContext] = useState('');
   const [dragging, setDragging] = useState(false);
+  const [linking, setLinking] = useState(false);
+  const [linkFailed, setLinkFailed] = useState(false);
   const dictation = useDictation(context, setContext);
+  const typedHint = useTypedPlaceholder(Boolean(context.trim()) || dictation.listening);
   const [reading, setReading] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const [pills, setPills] = useState<AnalysisAttribute[]>([]);
@@ -51,6 +56,7 @@ export default function InspirationInput({
   const continued = useRef(false);
   const generatedAudio = useRef<HTMLAudioElement | null>(null);
   const generatedPlayed = useRef(false);
+  const linkingRef = useRef(false);
 
   useEffect(() => {
     onReadingChange?.(reading);
@@ -60,9 +66,37 @@ export default function InspirationInput({
     if (reading) dictation.stop();
   }, [reading, dictation.stop]);
 
-  function useFile(file: File) {
-    setImageSrc(URL.createObjectURL(file));
+  function replaceImage(next: string | null) {
+    setImageSrc((prev) => {
+      if (prev?.startsWith('blob:') && prev !== next) URL.revokeObjectURL(prev);
+      return next;
+    });
     setAnalyzeError(null);
+    setLinkFailed(false);
+  }
+
+  function useFile(file: File) {
+    replaceImage(URL.createObjectURL(file));
+  }
+
+  async function attachFromUrl(url: string) {
+    if (linkingRef.current) return null;
+    linkingRef.current = true;
+    dictation.stop();
+    setLinking(true);
+    setLinkFailed(false);
+    setAnalyzeError(null);
+    try {
+      const image = await fetchInspirationFromUrl(url);
+      replaceImage(image.preview);
+      return image.preview;
+    } catch {
+      setLinkFailed(true);
+      return null;
+    } finally {
+      linkingRef.current = false;
+      setLinking(false);
+    }
   }
 
   function onDrop(e: React.DragEvent) {
@@ -74,32 +108,40 @@ export default function InspirationInput({
 
   function onPaste(e: React.ClipboardEvent | ClipboardEvent) {
     const items = e.clipboardData?.items;
-    if (!items) return;
-    const file = [...items]
-      .find((item) => item.type.startsWith('image/'))
-      ?.getAsFile();
+    const file = items
+      ? [...items].find((item) => item.type.startsWith('image/'))?.getAsFile()
+      : null;
     if (file) {
       e.preventDefault();
       useFile(file);
+      return;
     }
+    const pasted = e.clipboardData?.getData('text') ?? '';
+    const { url, caption } = splitPromptMedia(pasted);
+    if (!url || imageSrc || linking || linkingRef.current) return;
+    e.preventDefault();
+    const keep = [context.trim(), caption].filter(Boolean).join(' ');
+    if (keep !== context) onContextChange(keep);
+    void attachFromUrl(url);
   }
 
   useEffect(() => {
-    if (imageSrc) return;
+    if (imageSrc || linking) return;
     function onWindowPaste(e: ClipboardEvent) {
       onPaste(e);
     }
     window.addEventListener('paste', onWindowPaste);
     return () => window.removeEventListener('paste', onWindowPaste);
-  }, [imageSrc]);
+  }, [imageSrc, linking, context]);
 
   function onContextChange(value: string) {
     if (dictation.listening) dictation.stop();
+    setLinkFailed(false);
     setContext(value);
   }
 
   function canSubmit() {
-    return Boolean(imageSrc || context.trim());
+    return !linking && Boolean(imageSrc || context.trim());
   }
 
   async function submit() {
@@ -110,6 +152,18 @@ export default function InspirationInput({
     setAnalyzeError(null);
     setAnalysis(null);
     setPills([]);
+
+    let src = imageSrc;
+    let text = context.trim();
+    const split = splitPromptMedia(text);
+    if (!src && split.url) {
+      const preview = await attachFromUrl(split.url);
+      if (!preview) return;
+      src = preview;
+      text = split.caption;
+      setContext(text);
+    }
+
     setReading(true);
     setWaiting(true);
     const queue = createRevealQueue((attribute) => {
@@ -119,13 +173,23 @@ export default function InspirationInput({
       );
     });
     try {
-      const payload: { text?: string; imageBase64?: string; mimeType?: string } = {};
-      const text = context.trim();
+      const payload: {
+        text?: string;
+        imageBase64?: string;
+        mimeType?: string;
+        imageUrl?: string;
+      } = {};
       if (text) payload.text = text;
-      if (imageSrc) {
-        const image = await imageUrlToBase64(imageSrc);
-        payload.imageBase64 = image.imageBase64;
-        payload.mimeType = image.mimeType;
+      if (src) {
+        if (src.startsWith('http://') || src.startsWith('https://')) {
+          payload.imageUrl = src;
+        } else {
+          const image = await imageUrlToBase64(src);
+          payload.imageBase64 = image.imageBase64;
+          payload.mimeType = image.mimeType;
+        }
+      } else if (split.url) {
+        payload.imageUrl = split.url;
       }
       const result = await requestAnalyzeStream(payload, queue.push);
       if (!result.fashion) {
@@ -215,12 +279,12 @@ export default function InspirationInput({
               <header className="inspiration__intro">
                 <h1 className="inspiration__title">What's on your mind?</h1>
                 <p className="inspiration__sub">
-                  Show me something you saw, describe it, or tell me what you're looking
-                  for.
+                  Show me something you saw, describe it, or tell me what you are looking for.
                 </p>
               </header>
               <div
-                className={`inspiration__bar${dragging ? ' is-dragging' : ''}${dictation.listening ? ' is-dictating' : ''}`}
+                className={`inspiration__bar${dragging ? ' is-dragging' : ''}${dictation.listening ? ' is-dictating' : ''}${linking ? ' is-resolving' : ''}${linkFailed ? ' is-link-failed' : ''}`}
+                aria-busy={linking}
                 onDragOver={(e) => {
                   e.preventDefault();
                   setDragging(true);
@@ -230,20 +294,42 @@ export default function InspirationInput({
                 onPaste={onPaste}
               >
                 <div className="inspiration__bar-field">
-                  {dictation.listening ? <VoiceFreq /> : null}
-                  <input
-                    className="inspiration__query"
-                    value={context}
-                    onChange={(e) => onContextChange(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key !== 'Enter') return;
-                      e.preventDefault();
-                      if (dictation.listening) return;
-                      submitFromBar();
-                    }}
-                    placeholder="Start with anything..."
-                    aria-label="Start with anything..."
-                  />
+                  {linking ? (
+                    <span className="inspiration__link-chip is-busy" role="status">
+                      <span className="inspiration__link-spin" aria-hidden />
+                      getting the photo
+                    </span>
+                  ) : linkFailed ? (
+                    <button
+                      type="button"
+                      className="inspiration__link-chip is-failed"
+                      onClick={() => setLinkFailed(false)}
+                    >
+                      Could not get the photo
+                    </button>
+                  ) : (
+                    <>
+                      {dictation.listening ? <VoiceFreq /> : null}
+                      <input
+                        className={`inspiration__query${context ? '' : ' is-empty'}`}
+                        value={context}
+                        onChange={(e) => onContextChange(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key !== 'Enter') return;
+                          e.preventDefault();
+                          if (dictation.listening || linking) return;
+                          submitFromBar();
+                        }}
+                        aria-label="Drop an inspo image, paste a Pinterest pin or URL, or describe using voice"
+                      />
+                      {!context && !dictation.listening ? (
+                        <span className="inspiration__typed" aria-hidden>
+                          {typedHint}
+                          <span className="inspiration__typed-caret" />
+                        </span>
+                      ) : null}
+                    </>
+                  )}
                 </div>
                 <div className="inspiration__bar-actions">
                   {dictation.listening ? null : (
@@ -251,6 +337,7 @@ export default function InspirationInput({
                       type="button"
                       className="inspiration__bar-btn"
                       aria-label="Add an image"
+                      disabled={linking}
                       onClick={() => fileRef.current?.click()}
                     >
                       <ImageMark />
@@ -259,13 +346,14 @@ export default function InspirationInput({
                   <DictateButton
                     className="inspiration__bar-btn"
                     listening={dictation.listening}
+                    disabled={linking}
                     onClick={dictation.toggle}
                   />
                   <button
                     type="button"
                     className="inspiration__submit"
                     aria-label="Continue"
-                    disabled={dictation.listening}
+                    disabled={dictation.listening || linking}
                     onClick={submitFromBar}
                   >
                     <ArrowUp size={18} strokeWidth={2.4} />
@@ -292,7 +380,7 @@ export default function InspirationInput({
                 type="button"
                 className="inspiration__close"
                 aria-label="Close"
-                onClick={() => setImageSrc(null)}
+                onClick={() => replaceImage(null)}
               >
                 <X size={18} />
               </button>
@@ -313,7 +401,7 @@ export default function InspirationInput({
                     type="button"
                     className="inspiration__remove"
                     aria-label="Remove image"
-                    onClick={() => setImageSrc(null)}
+                    onClick={() => replaceImage(null)}
                   >
                     <X size={10} />
                   </button>
@@ -346,7 +434,12 @@ export default function InspirationInput({
               {analyzeError || dictation.error ? (
                 <p className="inspiration__error">{analyzeError || dictation.error}</p>
               ) : null}
-              <button type="button" className="inspiration__done" onClick={() => void submit()}>
+              <button
+                type="button"
+                className="inspiration__done"
+                disabled={linking}
+                onClick={() => void submit()}
+              >
                 Let's find something great
               </button>
             </div>

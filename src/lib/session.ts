@@ -46,6 +46,22 @@ function empty(): Partial<StudioSession> {
   };
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number) {
+  return new Promise<T>((resolve, reject) => {
+    const id = window.setTimeout(() => reject(new Error('session timeout')), ms);
+    promise.then(
+      (value) => {
+        window.clearTimeout(id);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(id);
+        reject(error);
+      },
+    );
+  });
+}
+
 function openDb() {
   if (dbPromise) return dbPromise;
   dbPromise = new Promise((resolve, reject) => {
@@ -56,6 +72,10 @@ function openDb() {
       }
     };
     req.onsuccess = () => resolve(req.result);
+    req.onblocked = () => {
+      dbPromise = null;
+      reject(new Error('session blocked'));
+    };
     req.onerror = () => {
       dbPromise = null;
       reject(req.error);
@@ -104,18 +124,22 @@ export function peekSession() {
 
 export async function hydrateSession() {
   try {
-    const db = await openDb();
-    const stored = await new Promise<StudioSession | null>((resolve, reject) => {
-      const tx = db.transaction(STORE, 'readonly');
-      const req = tx.objectStore(STORE).get(KEY);
-      req.onsuccess = () => resolve((req.result as StudioSession | undefined) ?? null);
-      req.onerror = () => reject(req.error);
-    });
+    const db = await withTimeout(openDb(), 800);
+    const stored = await withTimeout(
+      new Promise<StudioSession | null>((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readonly');
+        const req = tx.objectStore(STORE).get(KEY);
+        req.onsuccess = () => resolve((req.result as StudioSession | undefined) ?? null);
+        req.onerror = () => reject(req.error);
+      }),
+      800,
+    );
     cache = stored?.version === 1 && stored.analysis
       ? { ...stored, context: stored.context ?? '' }
       : null;
     return cache;
   } catch {
+    dbPromise = null;
     cache = null;
     return null;
   }
