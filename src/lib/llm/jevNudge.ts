@@ -1,5 +1,5 @@
 import { dimensionCovered } from './intentQuery.js';
-import { catalogFor, IMAGE_NUDGES, TEXT_NUDGES } from './nudgeCatalog.js';
+import { catalogFor } from './nudgeCatalog.js';
 import { EMPTY_NUDGE, type JevNudge, type JevNudgeRequest } from './types.js';
 
 const JEV_URL = 'https://api.typesafe.ai/v1/systemone';
@@ -34,22 +34,8 @@ function env(name: string) {
   return runtime.process?.env?.[name];
 }
 
-function keysForQuestions(questions: string[]) {
-  const keys: string[] = [];
-  for (const question of questions) {
-    const q = question.trim();
-    if (!q) continue;
-    for (const catalog of [TEXT_NUDGES, IMAGE_NUDGES]) {
-      for (const [key, spec] of Object.entries(catalog)) {
-        if (spec.question === q && !keys.includes(key)) keys.push(key);
-      }
-    }
-  }
-  return keys;
-}
-
-function skipKeys(text: string, hasImage: boolean, answeredQuestions: string[]) {
-  const skip = new Set(keysForQuestions(answeredQuestions));
+function skipKeys(text: string, hasImage: boolean) {
+  const skip = new Set<string>();
   for (const [key, spec] of Object.entries(catalogFor(hasImage))) {
     if (dimensionCovered(text, key, spec.options)) skip.add(key);
   }
@@ -71,7 +57,18 @@ function pickNudge(
   inScope: boolean,
 ): JevNudge {
   if (!inScope) return { ...EMPTY_NUDGE, inScope: false };
-  if (!choice || choice === 'none' || skip.has(choice)) return EMPTY_NUDGE;
+  if (!choice || choice === 'none' || skip.has(choice)) {
+    if (hasImage && !skip.has('reference')) {
+      const spec = catalogFor(true).reference;
+      return {
+        key: 'reference',
+        question: spec.question,
+        options: spec.options,
+        inScope: true,
+      };
+    }
+    return EMPTY_NUDGE;
+  }
   const spec = catalogFor(hasImage)[choice];
   if (!spec) return EMPTY_NUDGE;
   return { key: choice, question: spec.question, options: spec.options, inScope: true };
@@ -80,13 +77,12 @@ function pickNudge(
 export async function runJevNudge(request: JevNudgeRequest): Promise<JevNudge> {
   const text = request.text?.trim() ?? '';
   const hasImage = Boolean(request.hasImage);
-  const answeredQuestions = request.answeredQuestions ?? [];
   if (!hasImage && !text) return EMPTY_NUDGE;
 
   const key = env('TYPESAFE_API_KEY');
   if (!key) throw new Error('TYPESAFE_API_KEY is not set');
 
-  const skip = skipKeys(text, hasImage, answeredQuestions);
+  const skip = skipKeys(text, hasImage);
 
   const res = await fetch(JEV_URL, {
     method: 'POST',
@@ -99,8 +95,7 @@ export async function runJevNudge(request: JevNudgeRequest): Promise<JevNudge> {
       state: {
         query: text,
         hasImage,
-        answeredQuestions,
-        task: "Lookmind is a women's clothing shopping assistant. Decide if the query is in scope for women's fashion. If it is, pick the single highest-value MISSING intent dimension. Never ask about budget. Do not ask for anything already in the query. Do not interpret a photo. Never repeat a dimension in answeredQuestions.",
+        task: "Lookmind is a women's clothing shopping assistant. Decide if the query is in scope for women's fashion. If it is, pick the single highest-value MISSING intent dimension. Never ask about budget. Do not ask for anything already in the query. Do not interpret a photo.",
       },
       questions: {
         scope: {
@@ -112,7 +107,7 @@ export async function runJevNudge(request: JevNudgeRequest): Promise<JevNudge> {
         next: {
           type: 'choice',
           instructions:
-            'Which follow-up should Lookmind ask next? Choose none if nothing useful is missing, or if scope is other. Never choose budget. Never choose a dimension already answered.',
+            'Which follow-up should Lookmind ask next? If hasImage and they have not said what they like about the photo, choose reference. Choose none if nothing useful is missing, or if scope is other. Never choose budget. Never choose a dimension already in the query.',
           criteria: criteriaFor(hasImage, skip),
         },
       },

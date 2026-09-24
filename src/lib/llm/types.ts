@@ -60,7 +60,6 @@ export const EMPTY_NUDGE: JevNudge = {
 export type JevNudgeRequest = {
   text?: string;
   hasImage?: boolean;
-  answeredQuestions?: string[];
 };
 
 export type StyleOnMeRequest = {

@@ -32,9 +32,6 @@ function asRequest(value: unknown): JevNudgeRequest {
   return {
     text: typeof row.text === 'string' ? row.text : undefined,
     hasImage: Boolean(row.hasImage),
-    answeredQuestions: Array.isArray(row.answeredQuestions)
-      ? row.answeredQuestions.filter((item): item is string => typeof item === 'string')
-      : undefined,
   };
 }
 

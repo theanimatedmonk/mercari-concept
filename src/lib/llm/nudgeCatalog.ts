@@ -49,6 +49,16 @@ export function catalogFor(hasImage: boolean) {
   return hasImage ? IMAGE_NUDGES : TEXT_NUDGES;
 }
 
+export function firstImageNudge() {
+  const spec = IMAGE_NUDGES.reference;
+  return {
+    key: 'reference',
+    question: spec.question,
+    options: spec.options,
+    inScope: true as const,
+  };
+}
+
 export function keyForQuestion(question: string) {
   const q = question.trim();
   if (!q) return '';
