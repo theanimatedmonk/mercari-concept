@@ -361,18 +361,30 @@
 }
 
 .inspiration__bar {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-items: stretch;
   width: min(var(--size-landing), 100%);
   max-width: 100%;
   min-width: 0;
-  min-height: calc(var(--size-control) + var(--space-stack-md));
-  gap: var(--space-inline-sm);
-  padding: var(--space-stack-lg) var(--space-stack-lg) var(--space-stack-lg)
-    var(--space-inline-lg);
+  min-height: calc(var(--size-composer) + var(--size-control));
+  padding: var(--space-stack-lg);
   background: var(--color-bg-elevated);
-  border-radius: var(--radius-bubble);
+  border-radius: var(--radius-sheet);
   box-shadow: var(--shadow-elevated);
+}
+
+.inspiration__bar-copy {
+  align-self: start;
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  align-content: start;
+}
+
+.inspiration__bar.is-nudging .inspiration__bar-field {
+  align-items: flex-start;
 }
 
 .inspiration__bar.is-dictating .inspiration__query {
@@ -384,23 +396,45 @@
   display: flex;
   align-items: center;
   gap: var(--space-inline-sm);
-  flex: 1 1 0;
   min-width: 0;
+  min-height: var(--size-control);
 }
 
 .inspiration__query {
   flex: 1 1 0;
-  width: 0;
+  width: 100%;
   min-width: 0;
+  min-height: calc(var(--font-size-body) * var(--line-height-body));
+  margin: 0;
+  padding: 0;
   border: 0;
   background: transparent;
   color: var(--color-text-primary);
+  font-family: inherit;
   font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  resize: none;
+  overflow: hidden;
   outline: none;
+}
+
+.inspiration__bar.is-nudging .inspiration__query {
+  overflow: auto;
 }
 
 .inspiration__query.is-empty {
   caret-color: transparent;
+}
+
+.inspiration__nudge-slot {
+  overflow: hidden;
+}
+
+.inspiration__nudge {
+  display: grid;
+  gap: var(--space-stack-sm);
+  justify-items: start;
+  padding-top: var(--space-stack-md);
 }
 
 .inspiration__typed {
@@ -429,6 +463,55 @@
   50% {
     opacity: 0;
   }
+}
+
+.inspiration__nudge-q {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body-sm);
+}
+
+.inspiration__nudge-list {
+  display: grid;
+  gap: var(--space-stack-sm);
+  justify-items: start;
+}
+
+.inspiration__nudge-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-inline-sm);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: var(--font-size-body-sm);
+  line-height: var(--line-height-body);
+  text-align: left;
+}
+
+.inspiration__nudge-mark {
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-bubble);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-on-primary);
+}
+
+.inspiration__nudge-opt.is-on .inspiration__nudge-mark {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+}
+
+.inspiration__remember-wrap:has(.inspiration__nudge) {
+  gap: var(--space-stack-md);
 }
 
 .inspiration__link-chip {
@@ -498,6 +581,8 @@
   align-items: center;
   gap: var(--space-inline-md);
   flex-shrink: 0;
+  justify-self: end;
+  align-self: end;
 }
 
 .inspiration__bar.is-resolving .inspiration__bar-actions,
@@ -666,6 +751,14 @@
 
   .inspiration__typed-caret {
     animation: none;
+  }
+
+  .inspiration__bar {
+    transition: none;
+  }
+
+  .inspiration__query {
+    transition: none;
   }
 }
 
@@ -875,28 +968,8 @@
   }
 
   .inspiration__bar {
-    display: grid;
-    grid-template-rows: 1fr auto;
     width: 100%;
-    min-height: calc(var(--size-composer) + var(--size-control));
-    gap: var(--space-stack-md);
     padding: var(--space-stack-md);
-    border-radius: var(--radius-sheet);
-  }
-
-  .inspiration__bar-field {
-    width: auto;
-    align-self: start;
-  }
-
-  .inspiration__query {
-    width: auto;
-    align-self: start;
-  }
-
-  .inspiration__bar-actions {
-    justify-self: end;
-    gap: var(--space-inline-sm);
   }
 
   .inspiration__examples {

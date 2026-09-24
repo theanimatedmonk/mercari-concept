@@ -43,6 +43,20 @@ export type AnalyzeStreamEvent =
   | { type: 'done'; result: AnalyzeResponse }
   | { type: 'error'; error: string };
 
+export type JevNudge = {
+  key: string;
+  question: string;
+  options: string[];
+};
+
+export const EMPTY_NUDGE: JevNudge = { key: '', question: '', options: [] };
+
+export type JevNudgeRequest = {
+  text?: string;
+  hasImage?: boolean;
+  answeredQuestions?: string[];
+};
+
 export type StyleOnMeRequest = {
   productImageUrl?: string;
   productImageBase64?: string;

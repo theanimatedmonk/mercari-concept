@@ -2,8 +2,9 @@ import type { Plugin } from 'vite';
 import { serverRetrieveCatalog } from './src/lib/recommendation/serverRetrieve';
 import { streamAnalyzeEvents } from './src/lib/llm/runAnalyze';
 import { resolveRemoteImage } from './src/lib/llm/resolveRemoteImage';
+import { runJevNudge } from './src/lib/llm/jevNudge';
 import { runStyleOnMe } from './src/lib/llm/styleOnMe';
-import type { AnalyzeRequest, AnalyzeStreamEvent, StyleOnMeRequest } from './src/lib/llm/types';
+import type { AnalyzeRequest, AnalyzeStreamEvent, JevNudgeRequest, StyleOnMeRequest } from './src/lib/llm/types';
 
 function readBody(req: { on: (event: string, cb: (chunk?: Buffer) => void) => void }) {
   return new Promise<string>((resolve, reject) => {
@@ -21,6 +22,7 @@ export function analyzeDevPlugin(env: Record<string, string>): Plugin {
     name: 'analyze-dev-api',
     configureServer(server) {
       if (env.XAI_API_KEY) process.env.XAI_API_KEY = env.XAI_API_KEY;
+      if (env.TYPESAFE_API_KEY) process.env.TYPESAFE_API_KEY = env.TYPESAFE_API_KEY;
       if (env.MYNTRA_AFFILIATE_FEED_URL) {
         process.env.MYNTRA_AFFILIATE_FEED_URL = env.MYNTRA_AFFILIATE_FEED_URL;
       }
@@ -179,6 +181,36 @@ export function analyzeDevPlugin(env: Record<string, string>): Plugin {
             res.statusCode = 422;
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify({ error: message }));
+          }
+        })();
+      });
+
+      server.middlewares.use('/api/jev/nudge', (req, res, next) => {
+        void (async () => {
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+          res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+          if (req.method === 'OPTIONS') {
+            res.statusCode = 204;
+            res.end();
+            return;
+          }
+          if (req.method !== 'POST') {
+            next();
+            return;
+          }
+          try {
+            const raw = await readBody(req);
+            const body = JSON.parse(raw || '{}') as JevNudgeRequest;
+            const nudge = await runJevNudge(body);
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(nudge));
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'JEV nudge failed';
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: message, question: '', options: [] }));
           }
         })();
       });

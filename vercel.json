@@ -12,6 +12,9 @@
     "api/inspiration/from-url.ts": {
       "maxDuration": 20
     },
+    "api/jev/nudge.ts": {
+      "maxDuration": 20
+    },
     "api/catalog/out.ts": {
       "maxDuration": 10
     }

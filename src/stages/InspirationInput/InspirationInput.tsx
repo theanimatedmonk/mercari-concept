@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowUp, Plus, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import AvatarOrb from '../../components/AvatarOrb';
@@ -8,12 +8,15 @@ import exampleText from '../../assets/lander-images/text.png';
 import exampleVoice from '../../assets/lander-images/voice.png';
 import generatedSound from '../../assets/audio files/generated.mp3';
 import { imageUrlToBase64, fetchInspirationFromUrl, requestAnalyzeStream } from '../../lib/llm/client';
+import { toggleIntent } from '../../lib/llm/intentQuery';
 import { splitPromptMedia } from '../../lib/llm/promptMedia';
 import { createRevealQueue } from '../../lib/llm/revealQueue';
 import type { AnalysisAttribute, AnalyzeResponse } from '../../lib/llm/types';
 import useDictation from '../../lib/useDictation';
 import DictateButton, { VoiceFreq } from './DictateButton';
 import GeneratingHero from './GeneratingHero';
+import JevNudge from './JevNudge';
+import useJevNudge from './useJevNudge';
 import useTypedPlaceholder from './useTypedPlaceholder';
 import './InspirationInput.css';
 
@@ -24,6 +27,7 @@ const EXAMPLES = [
 ];
 
 const LAYOUT_SPRING = { type: 'spring' as const, stiffness: 80, damping: 18, mass: 1.05 };
+const BAR_SPRING = { type: 'spring' as const, stiffness: 380, damping: 36, mass: 0.85 };
 
 type Props = {
   onContinue: (payload: {
@@ -48,6 +52,9 @@ export default function InspirationInput({
   const [linkFailed, setLinkFailed] = useState(false);
   const dictation = useDictation(context, setContext);
   const typedHint = useTypedPlaceholder(Boolean(context.trim()) || dictation.listening);
+  const queryRef = useRef<HTMLTextAreaElement>(null);
+  const reduceMotion = Boolean(useReducedMotion());
+  const barMotion = reduceMotion ? { duration: 0 } : BAR_SPRING;
   const [reading, setReading] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const [pills, setPills] = useState<AnalysisAttribute[]>([]);
@@ -57,6 +64,12 @@ export default function InspirationInput({
   const generatedAudio = useRef<HTMLAudioElement | null>(null);
   const generatedPlayed = useRef(false);
   const linkingRef = useRef(false);
+  const nudge = useJevNudge(
+    context,
+    Boolean(imageSrc),
+    !reading && !linking && !dictation.listening && !linkFailed,
+  );
+  const nudging = Boolean(nudge.question);
 
   useEffect(() => {
     onReadingChange?.(reading);
@@ -138,6 +151,11 @@ export default function InspirationInput({
     if (dictation.listening) dictation.stop();
     setLinkFailed(false);
     setContext(value);
+  }
+
+  function toggleNudgeOption(option: string) {
+    onContextChange(toggleIntent(context, option, Boolean(imageSrc), nudge.key));
+    queryRef.current?.focus();
   }
 
   function canSubmit() {
@@ -282,8 +300,8 @@ export default function InspirationInput({
                   Show me something you saw, describe it, or tell me what you are looking for.
                 </p>
               </header>
-              <div
-                className={`inspiration__bar${dragging ? ' is-dragging' : ''}${dictation.listening ? ' is-dictating' : ''}${linking ? ' is-resolving' : ''}${linkFailed ? ' is-link-failed' : ''}`}
+              <motion.div
+                className={`inspiration__bar${dragging ? ' is-dragging' : ''}${dictation.listening ? ' is-dictating' : ''}${linking ? ' is-resolving' : ''}${linkFailed ? ' is-link-failed' : ''}${nudging ? ' is-nudging' : ''}`}
                 aria-busy={linking}
                 onDragOver={(e) => {
                   e.preventDefault();
@@ -293,43 +311,67 @@ export default function InspirationInput({
                 onDrop={onDrop}
                 onPaste={onPaste}
               >
-                <div className="inspiration__bar-field">
-                  {linking ? (
-                    <span className="inspiration__link-chip is-busy" role="status">
-                      <span className="inspiration__link-spin" aria-hidden />
-                      getting the photo
-                    </span>
-                  ) : linkFailed ? (
-                    <button
-                      type="button"
-                      className="inspiration__link-chip is-failed"
-                      onClick={() => setLinkFailed(false)}
-                    >
-                      Could not get the photo
-                    </button>
-                  ) : (
-                    <>
-                      {dictation.listening ? <VoiceFreq /> : null}
-                      <input
-                        className={`inspiration__query${context ? '' : ' is-empty'}`}
-                        value={context}
-                        onChange={(e) => onContextChange(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key !== 'Enter') return;
-                          e.preventDefault();
-                          if (dictation.listening || linking) return;
-                          submitFromBar();
-                        }}
-                        aria-label="Drop an inspo image, paste a Pinterest pin or URL, or describe using voice"
-                      />
-                      {!context && !dictation.listening ? (
-                        <span className="inspiration__typed" aria-hidden>
-                          {typedHint}
-                          <span className="inspiration__typed-caret" />
-                        </span>
-                      ) : null}
-                    </>
-                  )}
+                <div className="inspiration__bar-copy">
+                  <div className="inspiration__bar-field">
+                    {linking ? (
+                      <span className="inspiration__link-chip is-busy" role="status">
+                        <span className="inspiration__link-spin" aria-hidden />
+                        getting the photo
+                      </span>
+                    ) : linkFailed ? (
+                      <button
+                        type="button"
+                        className="inspiration__link-chip is-failed"
+                        onClick={() => setLinkFailed(false)}
+                      >
+                        Could not get the photo
+                      </button>
+                    ) : (
+                      <>
+                        {dictation.listening ? <VoiceFreq /> : null}
+                        <textarea
+                          ref={queryRef}
+                          className={`inspiration__query${context ? '' : ' is-empty'}`}
+                          rows={nudging ? 2 : 1}
+                          value={context}
+                          onChange={(e) => onContextChange(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key !== 'Enter' || e.shiftKey) return;
+                            e.preventDefault();
+                            if (dictation.listening || linking) return;
+                            submitFromBar();
+                          }}
+                          aria-label="Drop an inspo image, paste a Pinterest pin or URL, or describe using voice"
+                        />
+                        {!context && !dictation.listening ? (
+                          <span className="inspiration__typed" aria-hidden>
+                            {typedHint}
+                            <span className="inspiration__typed-caret" />
+                          </span>
+                        ) : null}
+                      </>
+                    )}
+                  </div>
+                  <AnimatePresence initial={false}>
+                    {nudging ? (
+                      <motion.div
+                        key="jev-nudge"
+                        className="inspiration__nudge-slot"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={barMotion}
+                      >
+                        <JevNudge
+                          intentKey={nudge.key}
+                          question={nudge.question}
+                          options={nudge.options}
+                          query={context}
+                          onToggle={toggleNudgeOption}
+                        />
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
                 </div>
                 <div className="inspiration__bar-actions">
                   {dictation.listening ? null : (
@@ -359,7 +401,7 @@ export default function InspirationInput({
                     <ArrowUp size={18} strokeWidth={2.4} />
                   </button>
                 </div>
-              </div>
+              </motion.div>
               {analyzeError || dictation.error ? (
                 <p className="inspiration__error">{analyzeError || dictation.error}</p>
               ) : null}
@@ -416,8 +458,9 @@ export default function InspirationInput({
                 </button>
               </div>
               <div className="inspiration__remember-wrap">
-                <div className={`inspiration__composer${dictation.listening ? ' is-dictating' : ''}`}>
+                <div className={`inspiration__composer${dictation.listening ? ' is-dictating' : ''}${nudging ? ' is-nudging' : ''}`}>
                   <textarea
+                    ref={queryRef}
                     value={context}
                     onChange={(e) => onContextChange(e.target.value)}
                     placeholder="What caught your eye in this image?"
@@ -430,6 +473,15 @@ export default function InspirationInput({
                     onClick={dictation.toggle}
                   />
                 </div>
+                {nudging ? (
+                  <JevNudge
+                    intentKey={nudge.key}
+                    question={nudge.question}
+                    options={nudge.options}
+                    query={context}
+                    onToggle={toggleNudgeOption}
+                  />
+                ) : null}
               </div>
               {analyzeError || dictation.error ? (
                 <p className="inspiration__error">{analyzeError || dictation.error}</p>

@@ -1,10 +1,14 @@
+import { keyForQuestion } from './nudgeCatalog.js';
 import type {
   AnalysisAttribute,
   AnalyzeErrorBody,
   AnalyzeRequest,
   AnalyzeResponse,
   AnalyzeStreamEvent,
+  JevNudge,
+  JevNudgeRequest,
 } from './types.js';
+import { EMPTY_NUDGE } from './types.js';
 
 export const PILL_REVEAL_MS = 360;
 
@@ -151,4 +155,26 @@ export async function fetchInspirationFromUrl(url: string): Promise<{
   const mimeType = data.mimeType || 'image/jpeg';
   const blob = new Blob([bytes], { type: mimeType });
   return { preview: URL.createObjectURL(blob), mimeType };
+}
+
+export async function requestJevNudge(
+  payload: JevNudgeRequest,
+  signal?: AbortSignal,
+): Promise<JevNudge> {
+  const res = await fetch('/api/jev/nudge', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    signal,
+  });
+  const data = (await res.json().catch(() => EMPTY_NUDGE)) as JevNudge & { error?: string };
+  if (!res.ok) return EMPTY_NUDGE;
+  const question = typeof data.question === 'string' ? data.question.trim() : '';
+  const options = Array.isArray(data.options)
+    ? data.options.filter((item): item is string => typeof item === 'string' && Boolean(item.trim()))
+    : [];
+  if (!question || options.length < 3) return EMPTY_NUDGE;
+  const key =
+    (typeof data.key === 'string' ? data.key.trim() : '') || keyForQuestion(question);
+  return { key, question, options };
 }
