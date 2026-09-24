@@ -4,9 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import ImageMark from '../../components/icons/ImageMark';
 import { fetchInspirationFromUrl } from '../../lib/llm/client';
+import { toggleIntent } from '../../lib/llm/intentQuery';
 import { splitPromptMedia } from '../../lib/llm/promptMedia';
 import useDictation from '../../lib/useDictation';
 import DictateButton, { VoiceFreq } from '../InspirationInput/DictateButton';
+import JevNudge from '../InspirationInput/JevNudge';
+import useJevNudge from '../InspirationInput/useJevNudge';
 import '../InspirationInput/InspirationInput.css';
 import './CanvasEdit.css';
 
@@ -98,6 +101,11 @@ export default function CanvasEdit({
   const [linkFailed, setLinkFailed] = useState(false);
   const linkingRef = useRef(false);
   const dictation = useDictation(draftContext, setDraftContext);
+  const nudge = useJevNudge(
+    draftContext,
+    Boolean(draftImage),
+    tasteOpen && !linking && !dictation.listening && !linkFailed,
+  );
   const instant = Boolean(reduceMotion);
   const veilMotion = instant ? { duration: 0 } : VEIL_TWEEN;
   const sheetMotion = instant ? { duration: 0 } : SHEET_SPRING;
@@ -179,6 +187,14 @@ export default function CanvasEdit({
       setDraftContext(keep);
     }
     void attachFromUrl(url);
+  }
+
+  function toggleNudgeOption(option: string) {
+    dictation.stop();
+    setLinkFailed(false);
+    setDraftContext((prev) =>
+      toggleIntent(prev, option, Boolean(draftImage), nudge.key),
+    );
   }
 
   function removeImage() {
@@ -452,6 +468,15 @@ export default function CanvasEdit({
                       />
                     </div>
                   </div>
+                  {nudge.question ? (
+                    <JevNudge
+                      intentKey={nudge.key}
+                      question={nudge.question}
+                      options={nudge.options}
+                      query={draftContext}
+                      onToggle={toggleNudgeOption}
+                    />
+                  ) : null}
                 </div>
                 {tasteError || dictation.error ? (
                   <p className="inspiration__error">{tasteError || dictation.error}</p>
