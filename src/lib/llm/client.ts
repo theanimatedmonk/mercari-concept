@@ -169,12 +169,14 @@ export async function requestJevNudge(
   });
   const data = (await res.json().catch(() => EMPTY_NUDGE)) as JevNudge & { error?: string };
   if (!res.ok) return EMPTY_NUDGE;
+  const inScope = data.inScope !== false;
   const question = typeof data.question === 'string' ? data.question.trim() : '';
   const options = Array.isArray(data.options)
     ? data.options.filter((item): item is string => typeof item === 'string' && Boolean(item.trim()))
     : [];
+  if (!inScope) return { ...EMPTY_NUDGE, inScope: false };
   if (!question || options.length < 3) return EMPTY_NUDGE;
   const key =
     (typeof data.key === 'string' ? data.key.trim() : '') || keyForQuestion(question);
-  return { key, question, options };
+  return { key, question, options, inScope: true };
 }

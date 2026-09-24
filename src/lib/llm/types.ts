@@ -47,9 +47,15 @@ export type JevNudge = {
   key: string;
   question: string;
   options: string[];
+  inScope: boolean;
 };
 
-export const EMPTY_NUDGE: JevNudge = { key: '', question: '', options: [] };
+export const EMPTY_NUDGE: JevNudge = {
+  key: '',
+  question: '',
+  options: [],
+  inScope: true,
+};
 
 export type JevNudgeRequest = {
   text?: string;

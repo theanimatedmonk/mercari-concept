@@ -5,6 +5,13 @@ import { EMPTY_NUDGE, type JevNudge, type JevNudgeRequest } from './types.js';
 const JEV_URL = 'https://api.typesafe.ai/v1/systemone';
 const MODEL = 'jev-latest';
 
+const SCOPE_CRITERIA: Record<string, string> = {
+  women:
+    "Women's clothing, shoes, bags, jewelry, or a women's outfit. Lookmind can help.",
+  other:
+    "Not women's fashion: men's, kids, electronics, food, home, animals, beauty-only, or anything else.",
+};
+
 const TEXT_CRITERIA: Record<string, string> = {
   product: 'Garment type is missing (dress, top, shoes, bag, jewelry).',
   vibe: 'Style or vibe is missing (minimal, romantic, edgy, elegant).',
@@ -61,11 +68,13 @@ function pickNudge(
   choice: string | undefined,
   hasImage: boolean,
   skip: Set<string>,
+  inScope: boolean,
 ): JevNudge {
+  if (!inScope) return { ...EMPTY_NUDGE, inScope: false };
   if (!choice || choice === 'none' || skip.has(choice)) return EMPTY_NUDGE;
   const spec = catalogFor(hasImage)[choice];
   if (!spec) return EMPTY_NUDGE;
-  return { key: choice, question: spec.question, options: spec.options };
+  return { key: choice, question: spec.question, options: spec.options, inScope: true };
 }
 
 export async function runJevNudge(request: JevNudgeRequest): Promise<JevNudge> {
@@ -91,13 +100,19 @@ export async function runJevNudge(request: JevNudgeRequest): Promise<JevNudge> {
         query: text,
         hasImage,
         answeredQuestions,
-        task: 'Fashion shopping inspiration. Pick the single highest-value MISSING intent dimension. Never ask about budget. Do not ask for anything already in the query. Do not interpret a photo. Never repeat a dimension in answeredQuestions.',
+        task: "Lookmind is a women's clothing shopping assistant. Decide if the query is in scope for women's fashion. If it is, pick the single highest-value MISSING intent dimension. Never ask about budget. Do not ask for anything already in the query. Do not interpret a photo. Never repeat a dimension in answeredQuestions.",
       },
       questions: {
+        scope: {
+          type: 'choice',
+          instructions:
+            "Is this in scope for a women's clothing shopping assistant? If the text is empty or ambiguous fashion, choose women. Choose other only when the text clearly is not women's clothing. Do not use the photo.",
+          criteria: SCOPE_CRITERIA,
+        },
         next: {
           type: 'choice',
           instructions:
-            'Which follow-up should Lookmind ask next? Choose none if nothing useful is missing. Never choose budget. Never choose a dimension already answered.',
+            'Which follow-up should Lookmind ask next? Choose none if nothing useful is missing, or if scope is other. Never choose budget. Never choose a dimension already answered.',
           criteria: criteriaFor(hasImage, skip),
         },
       },
@@ -108,7 +123,8 @@ export async function runJevNudge(request: JevNudgeRequest): Promise<JevNudge> {
     throw new Error(`TypeSafe Jev ${res.status}: ${detail.slice(0, 200)}`);
   }
   const body = (await res.json()) as {
-    answers?: { next?: { choice?: string } };
+    answers?: { scope?: { choice?: string }; next?: { choice?: string } };
   };
-  return pickNudge(body.answers?.next?.choice, hasImage, skip);
+  const inScope = body.answers?.scope?.choice !== 'other';
+  return pickNudge(body.answers?.next?.choice, hasImage, skip, inScope);
 }

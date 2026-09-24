@@ -1,6 +1,6 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowUp, Plus, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import AvatarOrb from '../../components/AvatarOrb';
 import ImageMark from '../../components/icons/ImageMark';
 import exampleImage from '../../assets/lander-images/image_text.png';
@@ -28,6 +28,18 @@ const EXAMPLES = [
 
 const LAYOUT_SPRING = { type: 'spring' as const, stiffness: 80, damping: 18, mass: 1.05 };
 const BAR_SPRING = { type: 'spring' as const, stiffness: 380, damping: 36, mass: 0.85 };
+
+function fitQuery(el: HTMLTextAreaElement | null) {
+  if (!el) return;
+  const prev = el.offsetHeight;
+  el.style.height = 'auto';
+  const next = el.scrollHeight;
+  if (prev > 0 && prev !== next) {
+    el.style.height = `${prev}px`;
+    el.offsetHeight;
+  }
+  el.style.height = `${next}px`;
+}
 
 type Props = {
   onContinue: (payload: {
@@ -70,6 +82,10 @@ export default function InspirationInput({
     !reading && !linking && !dictation.listening && !linkFailed,
   );
   const nudging = Boolean(nudge.question);
+
+  useLayoutEffect(() => {
+    fitQuery(queryRef.current);
+  }, [context, nudging, linking, linkFailed, imageSrc, dictation.listening]);
 
   useEffect(() => {
     onReadingChange?.(reading);
@@ -153,13 +169,18 @@ export default function InspirationInput({
     setContext(value);
   }
 
+  function onQueryChange(el: HTMLTextAreaElement) {
+    onContextChange(el.value);
+    fitQuery(el);
+  }
+
   function toggleNudgeOption(option: string) {
     onContextChange(toggleIntent(context, option, Boolean(imageSrc), nudge.key));
     queryRef.current?.focus();
   }
 
   function canSubmit() {
-    return !linking && Boolean(imageSrc || context.trim());
+    return !linking && Boolean(imageSrc || context.trim()) && nudge.inScope;
   }
 
   async function submit() {
@@ -229,6 +250,7 @@ export default function InspirationInput({
   }
 
   function submitFromBar() {
+    if (!nudge.inScope) return;
     if (context.trim()) {
       void submit();
       return;
@@ -262,7 +284,7 @@ export default function InspirationInput({
 
   return (
     <section
-      className={`inspiration${reading ? ' is-reading' : ''}${reading && !imageSrc ? ' is-prompt' : ''}`}
+      className={`inspiration${reading ? ' is-reading' : ''}${reading && !imageSrc ? ' is-prompt' : ''}${imageSrc && !reading ? ' is-sheet' : ''}`}
     >
       <input
         ref={fileRef}
@@ -332,13 +354,14 @@ export default function InspirationInput({
                         <textarea
                           ref={queryRef}
                           className={`inspiration__query${context ? '' : ' is-empty'}`}
-                          rows={nudging ? 2 : 1}
+                          rows={1}
+                          wrap="soft"
                           value={context}
-                          onChange={(e) => onContextChange(e.target.value)}
+                          onChange={(e) => onQueryChange(e.target)}
                           onKeyDown={(e) => {
                             if (e.key !== 'Enter' || e.shiftKey) return;
                             e.preventDefault();
-                            if (dictation.listening || linking) return;
+                            if (dictation.listening || linking || !nudge.inScope) return;
                             submitFromBar();
                           }}
                           aria-label="Drop an inspo image, paste a Pinterest pin or URL, or describe using voice"
@@ -394,8 +417,10 @@ export default function InspirationInput({
                   <button
                     type="button"
                     className="inspiration__submit"
-                    aria-label="Continue"
-                    disabled={dictation.listening || linking}
+                    aria-label={
+                      nudge.inScope ? 'Continue' : "Lookmind is for women's clothing"
+                    }
+                    disabled={dictation.listening || linking || !nudge.inScope}
                     onClick={submitFromBar}
                   >
                     <ArrowUp size={18} strokeWidth={2.4} />
@@ -432,6 +457,7 @@ export default function InspirationInput({
                     layoutId="inspiration-frame"
                     className="inspiration__thumb-frame"
                     transition={LAYOUT_SPRING}
+                    layout="position"
                   >
                     <img
                       className="inspiration__thumb"
@@ -461,8 +487,10 @@ export default function InspirationInput({
                 <div className={`inspiration__composer${dictation.listening ? ' is-dictating' : ''}${nudging ? ' is-nudging' : ''}`}>
                   <textarea
                     ref={queryRef}
+                    rows={1}
+                    wrap="soft"
                     value={context}
-                    onChange={(e) => onContextChange(e.target.value)}
+                    onChange={(e) => onQueryChange(e.target)}
                     placeholder="What caught your eye in this image?"
                     aria-label="What caught your eye in this image?"
                   />
@@ -473,15 +501,26 @@ export default function InspirationInput({
                     onClick={dictation.toggle}
                   />
                 </div>
-                {nudging ? (
-                  <JevNudge
-                    intentKey={nudge.key}
-                    question={nudge.question}
-                    options={nudge.options}
-                    query={context}
-                    onToggle={toggleNudgeOption}
-                  />
-                ) : null}
+                <AnimatePresence initial={false}>
+                  {nudging ? (
+                    <motion.div
+                      key="jev-nudge-sheet"
+                      className="inspiration__nudge-slot"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={barMotion}
+                    >
+                      <JevNudge
+                        intentKey={nudge.key}
+                        question={nudge.question}
+                        options={nudge.options}
+                        query={context}
+                        onToggle={toggleNudgeOption}
+                      />
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
               </div>
               {analyzeError || dictation.error ? (
                 <p className="inspiration__error">{analyzeError || dictation.error}</p>
@@ -489,7 +528,7 @@ export default function InspirationInput({
               <button
                 type="button"
                 className="inspiration__done"
-                disabled={linking}
+                disabled={linking || !nudge.inScope}
                 onClick={() => void submit()}
               >
                 Let's find something great

@@ -210,7 +210,7 @@ export function analyzeDevPlugin(env: Record<string, string>): Plugin {
             const message = error instanceof Error ? error.message : 'JEV nudge failed';
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: message, question: '', options: [] }));
+            res.end(JSON.stringify({ error: message, question: '', options: [], inScope: true }));
           }
         })();
       });

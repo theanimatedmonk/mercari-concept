@@ -104,8 +104,8 @@
   --primitive-blur-lg: 40px;
 
   --primitive-z-base: 1;
-  --primitive-z-stage: 2;
-  --primitive-z-sand: 3;
+  --primitive-z-sand: 2;
+  --primitive-z-stage: 3;
   --primitive-z-sticky: 200;
   --primitive-z-overlay: 800;
   --primitive-z-modal: 900;

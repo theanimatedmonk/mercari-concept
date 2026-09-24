@@ -29,14 +29,14 @@
 .sand-backdrop > div {
   width: 100%;
   height: 100%;
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 .sand-backdrop canvas {
   display: block;
   width: 100%;
   height: 100%;
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 @media (max-width: 48rem) {

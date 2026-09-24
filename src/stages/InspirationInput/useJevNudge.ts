@@ -25,7 +25,7 @@ export default function useJevNudge(
 
   useEffect(() => {
     if (!enabled) {
-      setNudge(EMPTY_NUDGE);
+      setNudge((prev) => ({ ...EMPTY_NUDGE, inScope: prev.inScope }));
       return undefined;
     }
     const trimmed = text.trim();
@@ -61,7 +61,7 @@ export default function useJevNudge(
         .catch((error: unknown) => {
           if (ac.signal.aborted) return;
           if (error instanceof DOMException && error.name === 'AbortError') return;
-          setNudge(EMPTY_NUDGE);
+          setNudge((prev) => ({ ...EMPTY_NUDGE, inScope: prev.inScope }));
         });
     }, DEBOUNCE_MS);
 

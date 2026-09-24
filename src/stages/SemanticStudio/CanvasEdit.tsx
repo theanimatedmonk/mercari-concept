@@ -205,7 +205,7 @@ export default function CanvasEdit({
   }
 
   function canSubmit() {
-    return !linking && Boolean(draftImage || draftContext.trim());
+    return !linking && Boolean(draftImage || draftContext.trim()) && nudge.inScope;
   }
 
   async function submitTaste() {

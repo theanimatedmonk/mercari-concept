@@ -39,6 +39,10 @@
   gap: var(--space-stack-xl);
 }
 
+.inspiration.is-sheet {
+  align-content: start;
+}
+
 .inspiration.is-reading.is-prompt .inspiration__hero {
   grid-column: auto;
   grid-row: auto;
@@ -363,7 +367,7 @@
 .inspiration__bar {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(min-content, 1fr) auto;
   align-items: stretch;
   width: min(var(--size-landing), 100%);
   max-width: 100%;
@@ -383,10 +387,6 @@
   align-content: start;
 }
 
-.inspiration__bar.is-nudging .inspiration__bar-field {
-  align-items: flex-start;
-}
-
 .inspiration__bar.is-dictating .inspiration__query {
   color: var(--color-text-secondary);
 }
@@ -394,15 +394,18 @@
 .inspiration__bar-field {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-inline-sm);
+  width: 100%;
   min-width: 0;
   min-height: var(--size-control);
 }
 
 .inspiration__query {
-  flex: 1 1 0;
+  flex: 1 1 auto;
+  display: block;
   width: 100%;
+  max-width: 100%;
   min-width: 0;
   min-height: calc(var(--font-size-body) * var(--line-height-body));
   margin: 0;
@@ -413,13 +416,13 @@
   font-family: inherit;
   font-size: var(--font-size-body);
   line-height: var(--line-height-body);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   resize: none;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: hidden;
   outline: none;
-}
-
-.inspiration__bar.is-nudging .inspiration__query {
-  overflow: auto;
+  transition: height var(--duration-slow) var(--ease-spring);
 }
 
 .inspiration__query.is-empty {
@@ -876,6 +879,7 @@
 
 .inspiration__composer textarea {
   width: 100%;
+  max-width: 100%;
   min-height: var(--size-composer);
   resize: none;
   border: 1px solid var(--color-border-default);
@@ -884,7 +888,12 @@
     calc(var(--size-control) + var(--space-stack-md)) var(--space-inline-md);
   background: var(--color-bg-elevated);
   color: var(--color-text-primary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
+  overflow-y: hidden;
   outline: none;
+  transition: height var(--duration-slow) var(--ease-spring);
 }
 
 .inspiration__composer .inspiration__freq {
