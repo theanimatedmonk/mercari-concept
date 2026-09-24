@@ -1,6 +1,7 @@
 import type { Plugin } from 'vite';
 import { serverRetrieveCatalog } from './src/lib/recommendation/serverRetrieve';
 import { streamAnalyzeEvents } from './src/lib/llm/runAnalyze';
+import { resolveRemoteImage } from './src/lib/llm/resolveRemoteImage';
 import { runStyleOnMe } from './src/lib/llm/styleOnMe';
 import type { AnalyzeRequest, AnalyzeStreamEvent, StyleOnMeRequest } from './src/lib/llm/types';
 
@@ -138,6 +139,44 @@ export function analyzeDevPlugin(env: Record<string, string>): Plugin {
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Style it on me failed';
             res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: message }));
+          }
+        })();
+      });
+
+      server.middlewares.use('/api/inspiration/from-url', (req, res, next) => {
+        void (async () => {
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+          res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+          if (req.method === 'OPTIONS') {
+            res.statusCode = 204;
+            res.end();
+            return;
+          }
+          if (req.method !== 'POST') {
+            next();
+            return;
+          }
+          try {
+            const raw = await readBody(req);
+            const body = JSON.parse(raw || '{}') as { url?: string };
+            const url = typeof body.url === 'string' ? body.url.trim() : '';
+            if (!url) {
+              res.statusCode = 400;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: 'Paste a photo, Pinterest, or Instagram link' }));
+              return;
+            }
+            const image = await resolveRemoteImage(url);
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(image));
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : "Couldn't find a photo at that link.";
+            res.statusCode = 422;
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify({ error: message }));
           }

@@ -25,23 +25,31 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false;
-    void hydrateSession().then((session) => {
-      if (cancelled) return;
-      if (session?.analysis) {
-        setImageSrc(session.imageSrc);
-        setContext(session.context ?? '');
-        setAnalysis(session.analysis);
-        setStage('sculpt');
-        setResume(true);
-      }
-      setBooted(true);
-    });
+    const failSafe = window.setTimeout(() => {
+      if (!cancelled) setBooted(true);
+    }, 400);
+    void hydrateSession()
+      .then((session) => {
+        if (cancelled) return;
+        if (session?.analysis) {
+          setImageSrc(session.imageSrc);
+          setContext(session.context ?? '');
+          setAnalysis(session.analysis);
+          setStage('sculpt');
+          setResume(true);
+        }
+      })
+      .finally(() => {
+        window.clearTimeout(failSafe);
+        if (!cancelled) setBooted(true);
+      });
     function onHide() {
       void flushSession();
     }
     window.addEventListener('pagehide', onHide);
     return () => {
       cancelled = true;
+      window.clearTimeout(failSafe);
       window.removeEventListener('pagehide', onHide);
     };
   }, []);

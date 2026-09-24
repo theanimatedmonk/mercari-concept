@@ -4,6 +4,7 @@ type ButtonProps = {
   listening: boolean;
   className: string;
   onClick: () => void;
+  disabled?: boolean;
 };
 
 const FREQ_BARS = 5;
@@ -18,16 +19,23 @@ export function VoiceFreq() {
   );
 }
 
-export default function DictateButton({ listening, className, onClick }: ButtonProps) {
+export default function DictateButton({
+  listening,
+  className,
+  onClick,
+  disabled = false,
+}: ButtonProps) {
   return (
     <button
       type="button"
       className={`${className}${listening ? ' is-listening' : ''}`}
       aria-label={listening ? 'Stop dictation' : 'Dictate'}
       aria-pressed={listening}
+      disabled={disabled}
       onClick={onClick}
     >
       {listening ? <span className="inspiration__stop" /> : <MicMark />}
     </button>
   );
 }
+

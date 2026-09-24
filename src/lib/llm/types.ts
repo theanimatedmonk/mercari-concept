@@ -14,6 +14,7 @@ export type TagSide = (typeof TAG_SIDES)[number];
 export type AnalyzeRequest = {
   imageBase64?: string;
   mimeType?: string;
+  imageUrl?: string;
   text?: string;
 };
 

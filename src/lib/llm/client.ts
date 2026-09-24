@@ -127,3 +127,28 @@ export async function imageUrlToBase64(url: string): Promise<{
     mimeType: blob.type || 'image/jpeg',
   };
 }
+
+export async function fetchInspirationFromUrl(url: string): Promise<{
+  preview: string;
+  mimeType: string;
+}> {
+  const res = await fetch('/api/inspiration/from-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  });
+  const data = (await res.json()) as {
+    error?: string;
+    imageBase64?: string;
+    mimeType?: string;
+  };
+  if (!res.ok || !data.imageBase64) {
+    throw new Error(data.error || "Couldn't find a photo at that link.");
+  }
+  const binary = atob(data.imageBase64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  const mimeType = data.mimeType || 'image/jpeg';
+  const blob = new Blob([bytes], { type: mimeType });
+  return { preview: URL.createObjectURL(blob), mimeType };
+}

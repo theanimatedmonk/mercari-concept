@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import generatedSound from '../../assets/audio files/generated.mp3';
 import { imageUrlToBase64, requestAnalyzeStream } from '../../lib/llm/client';
+import { splitPromptMedia } from '../../lib/llm/promptMedia';
 import { createRevealQueue } from '../../lib/llm/revealQueue';
 import type { AnalysisAttribute, AnalyzeResponse } from '../../lib/llm/types';
 
@@ -54,12 +55,25 @@ export default function usePromptGenerate(
       );
     });
     try {
-      const payload: { text?: string; imageBase64?: string; mimeType?: string } = {};
-      if (draft.context.trim()) payload.text = draft.context.trim();
+      const payload: {
+        text?: string;
+        imageBase64?: string;
+        mimeType?: string;
+        imageUrl?: string;
+      } = {};
+      const split = splitPromptMedia(draft.context);
+      const caption = draft.imageSrc ? draft.context.trim() : split.caption;
+      if (caption) payload.text = caption;
       if (draft.imageSrc) {
-        const image = await imageUrlToBase64(draft.imageSrc);
-        payload.imageBase64 = image.imageBase64;
-        payload.mimeType = image.mimeType;
+        if (draft.imageSrc.startsWith('http://') || draft.imageSrc.startsWith('https://')) {
+          payload.imageUrl = draft.imageSrc;
+        } else {
+          const image = await imageUrlToBase64(draft.imageSrc);
+          payload.imageBase64 = image.imageBase64;
+          payload.mimeType = image.mimeType;
+        }
+      } else if (split.url) {
+        payload.imageUrl = split.url;
       }
       const result = await requestAnalyzeStream(payload, queue.push);
       if (!result.fashion) {

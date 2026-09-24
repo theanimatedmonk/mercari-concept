@@ -9,6 +9,9 @@
     "api/catalog/search.ts": {
       "maxDuration": 30
     },
+    "api/inspiration/from-url.ts": {
+      "maxDuration": 20
+    },
     "api/catalog/out.ts": {
       "maxDuration": 10
     }

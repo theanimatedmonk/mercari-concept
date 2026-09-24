@@ -33,6 +33,7 @@ function asRequest(value: unknown): AnalyzeRequest {
   return {
     imageBase64: typeof row.imageBase64 === 'string' ? row.imageBase64 : undefined,
     mimeType: typeof row.mimeType === 'string' ? row.mimeType : undefined,
+    imageUrl: typeof row.imageUrl === 'string' ? row.imageUrl : undefined,
     text: typeof row.text === 'string' ? row.text : undefined,
   };
 }
