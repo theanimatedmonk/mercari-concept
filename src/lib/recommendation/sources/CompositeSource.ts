@@ -1,4 +1,4 @@
-import { catalogEnv, catalogFlag } from '../env.js';
+import { catalogEnv } from '../env.js';
 import type { CatalogProduct } from '../types.js';
 import type { ProductSource } from './ProductSource.js';
 import { amazonConfigured, amazonSource } from './AmazonSource.js';
@@ -25,10 +25,7 @@ export class CompositeSource implements ProductSource {
 
   async search(query: string): Promise<CatalogProduct[]> {
     const batches = await Promise.all(this.sources.map((source) => source.search(query)));
-    const merged = dedupe(batches.flat());
-    if (merged.length) return merged.slice(0, 36);
-    if (!catalogFlag('CATALOG_USE_MOCK_FALLBACK', true)) return [];
-    return mockSource.search(query);
+    return dedupe(batches.flat()).slice(0, 36);
   }
 }
 

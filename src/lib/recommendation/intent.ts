@@ -3,7 +3,7 @@ import { resolvedWeight } from '../scoring.js';
 import type { IntentAttribute, IntentSnapshot } from './types.js';
 import { buildProductQueries } from './queryBuilder.js';
 
-const RETRIEVAL_WEIGHT = 0.6;
+const RETRIEVAL_WEIGHT = 0.35;
 
 function toIntentAttribute(attr: SemanticAttribute): IntentAttribute {
   return {

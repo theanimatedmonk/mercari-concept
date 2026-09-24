@@ -1,4 +1,5 @@
 import { deriveAttributes } from '../catalog/deriveAttributes.js';
+import { normalizeCatalogImage } from './mapProduct.js';
 import type { CatalogProduct, MerchantId } from './types.js';
 
 type FeedRow = Record<string, string>;
@@ -91,7 +92,7 @@ function rowToProduct(row: FeedRow, merchant: MerchantId, index: number): Catalo
     brand: brand || undefined,
     price: parsePrice(priceRaw),
     currency,
-    imageUrl,
+    imageUrl: normalizeCatalogImage(imageUrl),
     productUrl: link,
     affiliateUrl: pick(row, ['affiliate_link', 'deeplink']) || link,
     category: category || 'fashion',

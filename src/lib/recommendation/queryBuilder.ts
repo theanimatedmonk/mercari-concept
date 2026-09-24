@@ -35,36 +35,14 @@ function joinQuery(parts: string[]) {
   return body.toLowerCase().includes('dress') ? body : `${body} ${DRESS_TAIL}`;
 }
 
-/** Deterministic 2–4 natural shopping queries from semantic state. */
+/** Deterministic 2–4 shopping queries from generated pills and catalogQuery. */
 export function buildProductQueries(intent: IntentSnapshot): string[] {
   const labels = pickLabels(intent, 6);
-  const locked = intent.attributes.filter((a) => a.locked && !a.deleted).map((a) => a.label);
-  const context = intent.attributes
-    .filter((a) => !a.deleted && a.category === 'user-context')
-    .map((a) => a.label);
-  const visual = intent.attributes
-    .filter((a) => !a.deleted && a.category !== 'user-context')
-    .sort((a, b) => b.weight - a.weight)
-    .map((a) => a.label);
-
   const queries: string[] = [];
   if (intent.catalogQuery) queries.push(intent.catalogQuery.trim());
-
-  if (locked.length) {
-    queries.push(joinQuery([...locked, ...context.slice(0, 2), DRESS_TAIL]));
+  for (const label of labels) {
+    queries.push(joinQuery([label]));
   }
-
-  if (visual.length >= 2) {
-    queries.push(joinQuery([visual[0], visual[1], context[0] ?? '', DRESS_TAIL]));
-  }
-
-  if (labels.length >= 3) {
-    queries.push(joinQuery([labels[0], labels[1], labels[2]]));
-  } else if (labels.length) {
-    queries.push(joinQuery(labels));
-  }
-
   if (!queries.length) queries.push('evening dress');
-
   return uniquePhrases(queries).slice(0, 4);
 }

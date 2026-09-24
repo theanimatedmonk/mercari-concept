@@ -3,7 +3,12 @@ import { isDressListing } from './dressFilter.js';
 import { deriveAttributes } from '../catalog/deriveAttributes.js';
 
 function scoresForIntent(product: RetrievedProduct, intent: IntentSnapshot) {
-  const blob = [product.title, product.brand ?? '', ...(product.attributes ?? [])].join(' ');
+  const blob = [
+    product.title,
+    product.brand ?? '',
+    product.category ?? '',
+    ...(product.attributes ?? []),
+  ].join(' ');
   return {
     ...product.attributeScores,
     ...deriveAttributes(
@@ -83,7 +88,7 @@ export function rankCatalogProducts(
 
   diversified.sort((a, b) => b.rankScore - a.rankScore);
   return diversified.filter((row) =>
-    row.merchant === 'aliexpress'
+    row.merchant === 'aliexpress' || row.merchant === 'luxurycloset'
       ? true
       : isDressListing(row.title, row.category ?? '', row.imageUrl),
   );

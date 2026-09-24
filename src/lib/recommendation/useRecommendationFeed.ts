@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { LISTING_PRODUCT_ID } from '../../data/listing.js';
-import { products as fallbackProducts } from '../../data/products.js';
 import type { Product, SemanticAttribute } from '../../types.js';
-import { withHeroListing } from '../catalog/fetchFashion.js';
 import { retrievalQueryKey, snapshotIntent, snapshotIntentForRetrieval } from './intent.js';
 import { catalogToProduct } from './mapProduct.js';
 import { buildProductQueries } from './queryBuilder.js';
@@ -12,24 +10,22 @@ import { rankCatalogProducts } from './ranking.js';
 import type { RetrievedProduct } from './types.js';
 
 const FEED_CARDS = 12;
-const dressFallback = fallbackProducts.filter((item) =>
-  isDressListing(item.name, '', item.image),
-);
 
 function fillCatalog(live: Product[]) {
   const out: Product[] = [];
   const seen = new Set<string>();
-  const liveMerchant = live.some(
-    (item) => item.merchant === 'luxurycloset' || item.merchant === 'aliexpress',
-  );
-  const pad = liveMerchant ? [] : dressFallback;
-  for (const item of [...live, ...pad]) {
+  for (const item of live) {
     if (seen.has(item.id)) continue;
     seen.add(item.id);
     out.push(item);
     if (out.length >= FEED_CARDS) break;
   }
-  return liveMerchant ? out : withHeroListing(out);
+  return out;
+}
+
+function keepListing(item: Product) {
+  if (item.merchant === 'luxurycloset' || item.merchant === 'aliexpress') return true;
+  return isDressListing(item.name, '', item.image);
 }
 
 export function useRecommendationFeed(
@@ -72,11 +68,7 @@ export function useRecommendationFeed(
     const intent = snapshotIntent(attributes, catalogQuery);
     const queries = buildProductQueries(snapshotIntentForRetrieval(attributes, catalogQuery));
     const rows = rankCatalogProducts(intent, pool, queries.length);
-    const products = rows
-      .map(catalogToProduct)
-      .filter((item) =>
-        item.merchant === 'aliexpress' ? true : isDressListing(item.name, '', item.image),
-      );
+    const products = rows.map(catalogToProduct).filter(keepListing);
     return fillCatalog(products);
   }, [attributes, catalogQuery, pool]);
 

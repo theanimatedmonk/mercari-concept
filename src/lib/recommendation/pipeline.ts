@@ -66,7 +66,7 @@ export async function retrieveProducts(
   try {
     return await fetchCatalogFromApi({ queries, inspirationImageUrl });
   } catch {
-    return retrieveFromQueries(queries, mockSource);
+    return [];
   }
 }
 

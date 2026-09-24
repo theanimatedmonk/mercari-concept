@@ -21,7 +21,7 @@ function isWomenDress(product: CatalogProduct) {
   const hay = `${product.title} ${product.category ?? ''}`;
   if (/\bkids?\b|\b\d+\s*yrs?\b|\b\d+-\d+\s*m\b/i.test(hay)) return false;
   if (!/women/i.test(hay)) return false;
-  if (/women'?s clothes,\s*dresses/i.test(product.category ?? '')) return true;
+  if (/\bdresses\b/i.test(product.category ?? '')) return true;
   return isDressListing(product.title, product.category ?? '', product.imageUrl);
 }
 

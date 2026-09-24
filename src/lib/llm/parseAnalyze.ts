@@ -11,7 +11,7 @@ fashion is true only for clothing, shoes, bags, jewelry, outfits, or fashion pho
 fashion is false for food, interiors, cars, animals, memes, landscapes, or anything not apparel.
 If fashion is false: attributes must be [] and catalogQuery must be "".
 If fashion is true: return 6 to 10 attributes. weight is 0 to 1. text is a status line like "Holding onto this plum". tag MUST be the same short phrase as label. tagSide is one of left, right, left-low, left-high, right-high, right-low.
-catalogQuery is 2 to 5 DummyJSON search keywords (example: "black evening gown").`;
+catalogQuery is 2 to 5 shopping keywords for a women's dress search (example: "black silk midi dress").`;
 
 const CATEGORIES: AttributeCategory[] = ['visual', 'inferred', 'user-context'];
 
