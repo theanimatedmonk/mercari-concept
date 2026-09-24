@@ -40,6 +40,7 @@
 
   --color-coachmark: var(--primitive-coach-500);
   --color-dictate: var(--primitive-coach-500);
+  --color-caret: var(--primitive-coach-500);
   --color-coachmark-nav: var(--primitive-coach-700);
   --color-coachmark-skip: rgb(255 255 255 / 0.22);
   --color-text-on-coachmark: var(--primitive-white);

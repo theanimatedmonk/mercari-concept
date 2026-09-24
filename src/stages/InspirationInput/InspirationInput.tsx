@@ -100,6 +100,11 @@ export default function InspirationInput({
     fitQuery(queryRef.current);
   }, [context, nudging, linking, linkFailed, imageSrc, dictation.listening]);
 
+  useLayoutEffect(() => {
+    if (!imageSrc || reading || linking) return;
+    queryRef.current?.focus();
+  }, [imageSrc, reading, linking]);
+
   useEffect(() => {
     onReadingChange?.(reading);
   }, [reading, onReadingChange]);
@@ -401,15 +406,14 @@ export default function InspirationInput({
                     {dictation.listening ? <VoiceFreq /> : null}
                     <textarea
                       ref={queryRef}
-                      className={`inspiration__query${context || imageSrc || queryFocused ? '' : ' is-empty'}`}
+                      className={`inspiration__query${
+                        !context && !dictation.listening && !imageSrc && !queryFocused
+                          ? ' is-empty'
+                          : ''
+                      }`}
                       rows={1}
                       wrap="soft"
                       value={context}
-                      placeholder={
-                        imageSrc && !queryFocused && !imagePrompted
-                          ? 'What caught your eye in this image?'
-                          : undefined
-                      }
                       onFocus={() => setQueryFocused(true)}
                       onBlur={() => setQueryFocused(false)}
                       onChange={(e) => onQueryChange(e.target)}

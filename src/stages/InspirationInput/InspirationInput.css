@@ -433,6 +433,7 @@
   border: 0;
   background: transparent;
   color: var(--color-text-primary);
+  caret-color: var(--color-caret);
   font-family: inherit;
   font-size: var(--font-size-body);
   line-height: var(--line-height-body);
@@ -486,11 +487,11 @@
 
 .inspiration__typed-caret {
   display: block;
-  width: 2px;
-  height: 1em;
-  margin-inline-start: var(--space-inline-xs);
+  width: 1px;
+  height: 1lh;
+  margin-inline-start: 1px;
   flex-shrink: 0;
-  background: currentColor;
+  background: var(--color-caret);
   animation: inspiration-typed-caret calc(var(--duration-reveal) * 2) step-end infinite;
 }
 
@@ -930,6 +931,7 @@
     calc(var(--size-control) + var(--space-stack-md)) var(--space-inline-md);
   background: var(--color-bg-elevated);
   color: var(--color-text-primary);
+  caret-color: var(--color-caret);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   overflow-x: hidden;
@@ -1029,13 +1031,7 @@
   }
 
   .inspiration__examples {
-    grid-template-columns: 1fr;
-    max-width: 20rem;
-    margin-top: var(--space-stack-xl);
-  }
-
-  .inspiration__example:nth-child(2) {
-    margin-top: 0;
+    display: none;
   }
 
   .inspiration__hero {
