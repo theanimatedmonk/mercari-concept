@@ -367,8 +367,10 @@
 .inspiration__bar {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(min-content, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-content: space-between;
   align-items: stretch;
+  gap: var(--space-stack-md);
   width: min(var(--size-landing), 100%);
   max-width: 100%;
   min-width: 0;
@@ -379,12 +381,30 @@
   box-shadow: var(--shadow-elevated);
 }
 
+.inspiration__bar.is-nudging {
+  min-height: calc(var(--size-composer) + var(--size-control) + var(--space-stack-xl));
+}
+
+.inspiration__bar.has-media {
+  min-height: calc(var(--size-composer) + var(--size-control) + var(--size-thumb));
+}
+
+.inspiration__bar.has-media.is-nudging {
+  min-height: calc(
+    var(--size-composer) + var(--size-control) + var(--size-thumb) + var(--space-stack-xl)
+  );
+}
+
 .inspiration__bar-copy {
   align-self: start;
   width: 100%;
   min-width: 0;
   display: grid;
   align-content: start;
+}
+
+.inspiration__bar-copy .inspiration__media {
+  margin-bottom: var(--space-stack-md);
 }
 
 .inspiration__bar.is-dictating .inspiration__query {
@@ -422,15 +442,21 @@
   overflow-x: hidden;
   overflow-y: hidden;
   outline: none;
+  touch-action: manipulation;
   transition: height var(--duration-slow) var(--ease-spring);
+  scroll-margin-bottom: 8rem;
 }
 
 .inspiration__query.is-empty {
   caret-color: transparent;
 }
 
+.inspiration__query::placeholder {
+  color: var(--color-text-muted);
+}
+
 .inspiration__nudge-slot {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .inspiration__nudge {
@@ -442,13 +468,19 @@
 
 .inspiration__typed {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  left: 0;
   display: flex;
   align-items: center;
+  height: calc(var(--font-size-body) * var(--line-height-body));
   overflow: hidden;
   pointer-events: none;
   color: var(--color-text-muted);
+  font-family: inherit;
   font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
   white-space: nowrap;
 }
 
@@ -470,47 +502,53 @@
 
 .inspiration__nudge-q {
   margin: 0;
-  color: var(--color-text-primary);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-body-sm);
+  margin-bottom: var(--space-stack-sm);
 }
 
 .inspiration__nudge-list {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-stack-sm);
-  justify-items: start;
+  overflow: visible;
 }
 
 .inspiration__nudge-opt {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-inline-sm);
   margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--color-text-primary);
-  font: inherit;
-  font-size: var(--font-size-body-sm);
-  line-height: var(--line-height-body);
-  text-align: left;
-}
-
-.inspiration__nudge-mark {
-  width: var(--icon-size-md);
-  height: var(--icon-size-md);
-  box-sizing: border-box;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
+  padding: var(--space-stack-sm) var(--space-inline-md);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-bubble);
   background: var(--color-bg-elevated);
-  color: var(--color-text-on-primary);
+  color: var(--color-text-secondary);
+  appearance: none;
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--font-weight-label);
+  line-height: var(--line-height-tight);
+  white-space: nowrap;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transform-origin: center;
 }
 
-.inspiration__nudge-opt.is-on .inspiration__nudge-mark {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
+.inspiration__nudge-opt.is-on {
+  border-color: var(--color-border-strong);
+  background: color-mix(in srgb, var(--color-text-primary) 10%, var(--color-bg-elevated));
+  color: var(--color-text-primary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .inspiration__nudge-opt:hover:not(.is-on) {
+    background: color-mix(in srgb, var(--color-text-primary) 8%, var(--color-bg-elevated));
+  }
+
+  .inspiration__nudge-opt.is-on:hover {
+    background: color-mix(in srgb, var(--color-text-primary) 14%, var(--color-bg-elevated));
+  }
 }
 
 .inspiration__remember-wrap:has(.inspiration__nudge) {
@@ -843,6 +881,10 @@
   place-items: center;
 }
 
+.inspiration__add:disabled {
+  opacity: 0.45;
+}
+
 .inspiration__remember {
   margin: 0;
   font-family: var(--font-family-display);
@@ -894,6 +936,7 @@
   overflow-y: hidden;
   outline: none;
   transition: height var(--duration-slow) var(--ease-spring);
+  scroll-margin-bottom: 8rem;
 }
 
 .inspiration__composer .inspiration__freq {
@@ -979,6 +1022,10 @@
   .inspiration__bar {
     width: 100%;
     padding: var(--space-stack-md);
+  }
+
+  .inspiration__nudge {
+    scroll-margin-bottom: 5rem;
   }
 
   .inspiration__examples {

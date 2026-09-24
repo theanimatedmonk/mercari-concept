@@ -63,7 +63,11 @@ export default function InspirationInput({
   const [linking, setLinking] = useState(false);
   const [linkFailed, setLinkFailed] = useState(false);
   const dictation = useDictation(context, setContext);
-  const typedHint = useTypedPlaceholder(Boolean(context.trim()) || dictation.listening);
+  const [queryFocused, setQueryFocused] = useState(false);
+  const [imagePrompted, setImagePrompted] = useState(false);
+  const typedHint = useTypedPlaceholder(
+    Boolean(context.trim()) || dictation.listening || queryFocused,
+  );
   const queryRef = useRef<HTMLTextAreaElement>(null);
   const reduceMotion = Boolean(useReducedMotion());
   const barMotion = reduceMotion ? { duration: 0 } : BAR_SPRING;
@@ -80,8 +84,17 @@ export default function InspirationInput({
     context,
     Boolean(imageSrc),
     !reading && !linking && !dictation.listening && !linkFailed,
+    imagePrompted,
   );
   const nudging = Boolean(nudge.question);
+
+  useEffect(() => {
+    if (!imageSrc) {
+      setImagePrompted(false);
+      return;
+    }
+    if (queryFocused || dictation.listening) setImagePrompted(true);
+  }, [imageSrc, queryFocused, dictation.listening]);
 
   useLayoutEffect(() => {
     fitQuery(queryRef.current);
@@ -251,7 +264,7 @@ export default function InspirationInput({
 
   function submitFromBar() {
     if (!nudge.inScope) return;
-    if (context.trim()) {
+    if (imageSrc || context.trim()) {
       void submit();
       return;
     }
@@ -315,226 +328,179 @@ export default function InspirationInput({
       {!reading ? (
         <div className="inspiration__inner">
           {!imageSrc ? (
-            <>
-              <header className="inspiration__intro">
-                <h1 className="inspiration__title">What's on your mind?</h1>
-                <p className="inspiration__sub">
-                  Show me something you saw, describe it, or tell me what you are looking for.
-                </p>
-              </header>
-              <motion.div
-                className={`inspiration__bar${dragging ? ' is-dragging' : ''}${dictation.listening ? ' is-dictating' : ''}${linking ? ' is-resolving' : ''}${linkFailed ? ' is-link-failed' : ''}${nudging ? ' is-nudging' : ''}`}
-                aria-busy={linking}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragging(true);
-                }}
-                onDragLeave={() => setDragging(false)}
-                onDrop={onDrop}
-                onPaste={onPaste}
-              >
-                <div className="inspiration__bar-copy">
-                  <div className="inspiration__bar-field">
-                    {linking ? (
-                      <span className="inspiration__link-chip is-busy" role="status">
-                        <span className="inspiration__link-spin" aria-hidden />
-                        getting the photo
-                      </span>
-                    ) : linkFailed ? (
-                      <button
-                        type="button"
-                        className="inspiration__link-chip is-failed"
-                        onClick={() => setLinkFailed(false)}
-                      >
-                        Could not get the photo
-                      </button>
-                    ) : (
-                      <>
-                        {dictation.listening ? <VoiceFreq /> : null}
-                        <textarea
-                          ref={queryRef}
-                          className={`inspiration__query${context ? '' : ' is-empty'}`}
-                          rows={1}
-                          wrap="soft"
-                          value={context}
-                          onChange={(e) => onQueryChange(e.target)}
-                          onKeyDown={(e) => {
-                            if (e.key !== 'Enter' || e.shiftKey) return;
-                            e.preventDefault();
-                            if (dictation.listening || linking || !nudge.inScope) return;
-                            submitFromBar();
-                          }}
-                          aria-label="Drop an inspo image, paste a Pinterest pin or URL, or describe using voice"
-                        />
-                        {!context && !dictation.listening ? (
-                          <span className="inspiration__typed" aria-hidden>
-                            {typedHint}
-                            <span className="inspiration__typed-caret" />
-                          </span>
-                        ) : null}
-                      </>
-                    )}
-                  </div>
-                  <AnimatePresence initial={false}>
-                    {nudging ? (
-                      <motion.div
-                        key="jev-nudge"
-                        className="inspiration__nudge-slot"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={barMotion}
-                      >
-                        <JevNudge
-                          intentKey={nudge.key}
-                          question={nudge.question}
-                          options={nudge.options}
-                          query={context}
-                          onToggle={toggleNudgeOption}
-                        />
-                      </motion.div>
-                    ) : null}
-                  </AnimatePresence>
-                </div>
-                <div className="inspiration__bar-actions">
-                  {dictation.listening ? null : (
-                    <button
-                      type="button"
-                      className="inspiration__bar-btn"
-                      aria-label="Add an image"
-                      disabled={linking}
-                      onClick={() => fileRef.current?.click()}
-                    >
-                      <ImageMark />
-                    </button>
-                  )}
-                  <DictateButton
-                    className="inspiration__bar-btn"
-                    listening={dictation.listening}
-                    disabled={linking}
-                    onClick={dictation.toggle}
-                  />
-                  <button
-                    type="button"
-                    className="inspiration__submit"
-                    aria-label={
-                      nudge.inScope ? 'Continue' : "Lookmind is for women's clothing"
-                    }
-                    disabled={dictation.listening || linking || !nudge.inScope}
-                    onClick={submitFromBar}
-                  >
-                    <ArrowUp size={18} strokeWidth={2.4} />
-                  </button>
-                </div>
-              </motion.div>
-              {analyzeError || dictation.error ? (
-                <p className="inspiration__error">{analyzeError || dictation.error}</p>
-              ) : null}
-              <div className="inspiration__examples">
-                {EXAMPLES.map((item) => (
-                  <img
-                    key={item.id}
-                    className="inspiration__example"
-                    src={item.src}
-                    alt={item.alt}
-                  />
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="inspiration__sheet">
-              <button
-                type="button"
-                className="inspiration__close"
-                aria-label="Close"
-                onClick={() => replaceImage(null)}
-              >
-                <X size={18} />
-              </button>
-              <div className="inspiration__media">
-                <div className="inspiration__thumb-wrap">
-                  <motion.div
-                    layoutId="inspiration-frame"
-                    className="inspiration__thumb-frame"
-                    transition={LAYOUT_SPRING}
-                    layout="position"
-                  >
-                    <img
-                      className="inspiration__thumb"
-                      src={imageSrc}
-                      alt="Inspiration"
-                    />
-                  </motion.div>
-                  <button
-                    type="button"
-                    className="inspiration__remove"
-                    aria-label="Remove image"
-                    onClick={() => replaceImage(null)}
-                  >
-                    <X size={10} />
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  className="inspiration__add"
-                  aria-label="Add another image"
-                  onClick={() => fileRef.current?.click()}
-                >
-                  <Plus size={18} />
-                </button>
-              </div>
-              <div className="inspiration__remember-wrap">
-                <div className={`inspiration__composer${dictation.listening ? ' is-dictating' : ''}${nudging ? ' is-nudging' : ''}`}>
-                  <textarea
-                    ref={queryRef}
-                    rows={1}
-                    wrap="soft"
-                    value={context}
-                    onChange={(e) => onQueryChange(e.target)}
-                    placeholder="What caught your eye in this image?"
-                    aria-label="What caught your eye in this image?"
-                  />
-                  {dictation.listening ? <VoiceFreq /> : null}
-                  <DictateButton
-                    className="inspiration__mic"
-                    listening={dictation.listening}
-                    onClick={dictation.toggle}
-                  />
-                </div>
-                <AnimatePresence initial={false}>
-                  {nudging ? (
+            <header className="inspiration__intro">
+              <h1 className="inspiration__title">What's on your mind?</h1>
+              <p className="inspiration__sub">
+                Show me something you saw, describe it, or tell me what you are looking for.
+              </p>
+            </header>
+          ) : null}
+          <motion.div
+            className={`inspiration__bar${dragging ? ' is-dragging' : ''}${dictation.listening ? ' is-dictating' : ''}${linking ? ' is-resolving' : ''}${linkFailed ? ' is-link-failed' : ''}${nudging ? ' is-nudging' : ''}${imageSrc ? ' has-media' : ''}`}
+            aria-busy={linking}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={onDrop}
+            onPaste={onPaste}
+          >
+            <div className="inspiration__bar-copy">
+              {imageSrc ? (
+                <div className="inspiration__media">
+                  <div className="inspiration__thumb-wrap">
                     <motion.div
-                      key="jev-nudge-sheet"
-                      className="inspiration__nudge-slot"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={barMotion}
+                      layoutId="inspiration-frame"
+                      className="inspiration__thumb-frame"
+                      transition={LAYOUT_SPRING}
+                      layout="position"
                     >
-                      <JevNudge
-                        intentKey={nudge.key}
-                        question={nudge.question}
-                        options={nudge.options}
-                        query={context}
-                        onToggle={toggleNudgeOption}
+                      <img
+                        className="inspiration__thumb"
+                        src={imageSrc}
+                        alt="Inspiration"
                       />
                     </motion.div>
-                  ) : null}
-                </AnimatePresence>
-              </div>
-              {analyzeError || dictation.error ? (
-                <p className="inspiration__error">{analyzeError || dictation.error}</p>
+                    <button
+                      type="button"
+                      className="inspiration__remove"
+                      aria-label="Remove image"
+                      onClick={() => replaceImage(null)}
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    className="inspiration__add"
+                    aria-label="Add another image"
+                    disabled={linking}
+                    onClick={() => fileRef.current?.click()}
+                  >
+                    <Plus size={18} />
+                  </button>
+                </div>
               ) : null}
+              <div className="inspiration__bar-field">
+                {linking ? (
+                  <span className="inspiration__link-chip is-busy" role="status">
+                    <span className="inspiration__link-spin" aria-hidden />
+                    getting the photo
+                  </span>
+                ) : linkFailed ? (
+                  <button
+                    type="button"
+                    className="inspiration__link-chip is-failed"
+                    onClick={() => setLinkFailed(false)}
+                  >
+                    Could not get the photo
+                  </button>
+                ) : (
+                  <>
+                    {dictation.listening ? <VoiceFreq /> : null}
+                    <textarea
+                      ref={queryRef}
+                      className={`inspiration__query${context || imageSrc || queryFocused ? '' : ' is-empty'}`}
+                      rows={1}
+                      wrap="soft"
+                      value={context}
+                      placeholder={
+                        imageSrc && !queryFocused && !imagePrompted
+                          ? 'What caught your eye in this image?'
+                          : undefined
+                      }
+                      onFocus={() => setQueryFocused(true)}
+                      onBlur={() => setQueryFocused(false)}
+                      onChange={(e) => onQueryChange(e.target)}
+                      onKeyDown={(e) => {
+                        if (e.key !== 'Enter' || e.shiftKey) return;
+                        e.preventDefault();
+                        if (dictation.listening || linking || !nudge.inScope) return;
+                        submitFromBar();
+                      }}
+                      aria-label={
+                        imageSrc
+                          ? 'What caught your eye in this image?'
+                          : 'Drop an inspo image, paste a Pinterest pin or URL, or describe using voice'
+                      }
+                    />
+                    {!context && !dictation.listening && !imageSrc && !queryFocused ? (
+                      <span className="inspiration__typed" aria-hidden>
+                        {typedHint}
+                        <span className="inspiration__typed-caret" />
+                      </span>
+                    ) : null}
+                  </>
+                )}
+              </div>
+              <AnimatePresence initial={false}>
+                {nudging ? (
+                  <motion.div
+                    key="jev-nudge"
+                    className="inspiration__nudge-slot"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    transition={barMotion}
+                  >
+                    <JevNudge
+                      intentKey={nudge.key}
+                      question={nudge.question}
+                      options={nudge.options}
+                      query={context}
+                      onToggle={toggleNudgeOption}
+                    />
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
+            <div className="inspiration__bar-actions">
+              {!imageSrc && !dictation.listening ? (
+                <button
+                  type="button"
+                  className="inspiration__bar-btn"
+                  aria-label="Add an image"
+                  disabled={linking}
+                  onClick={() => fileRef.current?.click()}
+                >
+                  <ImageMark />
+                </button>
+              ) : null}
+              <DictateButton
+                className="inspiration__bar-btn"
+                listening={dictation.listening}
+                disabled={linking}
+                onClick={dictation.toggle}
+              />
               <button
                 type="button"
-                className="inspiration__done"
-                disabled={linking || !nudge.inScope}
-                onClick={() => void submit()}
+                className="inspiration__submit"
+                aria-label={
+                  nudge.inScope ? 'Continue' : "Lookmind is for women's clothing"
+                }
+                disabled={dictation.listening || linking || !nudge.inScope}
+                onClick={submitFromBar}
               >
-                Let's find something great
+                <ArrowUp size={18} strokeWidth={2.4} />
               </button>
             </div>
-          )}
+          </motion.div>
+          {analyzeError || dictation.error ? (
+            <p className="inspiration__error">{analyzeError || dictation.error}</p>
+          ) : null}
+          {!imageSrc ? (
+            <div className="inspiration__examples">
+              {EXAMPLES.map((item) => (
+                <img
+                  key={item.id}
+                  className="inspiration__example"
+                  src={item.src}
+                  alt={item.alt}
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
       ) : (
         <GeneratingHero

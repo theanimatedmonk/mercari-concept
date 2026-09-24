@@ -14,6 +14,7 @@ export default function useJevNudge(
   text: string,
   hasImage: boolean,
   enabled: boolean,
+  imageLeadReady = true,
 ) {
   const [nudge, setNudge] = useState<JevNudge>(EMPTY_NUDGE);
 
@@ -29,7 +30,7 @@ export default function useJevNudge(
     }
 
     if (needsFirstImageNudge(trimmed, hasImage)) {
-      setNudge(firstImageNudge());
+      setNudge(imageLeadReady ? firstImageNudge() : EMPTY_NUDGE);
       return undefined;
     }
 
@@ -51,7 +52,7 @@ export default function useJevNudge(
       ac.abort();
       window.clearTimeout(timer);
     };
-  }, [text, hasImage, enabled]);
+  }, [text, hasImage, enabled, imageLeadReady]);
 
   return nudge;
 }

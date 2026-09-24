@@ -468,15 +468,26 @@ export default function CanvasEdit({
                       />
                     </div>
                   </div>
-                  {nudge.question ? (
-                    <JevNudge
-                      intentKey={nudge.key}
-                      question={nudge.question}
-                      options={nudge.options}
-                      query={draftContext}
-                      onToggle={toggleNudgeOption}
-                    />
-                  ) : null}
+                  <AnimatePresence initial={false}>
+                    {nudge.question ? (
+                      <motion.div
+                        key="jev-nudge"
+                        className="inspiration__nudge-slot"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={instant ? { duration: 0 } : SHEET_SPRING}
+                      >
+                        <JevNudge
+                          intentKey={nudge.key}
+                          question={nudge.question}
+                          options={nudge.options}
+                          query={draftContext}
+                          onToggle={toggleNudgeOption}
+                        />
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
                 </div>
                 {tasteError || dictation.error ? (
                   <p className="inspiration__error">{tasteError || dictation.error}</p>
