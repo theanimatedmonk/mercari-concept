@@ -1,10 +1,12 @@
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import SandBackdrop from './components/SandBackdrop';
+import PermissionDialogHost from './components/PermissionDialog';
 import InspirationInput from './stages/InspirationInput/InspirationInput';
 import NotFashion from './stages/NotFashion/NotFashion';
 import SemanticStudio from './stages/SemanticStudio/SemanticStudio';
 import type { AnalyzeResponse } from './lib/llm/types';
+import { subscribeShareTarget, type IncomingShare } from './lib/native/shareTarget';
 import {
   clearSession,
   flushSession,
@@ -22,6 +24,7 @@ export default function App() {
   const [context, setContext] = useState('');
   const [analysis, setAnalysis] = useState<AnalyzeResponse | null>(null);
   const [hideShade, setHideShade] = useState(false);
+  const [incomingShare, setIncomingShare] = useState<IncomingShare | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,6 +57,19 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    return subscribeShareTarget((share) => {
+      void clearSession();
+      setResume(false);
+      setHideShade(false);
+      setImageSrc(null);
+      setContext('');
+      setAnalysis(null);
+      setStage('inspiration');
+      setIncomingShare(share);
+    });
+  }, []);
+
   function goHome() {
     void clearSession();
     setResume(false);
@@ -71,6 +87,7 @@ export default function App() {
   return (
     <LayoutGroup>
     <div className="app-shell">
+      <PermissionDialogHost />
       {stage === 'inspiration' ? <SandBackdrop hidden={hideShade} /> : null}
       <AnimatePresence mode="wait">
         {stage === 'inspiration' ? (
@@ -82,6 +99,8 @@ export default function App() {
             transition={{ duration: 0.28 }}
           >
             <InspirationInput
+              incomingShare={incomingShare}
+              onIncomingConsumed={() => setIncomingShare(null)}
               onReadingChange={setHideShade}
               onNotFashion={() => {
                 void clearSession();

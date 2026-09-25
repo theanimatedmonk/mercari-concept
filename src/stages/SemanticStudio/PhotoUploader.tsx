@@ -4,6 +4,8 @@ import CloseMark from '../../components/icons/CloseMark';
 import EditMark from '../../components/icons/EditMark';
 import ImageMark from '../../components/icons/ImageMark';
 import { fileToImagePayload } from '../../lib/llm/styleOnMeClient';
+import { pickDeviceImage } from '../../lib/native/pickImage';
+import { isNativeApp } from '../../lib/native/platform';
 import './PhotoUploader.css';
 
 export type SelfiePayload = {
@@ -93,7 +95,16 @@ export default function PhotoUploader({ initial, onClose, onPick }: Props) {
                 type="button"
                 className="photo-uploader__swap"
                 aria-label="Edit photo"
-                onClick={() => fileRef.current?.click()}
+                onClick={() => {
+              void (async () => {
+                if (isNativeApp()) {
+                  const native = await pickDeviceImage('prompt');
+                  if (native) void readFile(native);
+                  return;
+                }
+                fileRef.current?.click();
+              })();
+            }}
               >
                 <EditMark />
               </button>
@@ -112,7 +123,16 @@ export default function PhotoUploader({ initial, onClose, onPick }: Props) {
           <button
             type="button"
             className={`photo-uploader__drop${dragging ? ' is-dragging' : ''}`}
-            onClick={() => fileRef.current?.click()}
+            onClick={() => {
+              void (async () => {
+                if (isNativeApp()) {
+                  const native = await pickDeviceImage('prompt');
+                  if (native) void readFile(native);
+                  return;
+                }
+                fileRef.current?.click();
+              })();
+            }}
             onDragOver={(e) => {
               e.preventDefault();
               setDragging(true);

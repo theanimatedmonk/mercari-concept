@@ -7,6 +7,7 @@ import { fetchInspirationFromUrl } from '../../lib/llm/client';
 import { toggleIntent } from '../../lib/llm/intentQuery';
 import { splitPromptMedia } from '../../lib/llm/promptMedia';
 import useDictation from '../../lib/useDictation';
+import { openImagePicker } from '../../lib/native/pickImage';
 import DictateButton, { VoiceFreq } from '../InspirationInput/DictateButton';
 import JevNudge from '../InspirationInput/JevNudge';
 import useJevNudge from '../InspirationInput/useJevNudge';
@@ -135,13 +136,18 @@ export default function CanvasEdit({
     setTasteOpen(true);
   }
 
-  function useFile(file: File) {
+  function applyFile(file: File) {
     setTasteError(null);
     setLinkFailed(false);
     setDraftImage((prev) => {
       if (prev?.startsWith('blob:') && prev !== imageSrc) URL.revokeObjectURL(prev);
       return URL.createObjectURL(file);
     });
+  }
+
+  async function addImage() {
+    const native = await openImagePicker(fileRef.current);
+    if (native) applyFile(native);
   }
 
   async function attachFromUrl(url: string) {
@@ -174,7 +180,7 @@ export default function CanvasEdit({
       : null;
     if (file) {
       e.preventDefault();
-      useFile(file);
+      applyFile(file);
       return;
     }
     const pasted = e.clipboardData.getData('text');
@@ -346,7 +352,7 @@ export default function CanvasEdit({
                 hidden
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (file) useFile(file);
+                  if (file) applyFile(file);
                   e.target.value = '';
                 }}
               />
@@ -408,7 +414,7 @@ export default function CanvasEdit({
                         type="button"
                         className="inspiration__add"
                         aria-label="Replace image"
-                        onClick={() => fileRef.current?.click()}
+                        onClick={() => void addImage()}
                       >
                         <Plus size={18} />
                       </button>
@@ -455,7 +461,7 @@ export default function CanvasEdit({
                           className="inspiration__bar-btn"
                           aria-label="Add an image"
                           disabled={linking}
-                          onClick={() => fileRef.current?.click()}
+                          onClick={() => void addImage()}
                         >
                           <ImageMark />
                         </button>

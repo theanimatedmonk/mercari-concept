@@ -35,7 +35,11 @@ export async function serverRetrieveCatalog(
   const batches = await Promise.all(searchQueries.map((query) => searchQuery(query, source)));
   let products = mergeProducts(batches.flat());
   if (inspirationImageUrl) {
-    products = await attachVisualScores(products, inspirationImageUrl);
+    try {
+      products = await attachVisualScores(products, inspirationImageUrl);
+    } catch {
+      /* keep unscored catalog if palette fetch fails */
+    }
   }
   return products;
 }

@@ -1,4 +1,5 @@
 import { keyForQuestion } from './nudgeCatalog.js';
+import { apiUrl } from '../native/apiUrl';
 import type {
   AnalysisAttribute,
   AnalyzeErrorBody,
@@ -36,7 +37,7 @@ function parseAnalyzeBody(raw: string): AnalyzeResponse | AnalyzeErrorBody {
 export async function requestAnalyze(
   payload: AnalyzeRequest,
 ): Promise<AnalyzeResponse> {
-  const res = await fetch('/api/analyze', {
+  const res = await fetch(apiUrl('/api/analyze'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -65,7 +66,7 @@ export async function requestAnalyzeStream(
   payload: AnalyzeRequest,
   onAttribute: (attribute: AnalysisAttribute) => void,
 ): Promise<AnalyzeResponse> {
-  const res = await fetch('/api/analyze', {
+  const res = await fetch(apiUrl('/api/analyze'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -136,7 +137,7 @@ export async function fetchInspirationFromUrl(url: string): Promise<{
   preview: string;
   mimeType: string;
 }> {
-  const res = await fetch('/api/inspiration/from-url', {
+  const res = await fetch(apiUrl('/api/inspiration/from-url'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ url }),
@@ -161,7 +162,7 @@ export async function requestJevNudge(
   payload: JevNudgeRequest,
   signal?: AbortSignal,
 ): Promise<JevNudge> {
-  const res = await fetch('/api/jev/nudge', {
+  const res = await fetch(apiUrl('/api/jev/nudge'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

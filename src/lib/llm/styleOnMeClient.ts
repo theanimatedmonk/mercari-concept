@@ -1,4 +1,5 @@
 import type { StyleOnMeRequest, StyleOnMeResponse } from './types.js';
+import { apiUrl } from '../native/apiUrl';
 
 const MAX_EDGE = 1280;
 const JPEG_QUALITY = 0.86;
@@ -55,7 +56,7 @@ export async function fileToImagePayload(file: File) {
 export async function requestStyleOnMe(
   payload: StyleOnMeRequest,
 ): Promise<StyleOnMeResponse> {
-  const res = await fetch('/api/style-on-me', {
+  const res = await fetch(apiUrl('/api/style-on-me'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

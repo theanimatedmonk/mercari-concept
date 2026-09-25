@@ -13,6 +13,8 @@ import { splitPromptMedia } from '../../lib/llm/promptMedia';
 import { createRevealQueue } from '../../lib/llm/revealQueue';
 import type { AnalysisAttribute, AnalyzeResponse } from '../../lib/llm/types';
 import useDictation from '../../lib/useDictation';
+import { openImagePicker } from '../../lib/native/pickImage';
+import type { IncomingShare } from '../../lib/native/shareTarget';
 import DictateButton, { VoiceFreq } from './DictateButton';
 import GeneratingHero from './GeneratingHero';
 import JevNudge from './JevNudge';
@@ -49,12 +51,16 @@ type Props = {
   }) => void;
   onNotFashion: () => void;
   onReadingChange?: (reading: boolean) => void;
+  incomingShare?: IncomingShare | null;
+  onIncomingConsumed?: () => void;
 };
 
 export default function InspirationInput({
   onContinue,
   onNotFashion,
   onReadingChange,
+  incomingShare,
+  onIncomingConsumed,
 }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -122,9 +128,21 @@ export default function InspirationInput({
     setLinkFailed(false);
   }
 
-  function useFile(file: File) {
+  function applyFile(file: File) {
     replaceImage(URL.createObjectURL(file));
   }
+
+  async function addImage() {
+    const native = await openImagePicker(fileRef.current);
+    if (native) applyFile(native);
+  }
+
+  useEffect(() => {
+    if (!incomingShare) return;
+    if (incomingShare.file) applyFile(incomingShare.file);
+    else if (incomingShare.url) void attachFromUrl(incomingShare.url);
+    onIncomingConsumed?.();
+  }, [incomingShare]);
 
   async function attachFromUrl(url: string) {
     if (linkingRef.current) return null;
@@ -150,7 +168,7 @@ export default function InspirationInput({
     e.preventDefault();
     setDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file) useFile(file);
+    if (file) applyFile(file);
   }
 
   function onPaste(e: React.ClipboardEvent | ClipboardEvent) {
@@ -160,7 +178,7 @@ export default function InspirationInput({
       : null;
     if (file) {
       e.preventDefault();
-      useFile(file);
+      applyFile(file);
       return;
     }
     const pasted = e.clipboardData?.getData('text') ?? '';
@@ -273,7 +291,7 @@ export default function InspirationInput({
       void submit();
       return;
     }
-    fileRef.current?.click();
+    void addImage();
   }
 
   const beats = pills;
@@ -311,7 +329,7 @@ export default function InspirationInput({
         hidden
         onChange={(e) => {
           const file = e.target.files?.[0];
-          if (file) useFile(file);
+          if (file) applyFile(file);
           e.target.value = '';
         }}
       />
@@ -381,7 +399,7 @@ export default function InspirationInput({
                     className="inspiration__add"
                     aria-label="Add another image"
                     disabled={linking}
-                    onClick={() => fileRef.current?.click()}
+                    onClick={() => void addImage()}
                   >
                     <Plus size={18} />
                   </button>
@@ -466,7 +484,7 @@ export default function InspirationInput({
                   className="inspiration__bar-btn"
                   aria-label="Add an image"
                   disabled={linking}
-                  onClick={() => fileRef.current?.click()}
+                  onClick={() => void addImage()}
                 >
                   <ImageMark />
                 </button>

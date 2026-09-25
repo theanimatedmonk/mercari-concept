@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ensurePermission } from './native/permissions';
 
 type SpeechRec = {
   continuous: boolean;
@@ -78,11 +79,13 @@ export default function useDictation(
     setListening(false);
   }, [clearRestart]);
 
-  const toggle = useCallback(() => {
+  const toggle = useCallback(async () => {
     if (wantRef.current) {
       stop();
       return;
     }
+
+    if (!(await ensurePermission('microphone'))) return;
 
     const Engine = speechCtor();
     if (!Engine) {

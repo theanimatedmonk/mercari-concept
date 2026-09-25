@@ -3,7 +3,7 @@ import MicMark from '../../components/icons/MicMark';
 type ButtonProps = {
   listening: boolean;
   className: string;
-  onClick: () => void;
+  onClick: () => void | Promise<void>;
   disabled?: boolean;
 };
 
