@@ -66,6 +66,17 @@ async function downloadCapped(url: string) {
   return text;
 }
 
+let inflight: Promise<CatalogProduct[]> | null = null;
+
+async function downloadAndParse(url: string) {
+  const text = await downloadCapped(url);
+  const products = parseProductFeed(text, 'aliexpress')
+    .filter(isTeeListing)
+    .slice(0, MAX_KEEP);
+  if (products.length) await writeParsedFeed(CACHE_KEY, products, FEED_TTL_MS);
+  return products;
+}
+
 async function loadFeed(): Promise<CatalogProduct[]> {
   const url = catalogEnv('ALIEXPRESS_AFFILIATE_FEED_URL');
   if (!url) return [];
@@ -73,12 +84,12 @@ async function loadFeed(): Promise<CatalogProduct[]> {
   const cached = await readParsedFeed(CACHE_KEY, FEED_TTL_MS);
   if (cached?.length) return cached;
 
-  const text = await downloadCapped(url);
-  const products = parseProductFeed(text, 'aliexpress')
-    .filter(isTeeListing)
-    .slice(0, MAX_KEEP);
-  if (products.length) await writeParsedFeed(CACHE_KEY, products, FEED_TTL_MS);
-  return products;
+  if (!inflight) {
+    inflight = downloadAndParse(url).finally(() => {
+      inflight = null;
+    });
+  }
+  return inflight;
 }
 
 export function aliexpressConfigured() {

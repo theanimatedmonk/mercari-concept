@@ -5,6 +5,7 @@ import DownloadMark from '../../components/icons/DownloadMark';
 import SparkleMark from '../../components/icons/SparkleMark';
 import StyleOnMeMark from '../../components/icons/StyleOnMeMark';
 import { merchantLabel, merchantShopUrl } from '../../lib/recommendation/mapProduct';
+import { apiUrl } from '../../lib/native/apiUrl';
 import { merchantMark } from '../../lib/recommendation/merchantMark';
 import { whyThis } from '../../lib/scoring';
 import type { Product, SemanticAttribute } from '../../types';
@@ -38,7 +39,8 @@ export default function ProductPreviewModal({
   const explanation = whyThis(product, attributes);
   const merchant = merchantLabel(product.merchant);
   const mark = merchantMark(product.merchant);
-  const shopUrl = merchantShopUrl(product);
+  const shop = merchantShopUrl(product);
+  const shopUrl = shop ? apiUrl(shop) : undefined;
   const slides = useMemo(
     () =>
       generatedImage && generatedImage !== product.image

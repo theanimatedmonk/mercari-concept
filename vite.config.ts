@@ -5,6 +5,7 @@ import { analyzeDevPlugin } from './vite.analyze-plugin'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   return {
+    base: './',
     plugins: [react(), analyzeDevPlugin(env)],
   }
 })

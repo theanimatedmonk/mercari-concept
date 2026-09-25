@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import SparkleMark from '../../components/icons/SparkleMark';
 import StyleOnMeMark from '../../components/icons/StyleOnMeMark';
 import { merchantLabel, merchantShopUrl } from '../../lib/recommendation/mapProduct';
+import { apiUrl } from '../../lib/native/apiUrl';
 import { merchantMark } from '../../lib/recommendation/merchantMark';
 import { whyThis } from '../../lib/scoring';
 import type { Product, SemanticAttribute } from '../../types';
@@ -31,7 +32,8 @@ export default function ProductCard({
   const explanation = whyThis(product, attributes);
   const merchant = merchantLabel(product.merchant);
   const mark = merchantMark(product.merchant);
-  const externalUrl = merchantShopUrl(product);
+  const shop = merchantShopUrl(product);
+  const externalUrl = shop ? apiUrl(shop) : undefined;
   const generating = styleState === 'generating';
   const image = styledImage || product.image;
 

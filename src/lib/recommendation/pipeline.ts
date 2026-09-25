@@ -1,4 +1,5 @@
 import { getCachedProducts, setCachedProducts } from './cache.js';
+import { apiFetch } from '../native/apiUrl';
 import type { CatalogProduct, RetrievedProduct } from './types.js';
 import type { ProductSource } from './sources/ProductSource.js';
 import { mockSource } from './sources/MockSource.js';
@@ -49,7 +50,7 @@ export type CatalogSearchRequest = {
 export async function fetchCatalogFromApi(
   payload: CatalogSearchRequest,
 ): Promise<RetrievedProduct[]> {
-  const res = await fetch('/api/catalog/search', {
+  const res = await apiFetch('/api/catalog/search', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

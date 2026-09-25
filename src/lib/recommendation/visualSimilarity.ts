@@ -51,10 +51,24 @@ export function colorSimilarity(a: Rgb | null, b: Rgb | null) {
   return Math.max(0, 1 - distance / 441);
 }
 
+function isPublicHttpUrl(value: string) {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;
+    const host = url.hostname.toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1' || host === '[::1]') return false;
+    if (host.endsWith('.local')) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function attachVisualScores(
   products: RetrievedProduct[],
   inspirationImageUrl: string,
 ): Promise<RetrievedProduct[]> {
+  if (!isPublicHttpUrl(inspirationImageUrl)) return products;
   const inspiration = await extractPaletteFromUrl(inspirationImageUrl);
   if (!inspiration) return products;
 

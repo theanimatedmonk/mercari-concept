@@ -8,9 +8,15 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "token-inspect:writer": "node \"$HOME/.cursor/skills/token-inspect/scripts/writer.mjs\"",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cap:sync": "npm run build && npx cap sync",
+    "cap:android": "npx cap open android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/camera": "^8.2.4",
+    "@capacitor/core": "^8.5.2",
     "@rive-app/react-webgl2": "^4.34.2",
     "@use-gesture/react": "^10.3.1",
     "framer-motion": "^13.1.1",
@@ -19,6 +25,7 @@
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.2",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",

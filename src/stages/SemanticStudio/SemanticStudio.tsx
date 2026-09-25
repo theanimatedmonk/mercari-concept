@@ -4,6 +4,7 @@ import AvatarOrb from '../../components/AvatarOrb';
 import { DRESS_CENTER, expansions } from '../../data/demo';
 import { products as fallbackProducts } from '../../data/products';
 import { isDressListing } from '../../lib/recommendation/dressFilter';
+import { publicHttpUrl } from '../../lib/native/apiUrl';
 import { useRecommendationFeed } from '../../lib/recommendation/useRecommendationFeed';
 import { layoutAttributes } from '../../lib/llm/layoutAttributes';
 import type { AnalyzeResponse } from '../../lib/llm/types';
@@ -76,10 +77,7 @@ export default function SemanticStudio({
   const inspirationForApi = useMemo(() => {
     if (!imageSrc) return undefined;
     if (imageSrc.startsWith('http://') || imageSrc.startsWith('https://')) {
-      return imageSrc;
-    }
-    if (imageSrc.startsWith('/') && typeof window !== 'undefined') {
-      return `${window.location.origin}${imageSrc}`;
+      return publicHttpUrl(imageSrc);
     }
     return undefined;
   }, [imageSrc]);
@@ -315,7 +313,7 @@ export default function SemanticStudio({
             );
           })}
         </svg>
-        <div className="canvas__dress">
+        <div className={`canvas__dress${imageSrc ? '' : ' is-prompt'}`}>
           <div className="canvas__dress-glow" />
           {imageSrc ? (
             <img
@@ -323,6 +321,8 @@ export default function SemanticStudio({
               src={imageSrc}
               alt="Selected look"
             />
+          ) : context.trim() ? (
+            <p className="inspiration__prompt">{context.trim()}</p>
           ) : (
             <div className="canvas__dress-empty" aria-hidden />
           )}

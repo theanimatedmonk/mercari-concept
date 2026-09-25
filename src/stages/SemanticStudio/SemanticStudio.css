@@ -119,6 +119,14 @@
   background: var(--color-bg-subtle);
 }
 
+.canvas__dress.is-prompt {
+  width: min(18rem, 48%);
+}
+
+.canvas__dress.is-prompt .inspiration__prompt {
+  position: relative;
+}
+
 .canvas__generating {
   position: absolute;
   inset: 0;
@@ -379,6 +387,10 @@
 
   .canvas__dress {
     width: min(6.25rem, 26%);
+  }
+
+  .canvas__dress.is-prompt {
+    width: min(12.5rem, 56%);
   }
 
   .canvas__orb-dock {
