@@ -76,6 +76,16 @@
   z-index: 1;
 }
 
+.canvas__chrome {
+  position: absolute;
+  top: var(--space-stack-md);
+  right: var(--space-inline-lg);
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-sm);
+}
+
 .canvas__orb-dock {
   position: absolute;
   top: var(--space-stack-md);

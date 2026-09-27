@@ -1,7 +1,5 @@
 .canvas-edit {
-  position: absolute;
-  top: var(--space-stack-md);
-  right: var(--space-inline-lg);
+  position: relative;
   z-index: 8;
 }
 

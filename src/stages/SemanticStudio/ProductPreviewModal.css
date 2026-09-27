@@ -228,7 +228,7 @@
   padding: var(--space-stack-md) var(--space-inline-md);
   border-radius: var(--radius-bubble);
   background: var(--color-primary);
-  color: var(--color-text-inverse);
+  color: var(--color-text-on-primary);
   text-decoration: none;
   font-size: var(--font-size-body-sm);
   font-weight: var(--font-weight-label);

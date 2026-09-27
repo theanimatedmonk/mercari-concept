@@ -4,6 +4,7 @@
  */
 :root,
 [data-theme='light'] {
+  color-scheme: light;
   --color-bg-canvas: var(--primitive-paper-50);
   --color-bg-elevated: var(--primitive-white);
   --color-bg-subtle: var(--primitive-paper-100);
@@ -36,6 +37,7 @@
   --color-text-muted: var(--primitive-ink-500);
   --color-text-inverse: var(--primitive-paper-50);
   --color-text-on-primary: var(--primitive-white);
+  --color-text-on-dock: var(--primitive-white);
   --color-text-accent: var(--primitive-gold-600);
 
   --color-coachmark: var(--primitive-coach-500);
@@ -164,27 +166,85 @@
   --z-stage: var(--primitive-z-stage);
   --z-overlay: var(--primitive-z-overlay);
   --z-modal: var(--primitive-z-modal);
+  --opacity-sand: 1;
+  --opacity-sand-shade: 0.92;
 }
 
 [data-theme='dark'] {
-  --color-bg-canvas: var(--primitive-ink-950);
-  --color-bg-elevated: var(--primitive-ink-900);
-  --color-bg-subtle: var(--primitive-ink-800);
+  color-scheme: dark;
+  --color-bg-canvas: var(--primitive-night-950);
+  --color-bg-elevated: var(--primitive-night-900);
+  --color-bg-subtle: var(--primitive-night-800);
+  --color-bg-input: var(--primitive-night-800);
+  --gradient-page: linear-gradient(
+    180deg,
+    var(--primitive-night-mist) 0%,
+    var(--primitive-night-950) 62%
+  );
   --color-bg-hover: rgb(255 255 255 / 0.06);
-  --color-bg-inverse: var(--primitive-paper-50);
+  --color-bg-inverse: var(--primitive-night-800);
+  --color-bg-canvas-deep: var(--primitive-night-900);
+  --color-bg-delete: rgb(196 92 74 / 0.22);
+  --color-bg-bubble: rgb(14 18 28 / 0.78);
+  --color-bg-bubble-strong: rgb(23 29 43 / 0.94);
+
   --color-text-primary: var(--primitive-ink-50);
   --color-text-secondary: var(--primitive-ink-300);
   --color-text-muted: var(--primitive-ink-400);
-  --color-text-inverse: var(--primitive-ink-950);
-  --color-text-on-primary: var(--primitive-ink-50);
-  --color-primary: var(--primitive-ink-100);
-  --color-border-default: var(--primitive-ink-700);
-  --color-border-subtle: var(--primitive-ink-800);
-  --color-border-focus: var(--primitive-ink-400);
+  --color-text-inverse: var(--primitive-paper-50);
+  --color-text-on-primary: var(--primitive-night-950);
+  --color-text-on-dock: var(--primitive-paper-50);
+  --color-text-accent: var(--primitive-gold-200);
+
+  --color-coachmark: var(--primitive-coach-300);
+  --color-dictate: var(--primitive-coach-300);
+  --color-caret: var(--primitive-coach-300);
+  --color-coachmark-nav: var(--primitive-coach-500);
+  --color-coachmark-skip: rgb(255 255 255 / 0.18);
+  --color-primary: var(--primitive-ink-50);
+  --color-primary-hover: var(--primitive-ink-200);
+  --color-accent: var(--primitive-rose-500);
+  --color-accent-hover: var(--primitive-rose-600);
+  --color-market: var(--primitive-coach-300);
+  --color-market-hover: var(--primitive-coach-500);
+  --color-market-soft: color-mix(
+    in srgb,
+    var(--primitive-market-500) 28%,
+    var(--primitive-night-800)
+  );
+  --color-sparkle: var(--primitive-gold-200);
+  --color-context-mark: var(--primitive-ink-400);
+  --color-glow: rgb(196 165 116 / 0.28);
+  --color-glow-dress: rgb(122 160 255 / 0.18);
+  --color-glow-hero: rgb(214 90 216 / 0.32);
   --color-bg-prompt: color-mix(
     in srgb,
-    var(--primitive-style-pink) 28%,
-    var(--primitive-ink-900)
+    var(--primitive-style-pink) 22%,
+    var(--primitive-night-800)
   );
-  --color-dock-glass: rgb(0 0 0 / 0.7);
+  --color-sparkle-status: var(--primitive-intent-vibe);
+  --color-pill-plum: var(--primitive-plum-300);
+  --color-overlay-veil: rgb(7 9 15 / 0.52);
+  --color-overlay-deep: rgb(7 9 15 / 0.78);
+  --color-overlay-scan: rgb(7 9 15 / 0.46);
+  --color-dock: rgb(7 9 15 / 0.92);
+  --color-dock-glass: rgb(7 9 15 / 0.72);
+  --color-dock-hover: rgb(255 255 255 / 0.08);
+  --color-shimmer: rgb(255 255 255 / 0.08);
+  --color-scan-dot: rgb(255 255 255 / 0.82);
+  --color-ring-soft: rgb(255 255 255 / 0.22);
+  --color-connection: rgb(221 229 246 / 0.18);
+  --color-connection-strong: rgb(221 229 246 / 0.4);
+  --color-delete: var(--primitive-rose-500);
+
+  --color-border-default: var(--primitive-night-600);
+  --color-border-subtle: var(--primitive-night-700);
+  --color-border-focus: var(--primitive-coach-300);
+  --color-border-strong: var(--primitive-ink-300);
+
+  --shadow-card: var(--primitive-shadow-lift-night);
+  --shadow-elevated: var(--primitive-shadow-soft-night);
+  --shadow-glow: var(--primitive-shadow-glow-night);
+  --opacity-sand: 0.22;
+  --opacity-sand-shade: 0;
 }

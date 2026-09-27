@@ -1,0 +1,21 @@
+.theme-toggle {
+  width: var(--size-control);
+  height: var(--size-control);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-card);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition:
+    background var(--duration-interaction) var(--ease-interaction),
+    border-color var(--duration-interaction) var(--ease-interaction),
+    color var(--duration-interaction) var(--ease-interaction);
+}
+
+.theme-toggle:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-default);
+}
