@@ -55,6 +55,13 @@
   z-index: 4;
 }
 
+.inspiration__theme {
+  position: absolute;
+  top: var(--space-stack-md);
+  right: var(--space-inline-lg);
+  z-index: 8;
+}
+
 .inspiration__orb-dock {
   display: flex;
   align-items: center;

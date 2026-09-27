@@ -8,6 +8,7 @@
   max-width: none;
   height: auto;
   pointer-events: none;
+  opacity: var(--opacity-sand-shade);
 }
 
 .sand-backdrop {
@@ -18,6 +19,7 @@
   height: var(--size-sand);
   z-index: var(--z-sand);
   pointer-events: none;
+  opacity: var(--opacity-sand);
 }
 
 .sand-backdrop.is-hidden,
