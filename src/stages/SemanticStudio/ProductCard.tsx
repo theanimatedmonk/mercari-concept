@@ -147,7 +147,7 @@ export default function ProductCard({
           onClick={() => setOpen((v) => !v)}
         >
           <SparkleMark fill="currentColor" stroke="none" />
-          Why this
+          <span className="product-card__why-label">Why this</span>
         </button>
         {open ? (
           <motion.div

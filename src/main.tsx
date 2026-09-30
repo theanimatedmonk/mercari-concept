@@ -1,10 +1,8 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { ThemeProvider } from './lib/useTheme'
+import { followSystemTheme } from './lib/theme'
 
-createRoot(document.getElementById('root')!).render(
-  <ThemeProvider>
-    <App />
-  </ThemeProvider>,
-)
+followSystemTheme()
+
+createRoot(document.getElementById('root')!).render(<App />)

@@ -9,6 +9,7 @@ import {
   useViewModelInstanceTrigger,
 } from '@rive-app/react-webgl2';
 import mercariRiv from '../assets/rive/mercari.riv?url';
+import { useSystemTheme } from '../lib/theme';
 import './AvatarOrb.css';
 
 export type OrbPose = 'lookDown' | 'twitch' | 'idle';
@@ -19,11 +20,26 @@ type Props = {
 };
 
 export default function AvatarOrb({ pose, compact = false }: Props) {
+  const artboard = useSystemTheme() === 'dark' ? 'Mercari-dark' : 'Mercari';
+
+  return (
+    <div
+      className={`avatar-orb${compact ? ' avatar-orb--compact' : ''}`}
+      role="img"
+      aria-label="Assistant"
+    >
+      {/* useRive only reads its params on first load, so remount per artboard. */}
+      <OrbRive key={artboard} artboard={artboard} pose={pose} />
+    </div>
+  );
+}
+
+function OrbRive({ artboard, pose }: { artboard: string; pose?: OrbPose }) {
   const lastPose = useRef<OrbPose | null>(null);
   const { rive, RiveComponent } = useRive(
     {
       src: mercariRiv,
-      artboard: 'Mercari',
+      artboard,
       stateMachine: 'mercari',
       autoplay: true,
       autoBind: false,
@@ -55,13 +71,5 @@ export default function AvatarOrb({ pose, compact = false }: Props) {
     if (pose === 'idle') idle();
   }, [vmi, pose, lookDown, twitch, idle]);
 
-  return (
-    <div
-      className={`avatar-orb${compact ? ' avatar-orb--compact' : ''}`}
-      role="img"
-      aria-label="Assistant"
-    >
-      <RiveComponent />
-    </div>
-  );
+  return <RiveComponent />;
 }

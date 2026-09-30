@@ -21,12 +21,16 @@
   --primitive-white: #ffffff;
   --primitive-black: #000000;
 
-  --primitive-night-950: #07090f;
-  --primitive-night-900: #0e121c;
-  --primitive-night-800: #171d2b;
-  --primitive-night-700: #242c3f;
-  --primitive-night-600: #3a445c;
-  --primitive-night-mist: #10182a;
+  --primitive-night-950: #000000;
+  --primitive-night-900: #111111;
+  --primitive-night-850: #1a1a1a;
+  --primitive-night-800: #222222;
+  --primitive-night-700: #2e2e2e;
+  --primitive-night-600: #444444;
+  --primitive-night-mist: #0a0a0a;
+  --primitive-grey-200: #d6d6d6;
+  --primitive-grey-300: #c2c2c2;
+  --primitive-grey-400: #9a9a9a;
 
   --primitive-coach-300: #7aa0ff;
   --primitive-coach-500: #3b6cff;
@@ -51,6 +55,7 @@
   --primitive-market-600: #4a2ee6;
   --primitive-style-pink: #e664e5;
   --primitive-style-blue: #5869e8;
+  --primitive-style-blue-300: #7482f5;
   --primitive-success-500: #22c55e;
 
   --primitive-space-1: 0.25rem;

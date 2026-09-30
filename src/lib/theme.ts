@@ -1,23 +1,22 @@
+import { useSyncExternalStore } from 'react';
+
 export type Theme = 'light' | 'dark';
 
-const STORAGE_KEY = 'lookmind-theme';
+const DARK_QUERY = '(prefers-color-scheme: dark)';
 
-export function systemTheme(): Theme {
-  if (typeof window === 'undefined') return 'light';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+function subscribeSystemTheme(onChange: () => void) {
+  const media = window.matchMedia(DARK_QUERY);
+  media.addEventListener('change', onChange);
+  return () => media.removeEventListener('change', onChange);
 }
 
-export function readStoredTheme(): Theme | null {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored === 'light' || stored === 'dark' ? stored : null;
-  } catch {
-    return null;
-  }
+function systemTheme(): Theme {
+  return window.matchMedia(DARK_QUERY).matches ? 'dark' : 'light';
 }
 
-export function readTheme(): Theme {
-  return readStoredTheme() ?? systemTheme();
+/** The OS appearance setting, re-rendering when it changes. */
+export function useSystemTheme(): Theme {
+  return useSyncExternalStore(subscribeSystemTheme, systemTheme, () => 'light');
 }
 
 export function applyTheme(theme: Theme) {
@@ -25,11 +24,11 @@ export function applyTheme(theme: Theme) {
   document.documentElement.style.colorScheme = theme;
 }
 
-export function persistTheme(theme: Theme) {
-  try {
-    localStorage.setItem(STORAGE_KEY, theme);
-  } catch {
-    /* private mode */
-  }
-  applyTheme(theme);
+/** Mirror the OS appearance setting onto <html data-theme>, live. */
+export function followSystemTheme() {
+  const media = window.matchMedia(DARK_QUERY);
+  const sync = () => applyTheme(media.matches ? 'dark' : 'light');
+  sync();
+  media.addEventListener('change', sync);
+  return () => media.removeEventListener('change', sync);
 }

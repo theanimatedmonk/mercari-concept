@@ -101,8 +101,8 @@
   border-radius: var(--radius-bubble);
   display: grid;
   place-items: center;
-  background: var(--color-bg-elevated);
-  color: var(--color-text-primary);
+  background: var(--color-coachmark-btn);
+  color: var(--color-coachmark-btn-text);
 }
 
 .coachmark__back:disabled,

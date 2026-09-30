@@ -12,7 +12,9 @@
   border-radius: var(--radius-card);
   background: var(--color-dock-glass);
   color: var(--color-text-inverse);
-  box-shadow: var(--shadow-elevated);
+  box-shadow:
+    inset 0 0 0 1px var(--color-dock-border),
+    var(--shadow-elevated);
   backdrop-filter: blur(var(--blur-glow));
   -webkit-backdrop-filter: blur(var(--blur-glow));
 }

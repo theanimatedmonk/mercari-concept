@@ -2,7 +2,7 @@
   position: relative;
   height: 100dvh;
   overflow: hidden;
-  background: var(--color-bg-canvas);
+  background: var(--color-bg-stage);
 }
 
 .studio.is-touring .panel {
@@ -62,7 +62,7 @@
   inset: 0;
   background:
     radial-gradient(ellipse at 50% 48%, var(--color-glow-hero), transparent 42%),
-    var(--color-bg-canvas);
+    var(--color-bg-stage);
   pointer-events: none;
   opacity: 0.55;
 }
@@ -74,16 +74,6 @@
   height: 100%;
   pointer-events: none;
   z-index: 1;
-}
-
-.canvas__chrome {
-  position: absolute;
-  top: var(--space-stack-md);
-  right: var(--space-inline-lg);
-  z-index: 8;
-  display: flex;
-  align-items: center;
-  gap: var(--space-inline-sm);
 }
 
 .canvas__orb-dock {

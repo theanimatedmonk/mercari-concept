@@ -1,7 +1,6 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowUp, Plus, X } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import ThemeToggle from '../../components/ThemeToggle';
 import AvatarOrb from '../../components/AvatarOrb';
 import ImageMark from '../../components/icons/ImageMark';
 import exampleImage from '../../assets/lander-images/image_text.png';
@@ -323,9 +322,6 @@ export default function InspirationInput({
     <section
       className={`inspiration${reading ? ' is-reading' : ''}${reading && !imageSrc ? ' is-prompt' : ''}${imageSrc && !reading ? ' is-sheet' : ''}`}
     >
-      <div className="inspiration__theme">
-        <ThemeToggle />
-      </div>
       <input
         ref={fileRef}
         type="file"

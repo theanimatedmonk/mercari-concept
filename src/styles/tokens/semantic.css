@@ -46,6 +46,8 @@
   --color-coachmark-nav: var(--primitive-coach-700);
   --color-coachmark-skip: rgb(255 255 255 / 0.22);
   --color-text-on-coachmark: var(--primitive-white);
+  --color-coachmark-btn: var(--primitive-white);
+  --color-coachmark-btn-text: var(--primitive-ink-900);
   --color-primary: var(--primitive-ink-900);
   --color-primary-hover: var(--primitive-ink-800);
   --color-accent: var(--primitive-rose-500);
@@ -65,6 +67,28 @@
     var(--primitive-white)
   );
   --color-sparkle-status: var(--primitive-intent-vibe);
+  --color-bg-stage: var(--color-bg-canvas);
+  --color-card-name: var(--color-text-primary);
+  --color-card-bg: var(--color-bg-canvas);
+  --color-card-border: transparent;
+  --color-card-media: var(--color-bg-subtle);
+  --color-why: var(--primitive-intent-gift);
+  --color-merchant-chip: transparent;
+  --color-glass-btn: rgb(28 25 22 / 0.28);
+  --color-glass-btn-border: rgb(255 255 255 / 0.4);
+  --gradient-style-ring: conic-gradient(
+    from -40deg,
+    var(--primitive-intent-gift) 0deg,
+    var(--primitive-intent-space) 80deg,
+    var(--primitive-style-pink) 200deg,
+    var(--primitive-intent-gift) 300deg,
+    var(--primitive-intent-gift) 360deg
+  );
+  --gradient-why: linear-gradient(
+    90deg,
+    var(--primitive-intent-gift) 0%,
+    var(--primitive-intent-vibe) 100%
+  );
   --color-pill-plum: #7a2d62;
   --color-overlay-veil: rgb(18 16 14 / 0.28);
   --color-overlay-deep: rgb(18 16 14 / 0.72);
@@ -72,6 +96,7 @@
   --color-success: var(--primitive-success-500);
   --color-dock: rgb(18 16 14 / 0.92);
   --color-dock-glass: rgb(0 0 0 / 0.7);
+  --color-dock-border: transparent;
   --color-dock-hover: rgb(255 255 255 / 0.08);
   --z-sticky: var(--primitive-z-sticky);
   --color-shimmer: rgb(255 255 255 / 0.22);
@@ -185,22 +210,19 @@
   --color-bg-inverse: var(--primitive-night-800);
   --color-bg-canvas-deep: var(--primitive-night-900);
   --color-bg-delete: rgb(196 92 74 / 0.22);
-  --color-bg-bubble: rgb(14 18 28 / 0.78);
-  --color-bg-bubble-strong: rgb(23 29 43 / 0.94);
+  --color-bg-bubble: rgb(17 17 17 / 0.78);
+  --color-bg-bubble-strong: rgb(34 34 34 / 0.94);
 
   --color-text-primary: var(--primitive-ink-50);
-  --color-text-secondary: var(--primitive-ink-300);
-  --color-text-muted: var(--primitive-ink-400);
+  --color-text-secondary: var(--primitive-grey-300);
+  --color-text-muted: var(--primitive-grey-400);
   --color-text-inverse: var(--primitive-paper-50);
   --color-text-on-primary: var(--primitive-night-950);
   --color-text-on-dock: var(--primitive-paper-50);
   --color-text-accent: var(--primitive-gold-200);
 
-  --color-coachmark: var(--primitive-coach-300);
   --color-dictate: var(--primitive-coach-300);
   --color-caret: var(--primitive-coach-300);
-  --color-coachmark-nav: var(--primitive-coach-500);
-  --color-coachmark-skip: rgb(255 255 255 / 0.18);
   --color-primary: var(--primitive-ink-50);
   --color-primary-hover: var(--primitive-ink-200);
   --color-accent: var(--primitive-rose-500);
@@ -213,7 +235,7 @@
     var(--primitive-night-800)
   );
   --color-sparkle: var(--primitive-gold-200);
-  --color-context-mark: var(--primitive-ink-400);
+  --color-context-mark: var(--primitive-grey-400);
   --color-glow: rgb(196 165 116 / 0.28);
   --color-glow-dress: rgb(122 160 255 / 0.18);
   --color-glow-hero: rgb(214 90 216 / 0.32);
@@ -224,27 +246,45 @@
   );
   --color-sparkle-status: var(--primitive-intent-vibe);
   --color-pill-plum: var(--primitive-plum-300);
-  --color-overlay-veil: rgb(7 9 15 / 0.52);
-  --color-overlay-deep: rgb(7 9 15 / 0.78);
-  --color-overlay-scan: rgb(7 9 15 / 0.46);
-  --color-dock: rgb(7 9 15 / 0.92);
-  --color-dock-glass: rgb(7 9 15 / 0.72);
+  --color-overlay-veil: rgb(0 0 0 / 0.52);
+  --color-overlay-deep: rgb(0 0 0 / 0.78);
+  --color-overlay-scan: rgb(0 0 0 / 0.46);
+  --color-dock: rgb(0 0 0 / 0.92);
+  --color-dock-glass: rgb(44 44 44 / 0.82);
+  --color-dock-border: rgb(255 255 255 / 0.1);
   --color-dock-hover: rgb(255 255 255 / 0.08);
   --color-shimmer: rgb(255 255 255 / 0.08);
   --color-scan-dot: rgb(255 255 255 / 0.82);
   --color-ring-soft: rgb(255 255 255 / 0.22);
-  --color-connection: rgb(221 229 246 / 0.18);
-  --color-connection-strong: rgb(221 229 246 / 0.4);
+  --color-connection: rgb(255 255 255 / 0.18);
+  --color-connection-strong: rgb(255 255 255 / 0.4);
   --color-delete: var(--primitive-rose-500);
 
   --color-border-default: var(--primitive-night-600);
   --color-border-subtle: var(--primitive-night-700);
   --color-border-focus: var(--primitive-coach-300);
-  --color-border-strong: var(--primitive-ink-300);
+  --color-border-strong: var(--primitive-grey-300);
 
+  --color-bg-stage: var(--primitive-night-850);
+  --color-card-name: var(--primitive-grey-200);
+  --color-card-bg: linear-gradient(
+    180deg,
+    var(--primitive-night-850) 0%,
+    var(--primitive-night-900) 100%
+  );
+  --color-card-border: var(--primitive-night-700);
+  --color-card-media: var(--primitive-night-850);
+  --color-why: var(--primitive-style-blue-300);
+  --color-merchant-chip: var(--primitive-white);
+  --color-glass-btn: rgb(20 20 20 / 0.65);
+  --color-glass-btn-border: rgb(255 255 255 / 0.16);
+  --gradient-why: linear-gradient(
+    90deg,
+    var(--primitive-style-blue-300) 0%,
+    var(--primitive-intent-vibe) 110%
+  );
   --shadow-card: var(--primitive-shadow-lift-night);
   --shadow-elevated: var(--primitive-shadow-soft-night);
   --shadow-glow: var(--primitive-shadow-glow-night);
-  --opacity-sand: 0.22;
-  --opacity-sand-shade: 0;
+  --opacity-sand: 0.5;
 }

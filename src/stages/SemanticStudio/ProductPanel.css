@@ -16,7 +16,7 @@
   justify-content: space-between;
   gap: var(--space-inline-sm);
   flex-shrink: 0;
-  margin-bottom: var(--space-stack-sm);
+  margin-bottom: var(--space-stack-md);
 }
 
 .panel__heading h1 {
@@ -30,6 +30,15 @@
   margin: var(--space-stack-xs) 0 0;
   color: var(--color-text-secondary);
   font-size: var(--font-size-caption);
+}
+
+[data-theme='dark'] .panel {
+  background: var(--color-bg-canvas);
+}
+
+[data-theme='dark'] .panel__filter {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border-default);
 }
 
 .panel__filter {
@@ -116,8 +125,9 @@
 .product-card {
   display: flex;
   flex-direction: column;
+  border: 1px solid var(--color-card-border);
   border-radius: var(--radius-control);
-  background: var(--color-bg-canvas);
+  background: var(--color-card-bg);
   overflow: hidden;
 }
 
@@ -125,7 +135,7 @@
   position: relative;
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  border-radius: var(--radius-control);
+  background: var(--color-card-media);
 }
 
 .product-card__image {
@@ -234,10 +244,35 @@
   height: var(--size-control);
   border: 0;
   border-radius: var(--radius-bubble);
-  background: color-mix(in srgb, var(--color-bg-inverse) 50%, transparent);
-  color: var(--color-text-inverse);
+  background: var(--color-glass-btn);
+  -webkit-backdrop-filter: blur(var(--blur-soft)) saturate(160%);
+  backdrop-filter: blur(var(--blur-soft)) saturate(160%);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.24);
+  color: var(--color-text-on-dock);
   display: grid;
   place-items: center;
+  transition: background var(--duration-interaction) var(--ease-interaction);
+}
+
+.product-card__style::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: inherit;
+  background: var(--gradient-style-ring);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+
+.product-card__style:hover {
+  background: color-mix(in srgb, var(--color-glass-btn) 70%, rgb(255 255 255 / 0.3));
 }
 
 .product-card__style .icon {
@@ -272,7 +307,7 @@
 }
 
 .product-card__body {
-  padding: var(--space-stack-sm) var(--space-stack-sm);
+  padding: var(--space-stack-md);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--space-stack-xs) var(--space-inline-sm);
@@ -282,7 +317,7 @@
 .product-card__mark {
   grid-column: 2;
   grid-row: 1;
-  align-self: center;
+  align-self: start;
   width: var(--icon-size-lg);
   height: var(--icon-size-lg);
   flex-shrink: 0;
@@ -299,21 +334,34 @@ a.product-card__mark {
   display: block;
 }
 
-[data-theme='dark'] .product-card__mark img,
+[data-theme='dark'] .product-card__mark {
+  box-sizing: border-box;
+  padding: 3px;
+  border-radius: var(--radius-bubble);
+  background: var(--color-merchant-chip);
+  filter: invert(1) hue-rotate(180deg);
+}
+
+[data-theme='dark'] .product-card__mark img {
+  border-radius: var(--radius-bubble);
+}
+
 [data-theme='dark'] .product-card__merchant img {
   filter: invert(1);
 }
 
 .product-card__name {
   margin: 0;
+  color: var(--color-card-name);
   font-size: var(--font-size-caption);
   font-weight: var(--font-weight-label);
 }
 
 .product-card__price {
   margin: 0;
-  font-size: var(--font-size-caption);
-  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-heading);
+  color: var(--color-text-primary);
 }
 
 .product-card__meta {
@@ -365,7 +413,7 @@ a.product-card__mark {
   margin-top: 0;
   border: 0;
   background: transparent;
-  color: var(--color-sparkle-status);
+  color: var(--color-why);
   font-size: var(--font-size-caption);
   text-align: left;
   padding: 0;
@@ -375,7 +423,14 @@ a.product-card__mark {
 }
 
 .product-card__why .icon {
-  color: var(--color-sparkle-status);
+  color: var(--color-why);
+}
+
+.product-card__why-label {
+  background: var(--gradient-why);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .product-card__why-body {

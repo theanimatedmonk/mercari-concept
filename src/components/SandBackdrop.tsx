@@ -9,6 +9,8 @@ import {
   useViewModelInstanceNumber,
 } from '@rive-app/react-webgl2';
 import pageShade from '../assets/bg-shade.png';
+import pageShadeDark from '../assets/bg-shade-dark.png';
+import { useSystemTheme } from '../lib/theme';
 import sandRiv from '../assets/rive/sand.riv?url';
 import './SandBackdrop.css';
 
@@ -29,6 +31,7 @@ function sandSize() {
 }
 
 export default function SandBackdrop({ hidden = false }: Props) {
+  const shade = useSystemTheme() === 'dark' ? pageShadeDark : pageShade;
   const { rive, RiveComponent } = useRive({
     src: sandRiv,
     artboard: 'sand',
@@ -74,7 +77,7 @@ export default function SandBackdrop({ hidden = false }: Props) {
     <>
       <img
         className={`sand-backdrop__shade${hidden ? ' is-hidden' : ''}`}
-        src={pageShade}
+        src={shade}
         alt=""
         aria-hidden
       />

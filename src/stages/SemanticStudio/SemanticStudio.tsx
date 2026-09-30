@@ -1,6 +1,5 @@
 import { AnimatePresence } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import ThemeToggle from '../../components/ThemeToggle';
 import AvatarOrb from '../../components/AvatarOrb';
 import { DRESS_CENTER, expansions } from '../../data/demo';
 import { products as fallbackProducts } from '../../data/products';
@@ -275,16 +274,13 @@ export default function SemanticStudio({
         <div className="canvas__orb-dock">
           <AvatarOrb compact pose={generate.active ? 'twitch' : 'idle'} />
         </div>
-        <div className="canvas__chrome">
-          <ThemeToggle />
-          <CanvasEdit
-            imageSrc={imageSrc}
-            context={context}
-            busy={generate.active}
-            onStartOver={onStartOver}
-            onRetaste={onRetaste}
-          />
-        </div>
+        <CanvasEdit
+          imageSrc={imageSrc}
+          context={context}
+          busy={generate.active}
+          onStartOver={onStartOver}
+          onRetaste={onRetaste}
+        />
         <div className="canvas__field" ref={canvasRef as React.Ref<HTMLDivElement>}>
         {generate.active ? (
           <div className="canvas__generating">
