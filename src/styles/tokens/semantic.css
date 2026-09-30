@@ -71,11 +71,11 @@
   --color-intro-sub: var(--color-text-secondary);
   --color-card-name: var(--color-text-primary);
   --color-card-bg: var(--color-bg-canvas);
-  --color-card-border: transparent;
+  --color-card-border: var(--color-border-subtle);
   --color-card-media: var(--color-bg-subtle);
   --color-why: var(--primitive-intent-gift);
   --color-merchant-chip: transparent;
-  --color-glass-btn: rgb(28 25 22 / 0.28);
+  --color-glass-btn: rgb(20 20 20 / 0.65);
   --color-glass-btn-border: rgb(255 255 255 / 0.4);
   --gradient-style-ring: conic-gradient(
     from -40deg,
