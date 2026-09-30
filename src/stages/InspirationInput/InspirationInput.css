@@ -360,7 +360,7 @@
 .inspiration__sub {
   margin: 0;
   max-width: 22rem;
-  color: var(--color-text-secondary);
+  color: var(--color-intro-sub);
   font-size: var(--font-size-body);
 }
 
@@ -1016,9 +1016,7 @@
   }
 
   .inspiration__title {
-    font-size: var(--font-size-display-sm);
-    white-space: normal;
-    text-wrap: balance;
+    font-size: clamp(var(--font-size-heading), 7.8vw, var(--font-size-display-sm));
   }
 
   .inspiration__sub {

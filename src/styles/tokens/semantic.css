@@ -68,6 +68,7 @@
   );
   --color-sparkle-status: var(--primitive-intent-vibe);
   --color-bg-stage: var(--color-bg-canvas);
+  --color-intro-sub: var(--color-text-secondary);
   --color-card-name: var(--color-text-primary);
   --color-card-bg: var(--color-bg-canvas);
   --color-card-border: transparent;
@@ -269,6 +270,7 @@
   --color-border-strong: var(--primitive-grey-300);
 
   --color-bg-stage: var(--primitive-night-850);
+  --color-intro-sub: var(--primitive-grey-350);
   --color-card-name: var(--primitive-grey-200);
   --color-card-bg: linear-gradient(
     180deg,
@@ -290,7 +292,7 @@
   --shadow-elevated: var(--primitive-shadow-soft-night);
   --shadow-glow: var(--primitive-shadow-glow-night);
   --shadow-focus-glow:
-    0 0 0 1px rgb(230 100 229 / 0.25),
+    0 0 0 1px rgb(230 100 229 / 0.65),
     0 16px 48px rgb(230 100 229 / 0.38);
   --opacity-sand: 0.35;
 }
