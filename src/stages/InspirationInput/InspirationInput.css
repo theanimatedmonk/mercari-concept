@@ -379,6 +379,11 @@
   background: var(--color-bg-elevated);
   border-radius: var(--radius-sheet);
   box-shadow: var(--shadow-elevated);
+  transition: box-shadow var(--duration-slow) var(--ease-interaction);
+}
+
+.inspiration__bar:has(.inspiration__query:focus) {
+  box-shadow: var(--shadow-elevated), var(--shadow-focus-glow);
 }
 
 .inspiration__bar.is-nudging {

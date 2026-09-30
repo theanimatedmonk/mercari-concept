@@ -170,6 +170,9 @@
   --shadow-card: var(--primitive-shadow-lift);
   --shadow-elevated: var(--primitive-shadow-soft);
   --shadow-glow: var(--primitive-shadow-glow);
+  --shadow-focus-glow:
+    0 0 0 1px rgb(230 100 229 / 0.2),
+    0 16px 40px rgb(230 100 229 / 0.32);
 
   --duration-interaction: var(--primitive-duration-normal);
   --duration-slow: var(--primitive-duration-slow);
@@ -286,5 +289,8 @@
   --shadow-card: var(--primitive-shadow-lift-night);
   --shadow-elevated: var(--primitive-shadow-soft-night);
   --shadow-glow: var(--primitive-shadow-glow-night);
-  --opacity-sand: 0.5;
+  --shadow-focus-glow:
+    0 0 0 1px rgb(230 100 229 / 0.25),
+    0 16px 48px rgb(230 100 229 / 0.38);
+  --opacity-sand: 0.35;
 }
